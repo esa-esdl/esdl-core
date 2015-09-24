@@ -12,7 +12,7 @@ Dependencies:
 * matplotlib >= 1.4
 * scikit_image >= 0.11
 
-For Windows OS get the Python wheels from (Stephan Gohlke's website)[http://www.lfd.uci.edu/~gohlke/pythonlibs/].
+For Windows OS get the Python wheels from Christoph Gohlke's website at http://www.lfd.uci.edu/~gohlke/pythonlibs/.
 Install them using
 
     > pip install <wheel-file>
