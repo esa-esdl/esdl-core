@@ -8,7 +8,7 @@ except ImportError:
 from setuptools import setup, find_packages
 
 setup(
-    name="CAB-LAB",
+    name="cablab-core",
     version="0.1.0",
     description='CAB-LAB Data Cube Software',
     license='GPL 3',
@@ -24,12 +24,12 @@ setup(
             'cablab_cli = cablab.__main__:main',
         ],
         'cablab.converter.classes': [
-            'lai = cablab.core:LaiConverter',
-            'fapar = cablab.core:FaparConverter',
+            'lai = cablab.extensions:LaiConverter',
+            'fapar = cablab.extensions:FaparConverter',
         ],
         'cablab.transformer.methods': [
-            'lai = cablab.core:transform_lai',
-            'fapar = cablab.core:transform_fapar',
+            'lai = cablab.extensions:transform_lai',
+            'fapar = cablab.extensions:transform_fapar',
         ],
     }
 )

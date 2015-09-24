@@ -6,8 +6,8 @@ CAB-LAB Core Components:
 
 
 Dependencies:
-* netCDF4  >= 1.1
-* numpy >= 1.10
+* netCDF4  >= 1.2
+* numpy >= 1.9
 * scipy >= 0.16
 * matplotlib >= 1.4
 * scikit_image >= 0.11

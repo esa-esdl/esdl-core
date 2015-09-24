@@ -10,7 +10,7 @@ class CLDataset:
         self.dataset = dataset
 
     @staticmethod
-    def create(file, description, width, height, level_values=[1013.25], time_values=[]):
+    def create(file, description, width, height, level_values=(1013.25,), time_values=()):
         # Note: format='NETCDF4_CLASSIC' is important, with format='NETCDF4' multi
         # files cannot be read with MFDataset!
         dataset = netCDF4.Dataset(file, 'w', format='NETCDF4_CLASSIC')
@@ -44,6 +44,7 @@ class CLDataset:
         dataset.description = description
         dataset.source = 'CAB-LAB Software (module ' + __name__ + ')'
         dataset.history = 'Created ' + time.ctime(time.time())
+        # TODO: add more global attributes from CF-conventions here
 
         return CLDataset(dataset)
 
@@ -61,6 +62,7 @@ class CLDataset:
                                                fill_value=fill_value)
         variable.units = units
         variable.description = description
+        # TODO: add more local attributes from CF-conventions here
         return variable
 
     def close(self):
