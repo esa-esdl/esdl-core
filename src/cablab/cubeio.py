@@ -37,7 +37,7 @@ class CLDataset:
         longitudes.units = 'degrees east'
 
         # TODO: grid cell centers or lower-left corner?
-        latitudes[:] = numpy.arange(-90, 90, 180 / height)
+        latitudes[:] = numpy.arange(90, -90, 180 / height)
         longitudes[:] = numpy.arange(-180, 180, 360 / width)
 
         import time
@@ -54,14 +54,19 @@ class CLDataset:
         # TODO: ensure that dataset complies with CAB-LAB format specification
         return CLDataset(dataset)
 
-    def create_variable(self, varname, datatype, units, description, fill_value=numpy.nan):
+    def create_variable(self, varname, datatype, units, long_name,
+                        scale_factor=1.0,
+                        add_offset=0.0,
+                        fill_value=float('nan')):
         variable = self.dataset.createVariable(varname,
                                                datatype,
                                                ("time", "level", "lat", "lon",),
                                                zlib=True,
                                                fill_value=fill_value)
         variable.units = units
-        variable.description = description
+        variable.long_name = long_name
+        variable.scale_factor = scale_factor
+        variable.add_offset = add_offset
         # TODO: add more local attributes from CF-conventions here
         return variable
 
