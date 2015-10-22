@@ -2,9 +2,14 @@ import netCDF4
 import numpy
 
 
+
+
+
+
+
 class CLDataset:
     TIME_UNITS = 'hours since 0001-01-01 00:00:00.0'
-    TIME_CALENDAR = 'gregorian'
+    TIME_CALENDAR = 'standard'
 
     def __init__(self, dataset):
         self.dataset = dataset

@@ -15,3 +15,4 @@ def load_all_extensions():
         transformer_methods.append(transformer_method)
 
     return converter_classes, transformer_methods
+
