@@ -72,32 +72,32 @@ class Cube:
         os.mkdir(base_dir)
         return Cube(config, base_dir)
 
-    def add_variable(self, name, provider):
-        var_dir = os.path.join(self.base_dir, name)
+    def add_variable(self, var_name, provider):
+        var_dir = os.path.join(self.base_dir, var_name)
         if os.path.exists(var_dir):
             raise IOError('data cube variable directory exists: %s' % var_dir)
         os.mkdir(var_dir)
-        self.variables.append(name)
-        import math
-        n = math.floor((date2num(provider.end_time) - date2num(provider.start_time)) / self.config.temporal_res)
-        pet = provider.end_time
+        self.variables.append(var_name)
 
-        cstr = _get_cube_times_for_src(pst, self.config.start_time, self.config.temporal_res)
-        cetr = _get_cube_times_for_src(pet, self.config.start_time, self.config.temporal_res)
+        cube_start_time = date2num(self.config.start_time)
+        cube_temporal_res = self.config.temporal_res
 
+        src_start_time = date2num(provider.start_time)
+        src_end_time = date2num(provider.end_time)
 
-        cst = cstr[0]
-        cet = cetr[0]
+        # compute adjusted src_start_time
+        n = _get_num_steps(cube_start_time, src_start_time, cube_temporal_res)
+        src_start_time = cube_start_time + n * cube_temporal_res
 
-        # datasets = sorted(provider.get_datasets(name))
-        # for dataset in datasets:
-        #    timestamp = dataset.timestamp
+        steps = _get_num_steps(src_start_time, src_end_time, cube_temporal_res)
+        for i in range(steps + 1):
+            t1 = src_start_time + i * cube_temporal_res
+            t2 = src_start_time + (i + 1) * cube_temporal_res
+            if t1 < src_end_time:
+                image = provider.get_image(var_name, num2date(t1), num2date(t2))
+                # todo - store image in the cube's var_dir
 
-
-        # times_count =
-        # [config.start_time + i * timedelta(days=config.temporal_res) for i in range(times_count)]
-
-        return name
+        return var_name
 
     def get_variable(self, name):
         return 'L' + 'A' + 'I'
@@ -106,9 +106,5 @@ class Cube:
         return 'Cube(%s, \'%s\')' % (self.config, self.base_dir)
 
 
-def _get_cube_times_for_src(src_time, cube_start_time, cube_temporal_res):
-    st = date2num(src_time)
-    cst = date2num(cube_start_time)
-    delta = st - cst
-    n = math.floor(delta / cube_temporal_res)
-    return num2date(cst + n * cube_temporal_res), num2date(cst + (n + 1) * cube_temporal_res)
+def _get_num_steps(x1, x2, dx):
+    return int(math.floor((x2 - x1) / dx))

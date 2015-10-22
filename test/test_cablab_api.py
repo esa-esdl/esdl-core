@@ -1,9 +1,7 @@
 from unittest import TestCase
 import shutil
-from datetime import datetime
 
 from cablab import *
-from cablab.cube import _get_cube_times_for_src
 
 
 class CablabApiTest(TestCase):
@@ -28,6 +26,8 @@ class CablabApiTest(TestCase):
         self.assertIs(var, cube.get_variable('LAI'))
         self.assertIs(var, cube.get_variable('LAI'))
 
+
+"""
     def test_get_cube_times_for_src(self):
         self.assertEqual((datetime(2010, 1, 1),
                           datetime(2010, 1, 9)),
@@ -57,6 +57,8 @@ class CablabApiTest(TestCase):
                           datetime(2010, 1, 25)),
                          _get_cube_times_for_src(datetime(2010, 1, 22),
                                                 datetime(2010, 1, 1), 8))
+
+"""
 
 
 class MyLaiProvider:
