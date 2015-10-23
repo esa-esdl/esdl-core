@@ -48,6 +48,23 @@ class CubeTest(TestCase):
                           (datetime(2013, 1, 28, 0, 0), datetime(2013, 2, 5, 0, 0))],
                          provider.trace)
 
+    def test_burnt_area_provider(self):
+        import os
+
+        base_dir = 'testcube'
+        if os.path.exists(base_dir):
+            shutil.rmtree(base_dir, True)
+        self.assertFalse(os.path.exists(base_dir))
+
+        config = CubeConfig()
+        cube = Cube.create(config, base_dir)
+        self.assertTrue(os.path.exists(base_dir))
+
+        provider = BurntAreaProvider()
+        provider.import_dataset()
+        provider.prepare(config)
+
+        cube.update(provider)
 
 
 import numpy
@@ -78,3 +95,53 @@ class MyLaiProvider(ImageProvider):
 
     def close(self):
         pass
+
+
+import netCDF4
+import cablab
+
+
+class BurntAreaProvider(ImageProvider):
+    def __init__(self):
+        self.grid_width = None
+        self.grid_height = None
+        self.easting = None
+        self.northing = None
+        self.spatial_res = None
+        self.start_time = None
+        self.temporal_res = None
+        self.variables = None
+        self.source_file = 'C:\\Personal\\CabLab\\EO data\\test_cube\\BurntArea.GFED4.2009.nc'
+        self.ds = None
+        self.ds_variables = None
+
+    def import_dataset(self):
+        self.ds = netCDF4.Dataset(self.source_file, 'r')
+        self.ds_variables = self.ds.variables['BurntArea']
+        ds_time = self.ds.variables['time']
+        print(ds_time.shape)
+        print(len(ds_time))
+        print(ds_time[0])
+        print(cablab.num2date_gregorian(155663.00000000047))
+
+    def prepare(self, cube_config):
+        self.grid_width = cube_config.grid_width
+        self.grid_height = cube_config.grid_height
+        self.easting = cube_config.easting
+        self.northing = cube_config.northing
+        self.spatial_res = cube_config.spatial_res
+        self.start_time = cube_config.start_time
+        self.temporal_res = cube_config.temporal_res
+        self.variables = cube_config.variables
+
+    def get_temporal_coverage(self):
+        return datetime(2009, 1, 1), datetime(2009, 12, 31)
+
+    def get_spatial_coverage(self):
+        return -180, -90, 1440, 720
+
+    def get_images(self, image_start_time, image_end_time):
+        return {'BurntArea': self.ds_variables[image_start_time.month - 1, :, :]}
+
+    def close(self):
+        self.ds.close()

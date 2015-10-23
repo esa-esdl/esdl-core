@@ -154,7 +154,7 @@ class Cube:
             t2 = src_start_time + (i + 1) * cube_temporal_res
             if t1 < src_end_time:
                 image_dict = provider.get_images(cablab.num2date(t1), cablab.num2date(t2))
-                if image_dict:
+                if image_dict is not None:
                     self._write_images(cablab.num2date(t1), cablab.num2date(t2), image_dict)
 
         provider.close()
