@@ -49,7 +49,6 @@ class CubeTest(TestCase):
                          provider.trace)
 
 
-
 import numpy
 
 
@@ -64,6 +63,17 @@ class MyLaiProvider(ImageProvider):
 
     def prepare(self, cube_config):
         self.cube_config = cube_config
+
+    def get_variable_metadata(self, variable):
+        metadata = {
+            'datatype': numpy.float32,
+            'fill_value': 0,
+            'units': '1',
+            'long_name': variable,
+            'scale_factor': 1.0,
+            'add_offset': 0.0,
+        }
+        return metadata
 
     def get_temporal_coverage(self):
         return self.start_time, self.end_time

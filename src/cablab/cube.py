@@ -3,7 +3,7 @@ import math
 import os
 from abc import ABCMeta, abstractmethod
 
-import numpy
+import netCDF4
 
 import cablab
 
@@ -37,6 +37,16 @@ class ImageProvider(metaclass=ABCMeta):
         Return the spatial coverage as a rectangle represented by a tuple (x, y, width, height) in the cube's image
         coordinates.
         :return: A tuple of integers (x, y, width, height) in the cube's image coordinates.
+        """
+        return None
+
+    @abstractmethod
+    def get_variable_metadata(self, variable):
+        """
+        Return a dictionary containing metadata for the given variable. The following metadata keys are mandatory:
+        * 'datatype': The numpy datatype
+        * ...
+        :return: Variable metadata.
         """
         return None
 
@@ -82,19 +92,23 @@ class CubeConfig:
                  spatial_res=0.25,
                  start_time=datetime(2000, 1, 1),
                  temporal_res=8,
-                 variables=None):
+                 variables=None,
+                 format='NETCDF4_CLASSIC',
+                 compression=False):
         """
         Create a configuration to be be used for creating new data cubes.
 
-        :param grid_width: The fixed image width in pixels (longitude direction)
-        :param grid_height: The fixed image height in pixels (latitude direction)
-        :param easting: The longitude position of the lower-left-most corner of the lower-left-most image pixel
-        :param northing: The latitude position of the lower-left-most corner of the lower-left-most image pixel
-        :param spatial_res: The spatial image resolution in degree
-        :param start_time: The start time of the first image
-        :param temporal_res: The temporal resolution in days
+        :param grid_width: The fixed image width in pixels (longitude direction).
+        :param grid_height: The fixed image height in pixels (latitude direction).
+        :param easting: The longitude position of the lower-left-most corner of the lower-left-most image pixel.
+        :param northing: The latitude position of the lower-left-most corner of the lower-left-most image pixel.
+        :param spatial_res: The spatial image resolution in degree.
+        :param start_time: The start time of the first image.
+        :param temporal_res: The temporal resolution in days.
         :param variables: A list of variable names to be included in the cube.
-        :return: the new configuration
+        :param format: The data format used. Must be one of 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_CLASSIC'
+                       or 'NETCDF3_64BIT'.
+        :param compression: Whether the data should be compressed.
         """
 
         self.grid_width = grid_width
@@ -105,11 +119,34 @@ class CubeConfig:
         self.start_time = start_time
         self.temporal_res = temporal_res
         self.variables = variables
+        self.format = format
+        self.compression = compression
 
     def __repr__(self):
         return 'CubeConfig(%s, %s, %s, %s, %s)' % (
             self.grid_width, self.grid_height,
             self.easting, self.northing, self.spatial_res)
+
+    def load(self, path):
+        """
+        Load a CubeConfig from a text file.
+        :param path: The file's path name.
+        """
+        with open(path) as fp:
+            code = fp.read()
+            exec(code, {'datetime': datetime}, self.__dict__)
+
+    def store(self, path):
+        """
+        Store a CubeConfig in a text file.
+        :param path: The file's path name.
+        """
+        with open(path, 'w') as fp:
+            lines = []
+            for name in self.__dict__:
+                if not (name.startswith('_') or name.endswith('_')):
+                    value = self.__dict__[name]
+                    fp.write('%s = %s\n' % (name, repr(value)))
 
 
 class Cube:
@@ -123,7 +160,10 @@ class Cube:
     def __init__(self, config, base_dir):
         self.config = config
         self.base_dir = base_dir
-        self.variables = []
+        self.datasets = dict()
+
+    def __repr__(self):
+        return 'Cube(%s, \'%s\')' % (self.config, self.base_dir)
 
     @staticmethod
     def create(config, base_dir):
@@ -131,6 +171,7 @@ class Cube:
         if os.path.exists(base_dir):
             raise IOError('data cube base directory exists: %s' % base_dir)
         os.mkdir(base_dir)
+        config.store(os.path.join(base_dir, 'cube.config'))
         return Cube(config, base_dir)
 
     def update(self, provider):
@@ -153,29 +194,91 @@ class Cube:
             t1 = src_start_time + i * cube_temporal_res
             t2 = src_start_time + (i + 1) * cube_temporal_res
             if t1 < src_end_time:
-                image_dict = provider.get_images(cablab.num2date(t1), cablab.num2date(t2))
+                image_time_range = (cablab.num2date(t1), cablab.num2date(t2))
+                image_dict = provider.get_images(*image_time_range)
                 if image_dict:
-                    self._write_images(cablab.num2date(t1), cablab.num2date(t2), image_dict)
+                    self._write_images(provider, image_time_range, image_dict)
 
         provider.close()
 
-    def get_variable(self, name):
-        return 'L' + 'A' + 'I'
-
-    def __repr__(self):
-        return 'Cube(%s, \'%s\')' % (self.config, self.base_dir)
-
-    def _write_images(self, image_start_time, image_end_time, image_dict):
+    def _write_images(self, provider, image_time_range, image_dict):
         for var_name in image_dict:
             image = image_dict[var_name]
             if image is not None:
-                var_dir = os.path.join(self.base_dir, var_name)
-                if not os.path.exists(var_dir):
-                    os.mkdir(var_dir)
-                filename = '%s_%s_%s' % (var_name,
-                                         str(image_start_time).replace(':', '-').replace(' ', '_'),
-                                         str(image_end_time).replace(':', '-').replace(' ', '_'))
-                numpy.save(os.path.join(var_dir, filename), image)
+                self._write_image(provider, image_time_range, var_name, image)
+
+    def _write_image(self, provider, image_time_range, var_name, image):
+        image_start_time, image_end_time = image_time_range
+        folder_name = '%04d' % image_start_time.year
+        folder = os.path.join(os.path.join(self.base_dir, 'data', folder_name))
+        if not os.path.exists(folder):
+            os.makedirs(folder, exist_ok=True)
+        filename = '%s_%04d.nc' % (var_name, image_start_time.year)
+        file = os.path.join(folder, filename)
+        if filename in self.datasets:
+            dataset = self.datasets[filename]
+        else:
+            if os.path.exists(file):
+                dataset = netCDF4.Dataset(file, 'a')
+            else:
+                dataset = netCDF4.Dataset(file, 'w', format=self.config.format)
+                self._init_variable_dataset(provider, dataset, var_name)
+            self.datasets[filename] = dataset
+        var_start_time = dataset.variables['start_time']
+        var_end_time = dataset.variables['end_time']
+        var_variable = dataset.variables[var_name]
+        i = len(var_start_time)
+        var_start_time[i] = cablab.date2num(image_start_time)
+        var_end_time[i] = cablab.date2num(image_end_time)
+        var_variable[i, :, :] = image
+
+    def _init_variable_dataset(self, provider, dataset, var_name):
+
+        image_x0, image_y0, image_width, image_height = provider.get_spatial_coverage()
+
+        dataset.createDimension('time', None)
+        dataset.createDimension('lat', image_height)
+        dataset.createDimension('lon', image_width)
+
+        var_start_time = dataset.createVariable('start_time', 'f8', ('time',))
+        var_start_time.units = cablab.TIME_UNITS
+        var_start_time.calendar = cablab.TIME_CALENDAR
+
+        var_end_time = dataset.createVariable('end_time', 'f8', ('time',))
+        var_end_time.units = cablab.TIME_UNITS
+        var_end_time.calendar = cablab.TIME_CALENDAR
+
+        var_longitude = dataset.createVariable('longitude', 'f4', ('lon',))
+        var_longitude.units = 'degrees east'
+
+        var_latitude = dataset.createVariable('latitude', 'f4', ('lat',))
+        var_latitude.units = 'degrees north'
+
+        # reference: lower-left corner of images, lower-left corner of pixel
+        spatial_res = self.config.spatial_res
+        lon0 = self.config.easting + image_x0 * spatial_res
+        for i in range(image_width):
+            var_longitude[i] = lon0 + i * spatial_res
+        lat0 = self.config.northing + image_y0 * spatial_res
+        for i in range(image_height):
+            var_latitude[i] = lat0 + i * spatial_res
+
+        # import time
+        # dataset.source = 'CAB-LAB Software (module ' + __name__ + ')'
+        # dataset.history = 'Created ' + time.ctime(time.time())
+        # TODO: add more global attributes from CF-conventions here
+        variable_metadata = provider.get_variable_metadata(var_name)
+        var_variable = dataset.createVariable(var_name,
+                                              variable_metadata['datatype'],
+                                              ('time', 'lat', 'lon',),
+                                              zlib=self.config.compression,
+                                              fill_value=variable_metadata['fill_value'])
+        var_variable.units = variable_metadata['units']
+        var_variable.long_name = variable_metadata['long_name']
+        var_variable.scale_factor = variable_metadata['scale_factor']
+        var_variable.add_offset = variable_metadata['add_offset']
+        # TODO: add more local attributes from CF-conventions here
+        return dataset
 
 
 def _get_num_steps(x1, x2, dx):
