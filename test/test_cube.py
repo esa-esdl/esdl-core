@@ -21,8 +21,7 @@ class CubeTest(TestCase):
         provider = MyLaiProvider(start_time=datetime(2000, 1, 1), end_time=datetime(2000, 2, 1))
         cube.update(provider)
 
-        self.assertTrue(os.path.exists(base_dir + "/LAI"))
-        self.assertTrue(os.path.exists(base_dir + "/FAPAR"))
+        self.assertTrue(os.path.exists(base_dir + "/data/2000"))
 
         self.assertEqual([(datetime(2000, 1, 1, 0, 0), datetime(2000, 1, 9, 0, 0)),
                           (datetime(2000, 1, 9, 0, 0), datetime(2000, 1, 17, 0, 0)),
@@ -30,14 +29,9 @@ class CubeTest(TestCase):
                           (datetime(2000, 1, 25, 0, 0), datetime(2000, 2, 2, 0, 0))],
                          provider.trace)
 
-        self.assertTrue(os.path.exists(base_dir + "/LAI/LAI_2000-01-01_00-00-00_2000-01-09_00-00-00.npy"))
-        self.assertTrue(os.path.exists(base_dir + "/LAI/LAI_2000-01-09_00-00-00_2000-01-17_00-00-00.npy"))
-        self.assertTrue(os.path.exists(base_dir + "/LAI/LAI_2000-01-17_00-00-00_2000-01-25_00-00-00.npy"))
-        self.assertTrue(os.path.exists(base_dir + "/LAI/LAI_2000-01-25_00-00-00_2000-02-02_00-00-00.npy"))
-        self.assertTrue(os.path.exists(base_dir + "/FAPAR/FAPAR_2000-01-01_00-00-00_2000-01-09_00-00-00.npy"))
-        self.assertTrue(os.path.exists(base_dir + "/FAPAR/FAPAR_2000-01-09_00-00-00_2000-01-17_00-00-00.npy"))
-        self.assertTrue(os.path.exists(base_dir + "/FAPAR/FAPAR_2000-01-17_00-00-00_2000-01-25_00-00-00.npy"))
-        self.assertTrue(os.path.exists(base_dir + "/FAPAR/FAPAR_2000-01-25_00-00-00_2000-02-02_00-00-00.npy"))
+        self.assertTrue(os.path.exists(base_dir + "/cube.config"))
+        self.assertTrue(os.path.exists(base_dir + "/data/2000/2000_LAI.nc"))
+        self.assertTrue(os.path.exists(base_dir + "/data/2000/2000_FAPAR.nc"))
 
         provider = MyLaiProvider(start_time=datetime(2013, 1, 1), end_time=datetime(2013, 2, 1))
         cube.update(provider)
