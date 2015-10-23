@@ -160,7 +160,6 @@ class Cube:
     def __init__(self, config, base_dir):
         self.config = config
         self.base_dir = base_dir
-        self.datasets = dict()
 
     def __repr__(self):
         return 'Cube(%s, \'%s\')' % (self.config, self.base_dir)
@@ -177,6 +176,8 @@ class Cube:
     def update(self, provider):
 
         provider.prepare(self.config)
+
+        datasets = dict()
 
         cube_start_time = cablab.date2num(self.config.start_time)
         cube_temporal_res = self.config.temporal_res
@@ -197,33 +198,36 @@ class Cube:
                 image_time_range = (cablab.num2date(t1), cablab.num2date(t2))
                 image_dict = provider.get_images(*image_time_range)
                 if image_dict:
-                    self._write_images(provider, image_time_range, image_dict)
+                    self._write_images(provider, datasets, image_time_range, image_dict)
+
+        for key in datasets:
+            datasets[key].close()
 
         provider.close()
 
-    def _write_images(self, provider, image_time_range, image_dict):
+    def _write_images(self, provider, datasets, image_time_range, image_dict):
         for var_name in image_dict:
             image = image_dict[var_name]
             if image is not None:
-                self._write_image(provider, image_time_range, var_name, image)
+                self._write_image(provider, datasets, image_time_range, var_name, image)
 
-    def _write_image(self, provider, image_time_range, var_name, image):
+    def _write_image(self, provider, datasets, image_time_range, var_name, image):
         image_start_time, image_end_time = image_time_range
         folder_name = '%04d' % image_start_time.year
         folder = os.path.join(os.path.join(self.base_dir, 'data', folder_name))
         if not os.path.exists(folder):
             os.makedirs(folder, exist_ok=True)
-        filename = '%s_%04d.nc' % (var_name, image_start_time.year)
+        filename = '%04d_%s.nc' % (image_start_time.year, var_name)
         file = os.path.join(folder, filename)
-        if filename in self.datasets:
-            dataset = self.datasets[filename]
+        if filename in datasets:
+            dataset = datasets[filename]
         else:
             if os.path.exists(file):
                 dataset = netCDF4.Dataset(file, 'a')
             else:
                 dataset = netCDF4.Dataset(file, 'w', format=self.config.format)
                 self._init_variable_dataset(provider, dataset, var_name)
-            self.datasets[filename] = dataset
+            datasets[filename] = dataset
         var_start_time = dataset.variables['start_time']
         var_end_time = dataset.variables['end_time']
         var_variable = dataset.variables[var_name]
