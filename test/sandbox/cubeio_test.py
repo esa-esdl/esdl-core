@@ -1,6 +1,6 @@
-from cablab.cubeio import CLDataset
 from datetime import datetime, timedelta
 
+from test.sandbox.cubeio import CLDataset
 
 times_count = 10
 dates = [datetime(2002, 6, 7) + i * timedelta(days=8) for i in range(times_count)]

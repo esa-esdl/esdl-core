@@ -1,11 +1,35 @@
-# cablab-core
 
-CAB-LAB Core Components:
-* `cubegen` - Data Cube Generation Software
-* `cubeio` - Data Cube Access API
+# CAB-LAB Components:
 
+* `cablab.cube` - Data Cube Generation and Access
+* `cablab.cli` - Command-line interface
 
-Dependencies:
+# Extension points and extensions
+
+## Defined extension points:
+
+* `cablab.image_providers`: *key* = *class derived from `cablab.ImageProvider`*    
+
+## Extensions:
+
+* `cablab.image_providers`: 
+  * `'burnt_area = cablab.providers.burnt_area.BurntAreaProvider'`    
+* `console_scripts`: 
+  * `'cablab_cli = cablab.cli:main'`, see %PYTHON_HOME%/Scripts/cablab_cli.exe (Windows) after installation
+    
+
+# How to build
+
+Development mode installation:
+
+    > python setup.py develop
+    
+or real installation
+    
+    > python setup.py install
+
+# Dependencies
+
 * netCDF4  >= 1.2
 * numpy >= 1.9
 * scipy >= 0.16

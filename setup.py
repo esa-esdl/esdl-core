@@ -21,15 +21,11 @@ setup(
     package_dir={'': 'src'},
     entry_points={
         'console_scripts': [
-            'cablab_cli = cablab.__main__:main',
+            'cablab_cli = cablab.cli:main',
         ],
-        'cablab.converter.classes': [
-            'lai = cablab.extensions:LaiConverter',
-            'fapar = cablab.extensions:FaparConverter',
+        'cablab.image_providers': [
+            'burnt_area = cablab.providers.burnt_area:BurntAreaProvider',
         ],
-        'cablab.transformer.methods': [
-            'lai = cablab.extensions:transform_lai',
-            'fapar = cablab.extensions:transform_fapar',
-        ],
-    }
+    },
+    requires=['numpy', 'netCDF4']
 )

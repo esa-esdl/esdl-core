@@ -1,27 +1,34 @@
 from unittest import TestCase
 import shutil
 from datetime import datetime
+import os
+
+import numpy
 
 from cablab import ImageProvider, CubeConfig, Cube
 
+CUBE_DIR = 'testcube'
+
 
 class CubeTest(TestCase):
+    def setUp(self):
+        while os.path.exists(CUBE_DIR):
+            shutil.rmtree(CUBE_DIR, True)
+
+    def tearDown(self):
+        # while os.path.exists(CUBE_DIR):
+        #     shutil.rmtree(CUBE_DIR, True)
+        pass
+
     def test_update(self):
         import os
 
-        base_dir = 'testcube'
-        if os.path.exists(base_dir):
-            shutil.rmtree(base_dir, True)
-        self.assertFalse(os.path.exists(base_dir))
-
         config = CubeConfig()
-        cube = Cube.create(config, base_dir)
-        self.assertTrue(os.path.exists(base_dir))
+        cube = Cube.create(CUBE_DIR, config)
+        self.assertTrue(os.path.exists(CUBE_DIR))
 
-        provider = MyLaiProvider(start_time=datetime(2000, 1, 1), end_time=datetime(2000, 2, 1))
+        provider = ImageProviderMock(start_time=datetime(2000, 1, 1), end_time=datetime(2000, 2, 1))
         cube.update(provider)
-
-        self.assertTrue(os.path.exists(base_dir + "/data/2000"))
 
         self.assertEqual([(datetime(2000, 1, 1, 0, 0), datetime(2000, 1, 9, 0, 0)),
                           (datetime(2000, 1, 9, 0, 0), datetime(2000, 1, 17, 0, 0)),
@@ -29,12 +36,23 @@ class CubeTest(TestCase):
                           (datetime(2000, 1, 25, 0, 0), datetime(2000, 2, 2, 0, 0))],
                          provider.trace)
 
-        self.assertTrue(os.path.exists(base_dir + "/cube.config"))
-        self.assertTrue(os.path.exists(base_dir + "/data/2000/2000_LAI.nc"))
-        self.assertTrue(os.path.exists(base_dir + "/data/2000/2000_FAPAR.nc"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/cube.config"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/data/2000/2000_LAI.nc"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/data/2000/2000_FAPAR.nc"))
 
-        provider = MyLaiProvider(start_time=datetime(2013, 1, 1), end_time=datetime(2013, 2, 1))
-        cube.update(provider)
+        cube.close()
+
+        with self.assertRaises(IOError) as ioe:
+            cube.update(provider)
+
+        cube2 = Cube.open(CUBE_DIR)
+        self.assertEqual(cube.config.spatial_res, cube2.config.spatial_res)
+        self.assertEqual(cube.config.temporal_res, cube2.config.temporal_res)
+        self.assertEqual(cube.config.format, cube2.config.format)
+        self.assertEqual(cube.config.compression, cube2.config.compression)
+
+        provider = ImageProviderMock(start_time=datetime(2013, 1, 1), end_time=datetime(2013, 2, 1))
+        cube2.update(provider)
         self.assertEqual([(datetime(2012, 12, 27, 0, 0), datetime(2013, 1, 4, 0, 0)),
                           (datetime(2013, 1, 4, 0, 0), datetime(2013, 1, 12, 0, 0)),
                           (datetime(2013, 1, 12, 0, 0), datetime(2013, 1, 20, 0, 0)),
@@ -42,28 +60,15 @@ class CubeTest(TestCase):
                           (datetime(2013, 1, 28, 0, 0), datetime(2013, 2, 5, 0, 0))],
                          provider.trace)
 
-    def test_burnt_area_provider(self):
-        import os
+        self.assertTrue(os.path.exists(CUBE_DIR + "/data/2012/2012_LAI.nc"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/data/2012/2012_FAPAR.nc"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/data/2013/2013_LAI.nc"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/data/2013/2013_FAPAR.nc"))
 
-        base_dir = 'testcube'
-        if os.path.exists(base_dir):
-            shutil.rmtree(base_dir, True)
-        self.assertFalse(os.path.exists(base_dir))
-
-        config = CubeConfig()
-        cube = Cube.create(config, base_dir)
-        self.assertTrue(os.path.exists(base_dir))
-
-        provider = BurntAreaProvider()
-        provider.import_dataset()
-        provider.prepare(config)
-
-        cube.update(provider)
-
-import numpy
+        cube2.close()
 
 
-class MyLaiProvider(ImageProvider):
+class ImageProviderMock(ImageProvider):
     def __init__(self,
                  start_time=datetime(2013, 1, 1),
                  end_time=datetime(2013, 2, 1)):
@@ -71,6 +76,8 @@ class MyLaiProvider(ImageProvider):
         self.end_time = end_time
         self.trace = []
         self.cube_config = None
+        self.lai_value = 0.1
+        self.fapar_value = 0.6
 
     def prepare(self, cube_config):
         self.cube_config = cube_config
@@ -78,7 +85,7 @@ class MyLaiProvider(ImageProvider):
     def get_variable_metadata(self, variable):
         metadata = {
             'datatype': numpy.float32,
-            'fill_value': 0,
+            'fill_value': 0.0,
             'units': '1',
             'long_name': variable,
             'scale_factor': 1.0,
@@ -94,63 +101,13 @@ class MyLaiProvider(ImageProvider):
 
     def get_images(self, image_start_time, image_end_time):
         self.trace.append((image_start_time, image_end_time))
-        return {'LAI': numpy.zeros((self.cube_config.grid_height, self.cube_config.grid_width), dtype=numpy.float32),
-                'FAPAR': numpy.zeros((self.cube_config.grid_height, self.cube_config.grid_width), dtype=numpy.float32)}
+        self.lai_value += 0.01
+        self.fapar_value += 0.005
+        image_width = self.cube_config.grid_width
+        image_height = self.cube_config.grid_height
+        image_shape = (image_height, image_width)
+        return {'LAI': numpy.full(image_shape, self.lai_value, dtype=numpy.float32),
+                'FAPAR': numpy.full(image_shape, self.fapar_value, dtype=numpy.float32)}
 
     def close(self):
         pass
-
-
-import netCDF4
-
-
-class BurntAreaProvider(ImageProvider):
-    def __init__(self):
-        self.grid_width = None
-        self.grid_height = None
-        self.easting = None
-        self.northing = None
-        self.spatial_res = None
-        self.start_time = None
-        self.temporal_res = None
-        self.variables = None
-        self.source_file = 'C:\\Personal\\CabLab\\EO data\\test_cube\\BurntArea.GFED4.2009.nc'
-        self.ds = None
-        self.ds_variables = None
-
-    def get_variable_metadata(self, variable):
-        metadata = {
-            'datatype': numpy.float32,
-            'fill_value': 0,
-            'units': '1',
-            'long_name': variable,
-            'scale_factor': 1.0,
-            'add_offset': 0.0,
-        }
-        return metadata
-
-    def import_dataset(self):
-        self.ds = netCDF4.Dataset(self.source_file, 'r')
-        self.ds_variables = self.ds.variables['BurntArea']
-
-    def prepare(self, cube_config):
-        self.grid_width = cube_config.grid_width
-        self.grid_height = cube_config.grid_height
-        self.easting = cube_config.easting
-        self.northing = cube_config.northing
-        self.spatial_res = cube_config.spatial_res
-        self.start_time = cube_config.start_time
-        self.temporal_res = cube_config.temporal_res
-        self.variables = cube_config.variables
-
-    def get_temporal_coverage(self):
-        return datetime(2009, 1, 1), datetime(2009, 12, 31)
-
-    def get_spatial_coverage(self):
-        return -180, -90, 1440, 720
-
-    def get_images(self, image_start_time, image_end_time):
-        return {'BurntArea': self.ds_variables[image_start_time.month - 1, :, :]}
-
-    def close(self):
-        self.ds.close()

@@ -4,6 +4,7 @@ The CAB-LAB parent module.
 __author__ = 'Brockmann Consult GmbH'
 
 import netCDF4
+from pkg_resources import iter_entry_points
 
 from cablab.cube import ImageProvider
 from cablab.cube import CubeConfig
@@ -45,8 +46,22 @@ def num2date(times):
                             calendar=TIME_CALENDAR)
 
 
+def _load_image_providers():
+    image_provider_classes = []
+    for entry_point in iter_entry_points(group='cablab.image_providers', name=None):
+        image_provider_class = entry_point.load()
+        # TODO: Check that it is a class type and that it has our expected interface
+        image_provider_classes.append(image_provider_class)
+    return image_provider_classes
+
+
+IMAGE_PROVIDERS = _load_image_providers()
+
 __all__ = ['ImageProvider',
            'CubeConfig',
            'Cube',
            'date2num',
-           'num2date']
+           'num2date',
+           'IMAGE_PROVIDERS',
+           'TIME_UNITS',
+           'TIME_CALENDAR']

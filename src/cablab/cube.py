@@ -127,14 +127,18 @@ class CubeConfig:
             self.grid_width, self.grid_height,
             self.easting, self.northing, self.spatial_res)
 
-    def load(self, path):
+    @staticmethod
+    def load(path):
         """
         Load a CubeConfig from a text file.
         :param path: The file's path name.
+        :return: A new CubeConfig instance
         """
+        config = CubeConfig()
         with open(path) as fp:
             code = fp.read()
-            exec(code, {'datetime': datetime}, self.__dict__)
+            exec(code, {'datetime': __import__('datetime')}, config.__dict__)
+        return config
 
     def store(self, path):
         """
@@ -153,30 +157,68 @@ class Cube:
     """
     Represents an existing data cube.
 
-    >>> Cube.create(CubeConfig(), '/home/hans/mycube')
+    >>> Cube.create('/home/hans/mycube',CubeConfig())
     Cube(CubeConfig(1440, 720, -180.0, -90.0, 0.25), '/home/hans/mycube')
     """
 
-    def __init__(self, config, base_dir):
-        self.config = config
+    def __init__(self, base_dir, config):
         self.base_dir = base_dir
-        self.datasets = dict()
+        self.config = config
+        self.closed = False
 
     def __repr__(self):
         return 'Cube(%s, \'%s\')' % (self.config, self.base_dir)
 
     @staticmethod
-    def create(config, base_dir):
+    def open(base_dir):
+        """
+        Open an existing data cube. Use the Cube.update(provider) method to add data to the cube
+        via a source data provider.
+
+        :param base_dir: The data cube's base directory. Must not exists.
+        :return: A cube instance.
+        """
+
+        if not os.path.exists(base_dir):
+            raise IOError('data cube base directory does not exists: %s' % base_dir)
+        config = CubeConfig.load(os.path.join(base_dir, 'cube.config'))
+        return Cube(base_dir, config)
+
+    @staticmethod
+    def create(base_dir, config):
+        """
+        Create a new data cube. Use the Cube.update(provider) method to add data to the cube
+        via a source data provider.
+
+        :param base_dir: The data cube's base directory. Must not exists.
+        :param config: The data cube's static information. Use an instance of CubeConfig.
+        :return: A cube instance.
+        """
 
         if os.path.exists(base_dir):
             raise IOError('data cube base directory exists: %s' % base_dir)
         os.mkdir(base_dir)
         config.store(os.path.join(base_dir, 'cube.config'))
-        return Cube(config, base_dir)
+        return Cube(base_dir, config)
+
+    def close(self):
+        """
+        Closes the data cube.
+        """
+        self.closed = True
 
     def update(self, provider):
+        """
+        Updates the data cube with source data from the given image provider.
+        :param provider: An instance of the abstract ImageProvider class
+        """
+
+        if self.closed:
+            raise IOError('cube has been closed')
 
         provider.prepare(self.config)
+
+        datasets = dict()
 
         cube_start_time = cablab.date2num(self.config.start_time)
         cube_temporal_res = self.config.temporal_res
@@ -196,34 +238,37 @@ class Cube:
             if t1 < src_end_time:
                 image_time_range = (cablab.num2date(t1), cablab.num2date(t2))
                 image_dict = provider.get_images(*image_time_range)
-                if image_dict is not None:
-                    self._write_images(provider, image_time_range, image_dict)
+                if image_dict:
+                    self._write_images(provider, datasets, image_time_range, image_dict)
+
+        for key in datasets:
+            datasets[key].close()
 
         provider.close()
 
-    def _write_images(self, provider, image_time_range, image_dict):
+    def _write_images(self, provider, datasets, image_time_range, image_dict):
         for var_name in image_dict:
             image = image_dict[var_name]
             if image is not None:
-                self._write_image(provider, image_time_range, var_name, image)
+                self._write_image(provider, datasets, image_time_range, var_name, image)
 
-    def _write_image(self, provider, image_time_range, var_name, image):
+    def _write_image(self, provider, datasets, image_time_range, var_name, image):
         image_start_time, image_end_time = image_time_range
         folder_name = '%04d' % image_start_time.year
         folder = os.path.join(os.path.join(self.base_dir, 'data', folder_name))
         if not os.path.exists(folder):
             os.makedirs(folder, exist_ok=True)
-        filename = '%s_%04d.nc' % (var_name, image_start_time.year)
+        filename = '%04d_%s.nc' % (image_start_time.year, var_name)
         file = os.path.join(folder, filename)
-        if filename in self.datasets:
-            dataset = self.datasets[filename]
+        if filename in datasets:
+            dataset = datasets[filename]
         else:
             if os.path.exists(file):
                 dataset = netCDF4.Dataset(file, 'a')
             else:
                 dataset = netCDF4.Dataset(file, 'w', format=self.config.format)
                 self._init_variable_dataset(provider, dataset, var_name)
-            self.datasets[filename] = dataset
+            datasets[filename] = dataset
         var_start_time = dataset.variables['start_time']
         var_end_time = dataset.variables['end_time']
         var_variable = dataset.variables[var_name]

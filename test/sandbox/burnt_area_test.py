@@ -5,7 +5,7 @@ ds = netCDF4.Dataset("C:\\Users\\Norman\\Desktop\\BurntArea\\BurntArea.GFED4.200
 ba_input = ds.variables['BurntArea']
 print(ba_input.units)
 
-from cablab.cubeio import CLDataset
+from test.sandbox.cubeio import CLDataset
 from datetime import datetime, timedelta
 
 times_count = 12

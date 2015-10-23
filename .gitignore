@@ -59,6 +59,7 @@ target/
 # PyCharm / IDEA
 .idea
 
-# Netcdf files
+# Data Cube files
 *.nc
+cube.config
 
