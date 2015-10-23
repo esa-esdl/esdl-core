@@ -5,6 +5,7 @@ __author__ = 'Brockmann Consult GmbH'
 
 import netCDF4
 
+from cablab.cube import ImageProvider
 from cablab.cube import CubeConfig
 from cablab.cube import Cube
 
@@ -44,7 +45,8 @@ def num2date(times):
                             calendar=TIME_CALENDAR)
 
 
-__all__ = ['CubeConfig',
+__all__ = ['ImageProvider',
+           'CubeConfig',
            'Cube',
            'date2num',
            'num2date']
