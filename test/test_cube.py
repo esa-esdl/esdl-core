@@ -102,7 +102,6 @@ class MyLaiProvider(ImageProvider):
 
 
 import netCDF4
-import cablab
 
 
 class BurntAreaProvider(ImageProvider):
@@ -119,14 +118,20 @@ class BurntAreaProvider(ImageProvider):
         self.ds = None
         self.ds_variables = None
 
+    def get_variable_metadata(self, variable):
+        metadata = {
+            'datatype': numpy.float32,
+            'fill_value': 0,
+            'units': '1',
+            'long_name': variable,
+            'scale_factor': 1.0,
+            'add_offset': 0.0,
+        }
+        return metadata
+
     def import_dataset(self):
         self.ds = netCDF4.Dataset(self.source_file, 'r')
         self.ds_variables = self.ds.variables['BurntArea']
-        ds_time = self.ds.variables['time']
-        print(ds_time.shape)
-        print(len(ds_time))
-        print(ds_time[0])
-        print(cablab.num2date_gregorian(155663.00000000047))
 
     def prepare(self, cube_config):
         self.grid_width = cube_config.grid_width
