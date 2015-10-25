@@ -146,7 +146,6 @@ class CubeConfig:
         :param path: The file's path name.
         """
         with open(path, 'w') as fp:
-            lines = []
             for name in self.__dict__:
                 if not (name.startswith('_') or name.endswith('_')):
                     value = self.__dict__[name]
@@ -175,7 +174,7 @@ class Cube:
         Open an existing data cube. Use the Cube.update(provider) method to add data to the cube
         via a source data provider.
 
-        :param base_dir: The data cube's base directory. Must not exists.
+        :param base_dir: The data cube's base directory which must be empty or non-existent.
         :return: A cube instance.
         """
 
