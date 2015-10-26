@@ -25,6 +25,7 @@ setup(
         ],
         'cablab.image_providers': [
             'burnt_area = cablab.providers.burnt_area:BurntAreaProvider',
+            'c_emissions = cablab.providers.c_emissions:CEmissionsProvider',
         ],
     },
     requires=['numpy', 'netCDF4']

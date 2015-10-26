@@ -48,11 +48,11 @@ def num2date(times):
 
 
 def _load_image_providers():
-    image_provider_classes = []
+    image_provider_classes = dict()
     for entry_point in iter_entry_points(group='cablab.image_providers', name=None):
         image_provider_class = entry_point.load()
         # TODO: Check that it is a class type and that it has our expected interface
-        image_provider_classes.append(image_provider_class)
+        image_provider_classes[entry_point.name] = image_provider_class
     return image_provider_classes
 
 
