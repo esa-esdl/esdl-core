@@ -15,6 +15,9 @@ class BaseImageProviderTest(TestCase):
 
         provider.prepare(config)
 
+        temporal_coverage = provider.get_temporal_coverage()
+        self.assertEqual((datetime(2010, 1, 1), datetime(2010, 1, 13)), temporal_coverage)
+
         # Requested range is exactly within all source ranges
         provider.get_images(datetime(2010, 1, 1), datetime(2010, 1, 13))
         self.assertEqual([{0: 1.0, 1: 1.0, 2: 1.0}], provider.trace)

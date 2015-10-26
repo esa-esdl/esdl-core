@@ -90,7 +90,7 @@ class BaseImageProvider(ImageProvider):
         pass
 
     def get_temporal_coverage(self):
-        return self.source_time_ranges[0], self.source_time_ranges[-1]
+        return self.source_time_ranges[0][0], self.source_time_ranges[-1][1]
 
     def get_images(self, image_start_time, image_end_time):
         if len(self.source_time_ranges) == 0:
