@@ -76,6 +76,56 @@ class ImageProvider(metaclass=ABCMeta):
         pass
 
 
+class BaseImageProvider(ImageProvider):
+    def __init__(self):
+        self.cube_config = None
+        self.source_time_ranges = []
+
+    def prepare(self, cube_config):
+        self.cube_config = cube_config
+        self.source_time_ranges = self.get_source_time_ranges()
+
+    @abstractmethod
+    def get_source_time_ranges(self):
+        pass
+
+    def get_temporal_coverage(self):
+        return self.source_time_ranges[0], self.source_time_ranges[-1]
+
+    def get_images(self, image_start_time, image_end_time):
+        if len(self.source_time_ranges) == 0:
+            return None
+        source_indices_to_time_overlap = dict()
+        for i in range(len(self.source_time_ranges)):
+            time1, time2 = self.source_time_ranges[i]
+            overlap = _get_overlap(time1, time2, image_start_time, image_end_time)
+            if overlap > 0:
+                source_indices_to_time_overlap[i] = overlap
+        if not source_indices_to_time_overlap:
+            return None
+        return self.compute_images_from_sources(source_indices_to_time_overlap)
+
+    @abstractmethod
+    def compute_images_from_sources(self, source_indices_to_time_overlap):
+        pass
+
+
+def _get_overlap(a1, a2, b1, b2):
+    a1_in_range = b1 <= a1 <= b2
+    a2_in_range = b1 <= a2 <= b2
+    if a1_in_range and a2_in_range:
+        return 1.0
+    if a1_in_range:
+        return (b2 - a1) / (b2 - b1)
+    if a2_in_range:
+        return (a2 - b1) / (b2 - b1)
+    b1_in_range = a1 <= b1 <= a2
+    b2_in_range = a1 <= b2 <= a2
+    if b1_in_range and b2_in_range:
+        return (b2 - b1) / (a2 - a1)
+    return -1.0
+
+
 class CubeConfig:
     """
     A data cube's static configuration information.

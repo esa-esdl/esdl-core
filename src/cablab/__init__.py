@@ -7,6 +7,7 @@ import netCDF4
 from pkg_resources import iter_entry_points
 
 from cablab.cube import ImageProvider
+from cablab.cube import BaseImageProvider
 from cablab.cube import CubeConfig
 from cablab.cube import Cube
 
@@ -58,6 +59,7 @@ def _load_image_providers():
 IMAGE_PROVIDERS = _load_image_providers()
 
 __all__ = ['ImageProvider',
+           'BaseImageProvider',
            'CubeConfig',
            'Cube',
            'date2num',
