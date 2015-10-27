@@ -17,6 +17,7 @@ class CEmissionsProvider(BaseImageProvider):
         # check: cache_dir could be a property of CubeConfig
         cache_dir = os.path.join(os.path.join(os.path.expanduser("~"), '.cablab'), 'cache')
         self.temp_path = os.path.join(cache_dir, os.path.basename(self.dir_path))
+        self.old_indices = None
 
     def compute_images_from_sources(self, source_indices_to_time_overlap):
 
@@ -25,7 +26,7 @@ class CEmissionsProvider(BaseImageProvider):
         if self.old_indices:
             unused_indices = self.old_indices - new_indices
             for i in unused_indices:
-                file, = self.time_range_to_file[i]
+                file, _ = self.time_range_to_file[i]
                 if file in self.open_datasets:
                     self.open_datasets[file].close()
                     del self.open_datasets[file]
