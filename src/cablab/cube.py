@@ -2,6 +2,7 @@ from datetime import datetime
 import math
 import os
 from abc import ABCMeta, abstractmethod
+import time
 
 import netCDF4
 
@@ -119,6 +120,7 @@ class BaseImageProvider(ImageProvider):
         according to the overlapping range. Pass these weights as source index to weight mapping
         to self.compute_images_from_sources(index_to_weight) and return the result.
         """
+        t1 = time.time()
         if len(self.source_time_ranges) == 0:
             return None
         index_to_weight = dict()
@@ -129,7 +131,14 @@ class BaseImageProvider(ImageProvider):
                 index_to_weight[i] = weight
         if not index_to_weight:
             return None
-        return self.compute_images_from_sources(index_to_weight)
+        self.log('computing images for time range %s to %s from %d source(s)...' % (image_start_time, image_end_time,
+                                                                               len(index_to_weight)))
+        result = self.compute_images_from_sources(index_to_weight)
+
+        t2 = time.time()
+        self.log('images computed for %s, took %f seconds' % (str(list(result.keys())), t2 - t1))
+
+        return result
 
     @abstractmethod
     def compute_images_from_sources(self, index_to_weight):
