@@ -5,15 +5,19 @@ import os
 import cablab
 from cablab import Cube, CubeConfig
 
+__VERSION__ = '0.1'
+
 
 def main(args=None):
     if not args:
         args = sys.argv[1:]
 
+    print('CAB-LAB command-line interface, version %s' % __VERSION__)
+
     #
     # Configure and run argument parser
     #
-    parser = argparse.ArgumentParser(description='Generates a new CAB-LAB data cube or updates an existing one')
+    parser = argparse.ArgumentParser(description='Generates a new CAB-LAB data cube or updates an existing one.')
     parser.add_argument('-l', '--list', action='store_true',
                         help="list all available source providers")
     parser.add_argument('-c', '--cube-conf', metavar='CONFIG',
