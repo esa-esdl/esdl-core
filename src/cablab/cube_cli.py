@@ -42,7 +42,8 @@ def main(args=None):
         if not is_new and cube_config_file:
             parser.error('TARGET directory must be empty')
         for source in cube_sources:
-            source_provider_name, source_args = source.split(':')
+            source.index(':')
+            source_provider_name, source_args = source.split(':', maxsplit=1)
             if source_provider_name not in cablab.IMAGE_PROVIDERS:
                 parser.error('no source provider installed with name \'%s\'' % source_provider_name)
             source_provider_class = cablab.IMAGE_PROVIDERS[source_provider_name]
