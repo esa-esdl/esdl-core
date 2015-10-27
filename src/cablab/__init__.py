@@ -6,8 +6,8 @@ __author__ = 'Brockmann Consult GmbH'
 import netCDF4
 from pkg_resources import iter_entry_points
 
-from cablab.cube import ImageProvider
-from cablab.cube import BaseImageProvider
+from cablab.cube import CubeSourceProvider
+from cablab.cube import BaseCubeSourceProvider
 from cablab.cube import CubeConfig
 from cablab.cube import Cube
 
@@ -58,8 +58,8 @@ def _load_image_providers():
 
 IMAGE_PROVIDERS = _load_image_providers()
 
-__all__ = ['ImageProvider',
-           'BaseImageProvider',
+__all__ = ['CubeSourceProvider',
+           'BaseCubeSourceProvider',
            'CubeConfig',
            'Cube',
            'date2num',

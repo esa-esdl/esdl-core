@@ -5,7 +5,7 @@ import os
 
 import numpy
 
-from cablab import ImageProvider, CubeConfig, Cube
+from cablab import CubeSourceProvider, CubeConfig, Cube
 
 CUBE_DIR = 'testcube'
 
@@ -27,7 +27,7 @@ class CubeTest(TestCase):
         cube = Cube.create(CUBE_DIR, config)
         self.assertTrue(os.path.exists(CUBE_DIR))
 
-        provider = ImageProviderMock(start_time=datetime(2000, 1, 1), end_time=datetime(2000, 2, 1))
+        provider = CubeSourceProviderMock(start_time=datetime(2000, 1, 1), end_time=datetime(2000, 2, 1))
         cube.update(provider)
 
         self.assertEqual([(datetime(2000, 1, 1, 0, 0), datetime(2000, 1, 9, 0, 0)),
@@ -37,8 +37,8 @@ class CubeTest(TestCase):
                          provider.trace)
 
         self.assertTrue(os.path.exists(CUBE_DIR + "/cube.config"))
-        self.assertTrue(os.path.exists(CUBE_DIR + "/data/2000/2000_LAI.nc"))
-        self.assertTrue(os.path.exists(CUBE_DIR + "/data/2000/2000_FAPAR.nc"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/data/LAI/2000_LAI.nc"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/data/FAPAR/2000_FAPAR.nc"))
 
         cube.close()
 
@@ -51,7 +51,7 @@ class CubeTest(TestCase):
         self.assertEqual(cube.config.format, cube2.config.format)
         self.assertEqual(cube.config.compression, cube2.config.compression)
 
-        provider = ImageProviderMock(start_time=datetime(2013, 1, 1), end_time=datetime(2013, 2, 1))
+        provider = CubeSourceProviderMock(start_time=datetime(2013, 1, 1), end_time=datetime(2013, 2, 1))
         cube2.update(provider)
         self.assertEqual([(datetime(2012, 12, 27, 0, 0), datetime(2013, 1, 4, 0, 0)),
                           (datetime(2013, 1, 4, 0, 0), datetime(2013, 1, 12, 0, 0)),
@@ -60,15 +60,15 @@ class CubeTest(TestCase):
                           (datetime(2013, 1, 28, 0, 0), datetime(2013, 2, 5, 0, 0))],
                          provider.trace)
 
-        self.assertTrue(os.path.exists(CUBE_DIR + "/data/2012/2012_LAI.nc"))
-        self.assertTrue(os.path.exists(CUBE_DIR + "/data/2012/2012_FAPAR.nc"))
-        self.assertTrue(os.path.exists(CUBE_DIR + "/data/2013/2013_LAI.nc"))
-        self.assertTrue(os.path.exists(CUBE_DIR + "/data/2013/2013_FAPAR.nc"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/data/LAI/2012_LAI.nc"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/data/LAI/2013_LAI.nc"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/data/FAPAR/2012_FAPAR.nc"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/data/FAPAR/2013_FAPAR.nc"))
 
         cube2.close()
 
 
-class ImageProviderMock(ImageProvider):
+class CubeSourceProviderMock(CubeSourceProvider):
     def __init__(self,
                  start_time=datetime(2013, 1, 1),
                  end_time=datetime(2013, 2, 1)):

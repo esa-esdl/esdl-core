@@ -3,10 +3,10 @@ from datetime import datetime
 import numpy
 import netCDF4
 
-from cablab import ImageProvider
+from cablab import CubeSourceProvider
 
 
-class BurntAreaProvider(ImageProvider):
+class BurntAreaProvider(CubeSourceProvider):
     def __init__(self):
         self.grid_width = None
         self.grid_height = None

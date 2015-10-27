@@ -3,7 +3,7 @@ from datetime import datetime
 
 import numpy
 
-from cablab import BaseImageProvider, CubeConfig
+from cablab import BaseCubeSourceProvider, CubeConfig
 
 
 class BaseImageProviderTest(TestCase):
@@ -53,7 +53,7 @@ class BaseImageProviderTest(TestCase):
         self.assertEqual([], provider.trace)
 
 
-class MyImageProvider(BaseImageProvider):
+class MyImageProvider(BaseCubeSourceProvider):
     def __init__(self, source_time_ranges):
         super(MyImageProvider, self).__init__()
         self.source_time_ranges = source_time_ranges

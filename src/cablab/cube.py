@@ -9,10 +9,10 @@ import netCDF4
 import cablab
 
 
-class ImageProvider(metaclass=ABCMeta):
+class CubeSourceProvider(metaclass=ABCMeta):
     """
-    Represents an abstract image provider to be used by the Cube's update() method.
-    Intended to be used as base class for specific image provider implementations.
+    An abstract interface for objects represent data source providers for the data cube.
+    Cube source providers are passed to the Cube.update() method.
     """
 
     @abstractmethod
@@ -52,20 +52,20 @@ class ImageProvider(metaclass=ABCMeta):
         return None
 
     @abstractmethod
-    def get_images(self, image_start_time, image_end_time):
+    def get_images(self, target_start_time, target_end_time):
         """
         Return a dictionary of variable names to image mappings where each image is a numpy array with the shape
         (height, width) derived from the self.get_spatial_coverage() method. The images must be computed (by
-        aggregation or interpolation) from the source data in the temporal range image_start_time <= source_data_time
-        < image_end_time and taking into account other data cube configuration settings.
+        aggregation or interpolation) from the source data in the temporal range target_start_time <= source_data_time
+        < target_end_time and taking into account other data cube configuration settings.
         Called by a Cube instance's update() method for all possible time periods in the time range given by the
         self.get_temporal_coverage() method. The times given are adjusted w.r.t. the cube's start time and temporal
         resolution.
 
-        :param: image_start_time The image start time as a datetime.datetime instance
-        :param: image_end_time The image end time as a datetime.datetime instance
+        :param: target_start_time The target start time as a datetime.datetime instance
+        :param: target_end_time The target end time as a datetime.datetime instance
         :return: A dictionary variable_name --> image (numpy array of size (width, height)) or None if no such
-        variables exists for the given time range.
+        variables exists for the given target time range.
         """
         return None
 
@@ -76,16 +76,14 @@ class ImageProvider(metaclass=ABCMeta):
         """
         pass
 
-    @staticmethod
-    def log(message):
-        """
-        Log a message.
-        :param message: The message
-        """
-        print(message)
 
+class BaseCubeSourceProvider(CubeSourceProvider):
+    """
+    A partial implementation of the CubeSourceProvider interface that computes its output image data
+    using weighted averages. The weights are computed according to the overlap of source time ranges and a
+    requested target time range.
+    """
 
-class BaseImageProvider(ImageProvider):
     def __init__(self):
         self.cube_config = None
         """ The cube's configuration. """
@@ -114,7 +112,7 @@ class BaseImageProvider(ImageProvider):
         """
         return self.source_time_ranges[0][0], self.source_time_ranges[-1][1]
 
-    def get_images(self, image_start_time, image_end_time):
+    def get_images(self, target_start_time, target_end_time):
         """
         For each source time range that has an overlap with the given image time range compute a weight
         according to the overlapping range. Pass these weights as source index to weight mapping
@@ -125,14 +123,14 @@ class BaseImageProvider(ImageProvider):
             return None
         index_to_weight = dict()
         for i in range(len(self.source_time_ranges)):
-            time1, time2 = self.source_time_ranges[i]
-            weight = _get_overlap(time1, time2, image_start_time, image_end_time)
+            source_start_time, source_end_time = self.source_time_ranges[i]
+            weight = _get_overlap(source_start_time, source_end_time, target_start_time, target_end_time)
             if weight > 0:
                 index_to_weight[i] = weight
         if not index_to_weight:
             return None
-        self.log('computing images for time range %s to %s from %d source(s)...' % (image_start_time, image_end_time,
-                                                                               len(index_to_weight)))
+        self.log('computing images for time range %s to %s from %d source(s)...' % (target_start_time, target_end_time,
+                                                                                    len(index_to_weight)))
         result = self.compute_images_from_sources(index_to_weight)
 
         t2 = time.time()
@@ -143,9 +141,20 @@ class BaseImageProvider(ImageProvider):
     @abstractmethod
     def compute_images_from_sources(self, index_to_weight):
         """
-        Compute the target images for all variables from the sources with the given indices and weights.
+        Compute the target images for all variables from the sources with the given time indices and weights.
+        The time indices point into the list returned by self.get_source_time_ranges().
+        The weights are float values computed from the overlap of source time ranges with a requested
+        target time range.
         """
         pass
+
+    @staticmethod
+    def log(message):
+        """
+        Log a message.
+        :param message: The message
+        """
+        print(message)
 
 
 def _get_overlap(a1, a2, b1, b2):
@@ -320,32 +329,32 @@ class Cube:
 
         steps = _get_num_steps(src_start_time, src_end_time, cube_temporal_res)
         for i in range(steps + 1):
-            t1 = src_start_time + i * cube_temporal_res
-            t2 = src_start_time + (i + 1) * cube_temporal_res
-            if t1 < src_end_time:
-                image_time_range = (cablab.num2date(t1), cablab.num2date(t2))
-                image_dict = provider.get_images(*image_time_range)
-                if image_dict:
-                    self._write_images(provider, datasets, image_time_range, image_dict)
+            target_start_time = src_start_time + i * cube_temporal_res
+            target_end_time = src_start_time + (i + 1) * cube_temporal_res
+            if target_start_time < src_end_time:
+                target_time_range = (cablab.num2date(target_start_time), cablab.num2date(target_end_time))
+                var_name_to_image = provider.get_images(*target_time_range)
+                if var_name_to_image:
+                    self._write_images(provider, datasets, target_time_range, var_name_to_image)
 
         for key in datasets:
             datasets[key].close()
 
         provider.close()
 
-    def _write_images(self, provider, datasets, image_time_range, image_dict):
-        for var_name in image_dict:
-            image = image_dict[var_name]
+    def _write_images(self, provider, datasets, target_time_range, var_name_to_image):
+        for var_name in var_name_to_image:
+            image = var_name_to_image[var_name]
             if image is not None:
-                self._write_image(provider, datasets, image_time_range, var_name, image)
+                self._write_image(provider, datasets, target_time_range, var_name, image)
 
-    def _write_image(self, provider, datasets, image_time_range, var_name, image):
-        image_start_time, image_end_time = image_time_range
+    def _write_image(self, provider, datasets, target_time_range, var_name, image):
+        target_start_time, target_end_time = target_time_range
         folder_name = var_name
         folder = os.path.join(os.path.join(self.base_dir, 'data', folder_name))
         if not os.path.exists(folder):
             os.makedirs(folder, exist_ok=True)
-        filename = '%04d_%s.nc' % (image_start_time.year, var_name)
+        filename = '%04d_%s.nc' % (target_start_time.year, var_name)
         file = os.path.join(folder, filename)
         if filename in datasets:
             dataset = datasets[filename]
@@ -360,8 +369,8 @@ class Cube:
         var_end_time = dataset.variables['end_time']
         var_variable = dataset.variables[var_name]
         i = len(var_start_time)
-        var_start_time[i] = cablab.date2num(image_start_time)
-        var_end_time[i] = cablab.date2num(image_end_time)
+        var_start_time[i] = cablab.date2num(target_start_time)
+        var_end_time[i] = cablab.date2num(target_end_time)
         var_variable[i, :, :] = image
 
     def _init_variable_dataset(self, provider, dataset, var_name):
