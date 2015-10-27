@@ -75,6 +75,14 @@ class ImageProvider(metaclass=ABCMeta):
         """
         pass
 
+    @staticmethod
+    def log(message):
+        """
+        Log a message.
+        :param message: The message
+        """
+        print(message)
+
 
 class BaseImageProvider(ImageProvider):
     def __init__(self):
@@ -324,7 +332,7 @@ class Cube:
 
     def _write_image(self, provider, datasets, image_time_range, var_name, image):
         image_start_time, image_end_time = image_time_range
-        folder_name = '%04d' % image_start_time.year
+        folder_name = var_name
         folder = os.path.join(os.path.join(self.base_dir, 'data', folder_name))
         if not os.path.exists(folder):
             os.makedirs(folder, exist_ok=True)
