@@ -1,11 +1,12 @@
 from datetime import datetime
 import os
-import gzip
 
 import numpy
-import netCDF4
 
 from cablab import BaseCubeSourceProvider
+from cablab.util import NetCDFDatasetCache
+
+VAR_NAME = 'C_Emissions'
 
 
 class CEmissionsProvider(BaseCubeSourceProvider):
@@ -13,10 +14,7 @@ class CEmissionsProvider(BaseCubeSourceProvider):
         super(CEmissionsProvider, self).__init__()
         self.dir_path = dir_path
         self.index_to_file = None
-        self.file_to_dataset = dict()
-        # check: cache_dir could be a property of CubeConfig
-        cache_dir = os.path.join(os.path.join(os.path.expanduser("~"), '.cablab'), 'cache')
-        self.temp_path = os.path.join(cache_dir, os.path.basename(self.dir_path))
+        self.dataset_cache = NetCDFDatasetCache(VAR_NAME)
         self.old_indices = None
 
     def prepare(self, cube_config):
@@ -34,15 +32,15 @@ class CEmissionsProvider(BaseCubeSourceProvider):
             unused_indices = self.old_indices - new_indices
             for i in unused_indices:
                 file, _ = self.index_to_file[i]
-                self._close_dataset(file)
+                self.dataset_cache.close_dataset(file)
 
         self.old_indices = new_indices
 
         if len(new_indices) == 1:
             i = next(iter(new_indices))
             file, time_index = self.index_to_file[i]
-            dataset = self._get_dataset(file)
-            emissions = dataset.variables['C_Emissions'][time_index, :, :]
+            dataset = self.dataset_cache.get_dataset(file)
+            emissions = dataset.variables[VAR_NAME][time_index, :, :]
         else:
             emissions_sum = numpy.zeros((self.cube_config.grid_height, self.cube_config.grid_width),
                                         dtype=numpy.float32)
@@ -50,26 +48,13 @@ class CEmissionsProvider(BaseCubeSourceProvider):
             for i in new_indices:
                 weight = index_to_weight[i]
                 file, time_index = self.index_to_file[i]
-                dataset = self._get_dataset(file)
-                emissions = dataset.variables['C_Emissions']
+                dataset = self.dataset_cache.get_dataset(file)
+                emissions = dataset.variables[VAR_NAME]
                 emissions_sum += weight * emissions[time_index, :, :]
                 weight_sum += weight
             emissions = emissions_sum / weight_sum
 
-        return {'C_Emissions': emissions}
-
-    def _get_dataset(self, file):
-        if file in self.file_to_dataset:
-            dataset = self.file_to_dataset[file]
-        else:
-            root, ext = os.path.splitext(file)
-            if ext == '.gz':
-                real_file = self._get_unpacked_file(file)
-            else:
-                real_file = file
-            dataset = netCDF4.Dataset(real_file)
-            self.file_to_dataset[file] = dataset
-        return dataset
+        return {VAR_NAME: emissions}
 
     def get_source_time_ranges(self):
         year_to_file = self._get_year_to_file_dict(self.dir_path)
@@ -88,7 +73,7 @@ class CEmissionsProvider(BaseCubeSourceProvider):
         return source_time_ranges
 
     def get_spatial_coverage(self):
-        return -180, -90, 1440, 720
+        return 0, 0, 1440, 720
 
     def get_variable_metadata(self, variable):
         return {
@@ -101,30 +86,7 @@ class CEmissionsProvider(BaseCubeSourceProvider):
         }
 
     def close(self):
-        files = list(self.file_to_dataset.keys())
-        for file in files:
-            self._close_dataset(file)
-
-    def _close_dataset(self, file):
-        if file not in self.file_to_dataset:
-            return
-        self.log('closing %s' % file)
-        dataset = self.file_to_dataset[file]
-        dataset.close()
-        del self.file_to_dataset[file]
-
-    def _get_unpacked_file(self, file):
-        root, _ = os.path.splitext(file)
-        filename = os.path.basename(root)
-        real_file = os.path.join(self.temp_path, filename)
-        if not os.path.exists(real_file):
-            if not os.path.exists(self.temp_path):
-                os.makedirs(self.temp_path, exist_ok=True)
-            self.log('unpacking %s to %s' % (file, real_file))
-            with gzip.open(file, 'rb') as istream:
-                with open(real_file, 'wb') as ostream:
-                    ostream.write(istream.read())
-        return real_file
+        self.dataset_cache.close_all_datasets()
 
     @staticmethod
     def _get_year_to_file_dict(dir_path):
