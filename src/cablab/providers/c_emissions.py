@@ -20,11 +20,21 @@ class CEmissionsProvider(BaseImageProvider):
 
     def compute_images_from_sources(self, source_indices_to_time_overlap):
 
-        # todo - close all datasets that woit be used anymore
+        # close all datasets that wont be used anymore
+        new_indices = source_indices_to_time_overlap.keys()
+        if self.old_indices:
+            unused_indices = self.old_indices - new_indices
+            for i in unused_indices:
+                file, = self.time_range_to_file[i]
+                if file in self.open_datasets:
+                    self.open_datasets[file].close()
+                    del self.open_datasets[file]
+
+        self.old_indices = new_indices
 
         emissions_sum = numpy.zeros((self.cube_config.grid_height, self.cube_config.grid_width), dtype=numpy.float32)
         weight_sum = 0.0
-        for i in source_indices_to_time_overlap.keys():
+        for i in new_indices:
             weight = source_indices_to_time_overlap[i]
             file, time_index = self.time_range_to_file[i]
 
