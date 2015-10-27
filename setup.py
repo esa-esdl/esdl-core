@@ -21,7 +21,7 @@ setup(
     package_dir={'': 'src'},
     entry_points={
         'console_scripts': [
-            'cablab_cli = cablab.cli:main',
+            'cube_cli = cablab.cube_cli:main',
         ],
         'cablab.image_providers': [
             'burnt_area = cablab.providers.burnt_area:BurntAreaProvider',

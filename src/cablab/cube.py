@@ -53,12 +53,12 @@ class ImageProvider(metaclass=ABCMeta):
     @abstractmethod
     def get_images(self, image_start_time, image_end_time):
         """
-        Return a dictionary of variable names to image mappings where each image is a numpy array with the the shape
-        (height, width) derived from the get_spatial_coverage() method. The images must be computed (by aggregation
-        or interpolation) from the source data in the temporal range image_start_time <= source_data_time
+        Return a dictionary of variable names to image mappings where each image is a numpy array with the shape
+        (height, width) derived from the self.get_spatial_coverage() method. The images must be computed (by
+        aggregation or interpolation) from the source data in the temporal range image_start_time <= source_data_time
         < image_end_time and taking into account other data cube configuration settings.
         Called by a Cube instance's update() method for all possible time periods in the time range given by the
-        get_temporal_coverage() method. The times given are adjusted w.r.t. the cube's start time and temporal
+        self.get_temporal_coverage() method. The times given are adjusted w.r.t. the cube's start time and temporal
         resolution.
 
         :param: image_start_time The image start time as a datetime.datetime instance
@@ -79,34 +79,55 @@ class ImageProvider(metaclass=ABCMeta):
 class BaseImageProvider(ImageProvider):
     def __init__(self):
         self.cube_config = None
+        """ The cube's configuration. """
         self.source_time_ranges = []
+        """ Sorted list of all time ranges of every source file. """
 
     def prepare(self, cube_config):
+        """
+        Stores the cube's configuration and calls self.get_source_time_ranges()
+        whoese return value is also stored. Overrides should call the base class' method.
+        """
         self.cube_config = cube_config
         self.source_time_ranges = self.get_source_time_ranges()
 
     @abstractmethod
     def get_source_time_ranges(self):
+        """
+        Return a sorted list of all time ranges of every source file.
+        Items in this list must be 2-element tuples of datetime instances.
+        """
         pass
 
     def get_temporal_coverage(self):
+        """
+        Return the temporal coverage derived from the value returned by self.get_source_time_ranges().
+        """
         return self.source_time_ranges[0][0], self.source_time_ranges[-1][1]
 
     def get_images(self, image_start_time, image_end_time):
+        """
+        For each source time range that has an overlap with the given image time range compute a weight
+        according to the overlapping range. Pass these weights as source index to weight mapping
+        to self.compute_images_from_sources(index_to_weight) and return the result.
+        """
         if len(self.source_time_ranges) == 0:
             return None
-        source_indices_to_time_overlap = dict()
+        index_to_weight = dict()
         for i in range(len(self.source_time_ranges)):
             time1, time2 = self.source_time_ranges[i]
-            overlap = _get_overlap(time1, time2, image_start_time, image_end_time)
-            if overlap > 0:
-                source_indices_to_time_overlap[i] = overlap
-        if not source_indices_to_time_overlap:
+            weight = _get_overlap(time1, time2, image_start_time, image_end_time)
+            if weight > 0:
+                index_to_weight[i] = weight
+        if not index_to_weight:
             return None
-        return self.compute_images_from_sources(source_indices_to_time_overlap)
+        return self.compute_images_from_sources(index_to_weight)
 
     @abstractmethod
-    def compute_images_from_sources(self, source_indices_to_time_overlap):
+    def compute_images_from_sources(self, index_to_weight):
+        """
+        Compute the target images for all variables from the sources with the given indices and weights.
+        """
         pass
 
 
@@ -348,14 +369,15 @@ class Cube:
         var_latitude = dataset.createVariable('latitude', 'f4', ('lat',))
         var_latitude.units = 'degrees north'
 
-        # reference: lower-left corner of images, lower-left corner of pixel
         spatial_res = self.config.spatial_res
+        # reference: lower-left pixel of images, lower-left corner of pixel
         lon0 = self.config.easting + image_x0 * spatial_res
         for i in range(image_width):
             var_longitude[i] = lon0 + i * spatial_res
-        lat0 = self.config.northing + image_y0 * spatial_res
+        # reference: upper-left pixel of images, lower-left corner of pixel
+        lat0 = self.config.northing + (image_height - 1) * spatial_res
         for i in range(image_height):
-            var_latitude[i] = lat0 + i * spatial_res
+            var_latitude[i] = lat0 - i * spatial_res
 
         # import time
         # dataset.source = 'CAB-LAB Software (module ' + __name__ + ')'
