@@ -37,14 +37,20 @@ Generate a default data cube with a 0.25 degree resolution:
 
 # Dependencies
 
+If you use Windows, get the Python wheels from Christoph Gohlke's website at http://www.lfd.uci.edu/~gohlke/pythonlibs/.
+Install them using
+
+    > pip install <wheel-file>
+
+## Production and test code dependencies
+
 * netCDF4  >= 1.2
 * numpy >= 1.9
+
+## Sandbox code dependencies
+
 * scipy >= 0.16
 * matplotlib >= 1.4
 * scikit_image >= 0.11
 
-For Windows OS get the Python wheels from Christoph Gohlke's website at http://www.lfd.uci.edu/~gohlke/pythonlibs/.
-Install them using
-
-    > pip install <wheel-file>
 
