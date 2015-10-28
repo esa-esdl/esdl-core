@@ -415,10 +415,10 @@ class Cube:
                                               ('time', 'lat', 'lon',),
                                               zlib=self.config.compression,
                                               fill_value=variable_metadata['fill_value'])
-        var_variable.units = variable_metadata['units']
-        var_variable.long_name = variable_metadata['long_name']
-        var_variable.scale_factor = variable_metadata['scale_factor']
-        var_variable.add_offset = variable_metadata['add_offset']
+        var_variable.units = variable_metadata.get('units')
+        var_variable.long_name = variable_metadata.get('long_name')
+        var_variable.scale_factor = variable_metadata.get('scale_factor', 1.0)
+        var_variable.add_offset = variable_metadata.get('add_offset', 0.0)
         # TODO: add more local attributes from CF-conventions here
         return dataset
 
