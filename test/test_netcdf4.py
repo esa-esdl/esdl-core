@@ -43,10 +43,31 @@ class NetCDF4Test(TestCase):
         self.assertEqual(3.0, new_array[2], msg='at index 2')
         self.assertIs(numpy.ma.masked, new_array[3], msg='at index 3')
 
-        # Test: Fill masked values in the netCDF4 masked array
+        # Test: Fill masked values in the netCDF4 masked array with the NetCDF '_FillValue'
+        new_array = array.filled()
+        self.assertFalse(numpy.ma.is_masked(new_array))
+        self.assertEqual(1.0, new_array[0], msg='at index 0')
+        self.assertEqual(-9999.0, new_array[1], msg='at index 1')
+        self.assertEqual(3.0, new_array[2], msg='at index 2')
+        self.assertTrue(numpy.isnan(new_array[3]), msg='at index 3')
+
+        # Test: Fill masked values in the netCDF4 masked array with NaN
         new_array = array.filled(numpy.NaN)
         self.assertFalse(numpy.ma.is_masked(new_array))
         self.assertEqual(1.0, new_array[0], msg='at index 0')
         self.assertTrue(numpy.isnan(new_array[1]), msg='at index 1')
         self.assertEqual(3.0, new_array[2], msg='at index 2')
         self.assertTrue(numpy.isnan(new_array[3]), msg='at index 3')
+
+        # Test: Apply a numpy array method (e.g. kron)
+        new_array = numpy.kron(array, numpy.ones((2,)))
+        self.assertFalse(numpy.ma.is_masked(new_array))
+        self.assertEqual(8, len(new_array))
+        self.assertEqual(1.0, new_array[0], msg='at index 0')
+        self.assertEqual(1.0, new_array[1], msg='at index 1')
+        self.assertEqual(-9999.0, new_array[2], msg='at index 2')
+        self.assertEqual(-9999.0, new_array[3], msg='at index 3')
+        self.assertEqual(3.0, new_array[4], msg='at index 4')
+        self.assertEqual(3.0, new_array[5], msg='at index 5')
+        self.assertTrue(numpy.isnan(new_array[6]), msg='at index 6')
+        self.assertTrue(numpy.isnan(new_array[7]), msg='at index 7')
