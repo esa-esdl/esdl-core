@@ -1,7 +1,47 @@
+"""
+Various utility constants, functions and classes.
+Developer note: make sure this module does not import any other cablab module!
+"""
+
 import os
 import gzip
 
 import netCDF4
+
+TIME_UNITS = 'days since 0001-1-1 00:00'
+TIME_CALENDAR = 'gregorian'
+
+
+def date2num(dates):
+    """
+    Return numeric time values given datetime objects.
+
+    >>> from datetime import datetime
+    >>> date2num([datetime(2015, 10, 22), datetime(2000, 1, 1)])
+    array([ 735894.,  730121.])
+
+    :param dates: datetime.datetime values
+    :return: numeric time values
+    """
+    return netCDF4.date2num(dates,
+                            units=TIME_UNITS,
+                            calendar=TIME_CALENDAR)
+
+
+def num2date(times):
+    """
+    Return datetime objects given numeric time values.
+
+    >>> num2date([735894., 730121.])
+    array([datetime.datetime(2015, 10, 22, 0, 0),
+           datetime.datetime(2000, 1, 1, 0, 0)], dtype=object)
+
+    :param times: numeric time values
+    :return: datetime.datetime values
+    """
+    return netCDF4.num2date(times,
+                            units=TIME_UNITS,
+                            calendar=TIME_CALENDAR)
 
 
 class NetCDFDatasetCache:

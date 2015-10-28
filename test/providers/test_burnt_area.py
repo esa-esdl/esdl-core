@@ -1,23 +1,52 @@
-from unittest import TestCase
-import shutil
-
-from cablab import CubeConfig, Cube
-import cablab.providers.BurntAreaProvider as BurntAreaProvider
-
+from datetime import datetime
 import os
+import unittest
+
+from cablab import CubeConfig
+from cablab.providers.burnt_area import BurntAreaProvider
+
+SOURCE_DIR = 'W:\\BurntArea'
 
 
-class BurntAreaProviderTest(TestCase):
-    def test_burnt_area_provider(self):
-        base_dir = 'testcube'
-        if os.path.exists(base_dir):
-            shutil.rmtree(base_dir, True)
-        self.assertFalse(os.path.exists(base_dir))
+class BurntAreaProviderTest(unittest.TestCase):
+    @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
+    def test_source_time_ranges(self):
+        provider = BurntAreaProvider(CubeConfig(), SOURCE_DIR)
+        provider.prepare()
+        source_time_ranges = provider.get_source_time_ranges()
+        self.assertEqual(225, len(source_time_ranges))
+        self.assertEqual((datetime(1995, 1, 6, 0, 0),
+                          datetime(1995, 2, 6, 0, 0),
+                          os.path.join(SOURCE_DIR, 'BurntArea.GFED4.1995.nc.gz'),
+                          0), source_time_ranges[0])
+        self.assertEqual((datetime(1995, 2, 6, 0, 0),
+                          datetime(1995, 3, 6, 0, 0),
+                          os.path.join(SOURCE_DIR, 'BurntArea.GFED4.1995.nc.gz'),
+                          1), source_time_ranges[1])
+        self.assertEqual((datetime(1995, 7, 6, 0, 0),
+                          datetime(1995, 8, 6, 0, 0),
+                          os.path.join(SOURCE_DIR, 'BurntArea.GFED4.1995.nc.gz'),
+                          6), source_time_ranges[6])
+        self.assertEqual((datetime(2014, 2, 1, 0, 0),
+                          datetime(2014, 3, 1, 0, 0),
+                          os.path.join(SOURCE_DIR, 'BurntArea.GFED4.2014.nc.gz'),
+                          1), source_time_ranges[224])
 
-        config = CubeConfig()
-        cube = Cube.create(config, base_dir)
-        self.assertTrue(os.path.exists(base_dir))
+    @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
+    def test_temporal_coverage(self):
+        provider = BurntAreaProvider(CubeConfig(), SOURCE_DIR)
+        provider.prepare()
+        temporal_coverage = provider.get_temporal_coverage()
+        self.assertEqual((datetime(1995, 1, 6, 0, 0),
+                          datetime(2014, 3, 1, 0, 0)),
+                          temporal_coverage)
 
-        provider = BurntAreaProvider()
-        cube.update(provider)
-
+    @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
+    def test_get_images(self):
+        provider = BurntAreaProvider(CubeConfig(), SOURCE_DIR)
+        provider.prepare()
+        images = provider.compute_variable_images(datetime(1996, 1, 1), datetime(1996, 1, 9))
+        self.assertIsNotNone(images)
+        self.assertTrue('BurntArea' in images)
+        image = images['BurntArea']
+        self.assertEqual((720, 1440), image.shape)

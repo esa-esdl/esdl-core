@@ -48,11 +48,11 @@ def main(args=None):
         for source in cube_sources:
             source.index(':')
             source_provider_name, source_args = source.split(':', maxsplit=1)
-            if source_provider_name not in cablab.IMAGE_PROVIDERS:
+            source_provider_class = cablab.SOURCE_PROVIDERS.get(source_provider_name)
+            if source_provider_class:
+                source_providers.append((source_provider_class, source_args))
+            else:
                 parser.error('no source provider installed with name \'%s\'' % source_provider_name)
-            source_provider_class = cablab.IMAGE_PROVIDERS[source_provider_name]
-            source_provider = source_provider_class(source_args)
-            source_providers.append(source_provider)
 
     #
     # Run tool
@@ -62,8 +62,8 @@ def main(args=None):
         sys.exit(1)
 
     if list_mode:
-        print('source data providers (%d):' % len(cablab.IMAGE_PROVIDERS))
-        for name in cablab.IMAGE_PROVIDERS.keys():
+        print('source data providers (%d):' % len(cablab.SOURCE_PROVIDERS))
+        for name in cablab.SOURCE_PROVIDERS.keys():
             print('  %s' % name)
     if cube_dir:
         if is_new:
@@ -74,6 +74,9 @@ def main(args=None):
             cube = Cube.create(cube_dir, cube_config)
         else:
             cube = Cube.open(cube_dir)
+
+        source_providers = [source_provider_class(cube.config, source_args)
+                            for source_provider_class, source_args in source_providers]
 
         for source_provider in source_providers:
             cube.update(source_provider)

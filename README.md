@@ -27,6 +27,13 @@ Development mode installation:
 or real installation
     
     > python setup.py install
+    
+    
+# How to generate a data cube
+
+Generate a default data cube with a 0.25 degree resolution:
+
+    > cablab_cli.exe testcube burnt_area:W:\BurntArea c_emissions:W:\Emissions ozone:W:\Ozone-CCI\Total_Columns\L3\MERGED precip:W:\CPC_precip
 
 # Dependencies
 

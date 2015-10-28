@@ -1,58 +1,99 @@
 from datetime import datetime
+import os
 
 import numpy
 import netCDF4
 
-from cablab import CubeSourceProvider
+from cablab import BaseCubeSourceProvider
+from cablab.util import NetCDFDatasetCache
+
+VAR_NAME = 'BurntArea'
 
 
-class BurntAreaProvider(CubeSourceProvider):
-    def __init__(self):
-        self.grid_width = None
-        self.grid_height = None
-        self.easting = None
-        self.northing = None
-        self.spatial_res = None
-        self.start_time = None
-        self.temporal_res = None
-        self.variables = None
-        self.source_file = 'C:\\Personal\\CabLab\\EO data\\test_cube\\BurntArea.GFED4.2009.nc'
-        self.ds = None
-        self.ds_variables = None
+class BurntAreaProvider(BaseCubeSourceProvider):
+    def __init__(self, cube_config, dir_path):
+        super(BurntAreaProvider, self).__init__(cube_config)
+        if cube_config.grid_width != 1440 or cube_config.grid_height != 720:
+            raise ValueError('illegal cube configuration, '
+                             'provider does not yet implement proper spatial aggregation/interpolation')
+        self.dir_path = dir_path
+        self.source_time_ranges = None
+        self.dataset_cache = NetCDFDatasetCache(VAR_NAME)
+        self.old_indices = None
 
-    def get_variable_metadata(self, variable):
-        metadata = {
-            'datatype': numpy.float32,
-            'fill_value': 0,
-            'units': '1',
-            'long_name': variable,
-            'scale_factor': 1.0,
-            'add_offset': 0.0,
+    def prepare(self):
+        self._init_source_time_ranges()
+
+    def get_variable_descriptors(self):
+        return {
+            VAR_NAME: {
+                'data_type': numpy.float32,
+                'fill_value': -9999.0,
+                'units': 'hectares',
+                'long_name': 'Monthly Burnt Area',
+                'scale_factor': 1.0,
+                'add_offset': 0.0,
+            }
         }
-        return metadata
 
-    def import_dataset(self):
-        self.ds = netCDF4.Dataset(self.source_file, 'r')
-        self.ds_variables = self.ds.variables['BurntArea']
+    def compute_variable_images_from_sources(self, index_to_weight):
 
-    def prepare(self, cube_config):
-        self.grid_width = cube_config.grid_width
-        self.grid_height = cube_config.grid_height
-        self.easting = cube_config.easting
-        self.northing = cube_config.northing
-        self.spatial_res = cube_config.spatial_res
-        self.start_time = cube_config.start_time
-        self.temporal_res = cube_config.temporal_res
-        self.variables = cube_config.variables
+        # close all datasets that wont be used anymore
+        new_indices = set(index_to_weight.keys())
+        if self.old_indices:
+            unused_indices = self.old_indices - new_indices
+            for i in unused_indices:
+                file, time_index = self._get_file_and_time_index(i)
+                self.dataset_cache.close_dataset(file)
 
-    def get_temporal_coverage(self):
-        return datetime(2009, 1, 1), datetime(2009, 12, 31)
+        self.old_indices = new_indices
+
+        if len(new_indices) == 1:
+            i = next(iter(new_indices))
+            file, time_index = self._get_file_and_time_index(i)
+            dataset = self.dataset_cache.get_dataset(file)
+            burnt_area = dataset.variables[VAR_NAME][time_index, :, :]
+        else:
+            burnt_area_sum = numpy.zeros((self.cube_config.grid_height, self.cube_config.grid_width),
+                                         dtype=numpy.float32)
+            weight_sum = 0.0
+            for i in new_indices:
+                weight = index_to_weight[i]
+                file, time_index = self._get_file_and_time_index(i)
+                dataset = self.dataset_cache.get_dataset(file)
+                burnt_area = dataset.variables[VAR_NAME]
+                burnt_area_sum += weight * burnt_area[time_index, :, :]
+                weight_sum += weight
+            burnt_area = burnt_area_sum / weight_sum
+
+        return {VAR_NAME: burnt_area}
+
+    def _get_file_and_time_index(self, i):
+        return self.source_time_ranges[i][2:4]
+
+    def get_source_time_ranges(self):
+        return self.source_time_ranges
 
     def get_spatial_coverage(self):
-        return -180, -90, 1440, 720
-
-    def get_images(self, image_start_time, image_end_time):
-        return {'BurntArea': self.ds_variables[image_start_time.month - 1, :, :]}
+        return 0, 0, 1440, 720
 
     def close(self):
-        self.ds.close()
+        self.dataset_cache.close_all_datasets()
+
+    def _init_source_time_ranges(self):
+        source_time_ranges = []
+        file_names = os.listdir(self.dir_path)
+        for file_name in file_names:
+            file = os.path.join(self.dir_path, file_name)
+            dataset = self.dataset_cache.get_dataset(file)
+            time_bnds = dataset.variables['time_bnds']
+            # todo - check datetime units, may be wrong in either the netCDF file (which is
+            # 'days since 1582-10-14 00:00') or the netCDF4 library
+            dates1 = netCDF4.num2date(time_bnds[:, 0], 'days since 1582-10-24 00:00', calendar='gregorian')
+            dates2 = netCDF4.num2date(time_bnds[:, 1], 'days since 1582-10-24 00:00', calendar='gregorian')
+            self.dataset_cache.close_dataset(file)
+            for i in range(len(dates1)):
+                t1 = datetime(dates1[i].year, dates1[i].month, dates1[i].day)
+                t2 = datetime(dates2[i].year, dates2[i].month, dates2[i].day)
+                source_time_ranges.append((t1, t2, file, i))
+        self.source_time_ranges = sorted(source_time_ranges, key=lambda item: item[0])

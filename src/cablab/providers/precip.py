@@ -1,5 +1,5 @@
 import os
-from  datetime import datetime
+from datetime import timedelta
 
 import numpy
 import netCDF4
@@ -7,13 +7,12 @@ import netCDF4
 from cablab import BaseCubeSourceProvider
 from cablab.util import NetCDFDatasetCache
 
-VAR_NAME = 'Ozone'
+VAR_NAME = 'Precip'
 
 
-class OzoneProvider(BaseCubeSourceProvider):
+class PrecipProvider(BaseCubeSourceProvider):
     def __init__(self, cube_config, dir_path):
-        super(OzoneProvider, self).__init__(cube_config)
-        # todo - remove check once we have addressed spatial aggregation/interpolation
+        super(PrecipProvider, self).__init__(cube_config)
         if cube_config.grid_width != 1440 or cube_config.grid_height != 720:
             raise ValueError('illegal cube configuration, '
                              'provider does not yet implement proper spatial aggregation/interpolation')
@@ -29,10 +28,10 @@ class OzoneProvider(BaseCubeSourceProvider):
         return {
             VAR_NAME: {
                 'data_type': numpy.float32,
-                'fill_value': numpy.NaN,
-                'units': 'DU',
-                'long_name': 'Mean Total Ozone Column in Dobson Units',
-                'standard_name': 'atmosphere_mole_content_of_ozone',
+                'fill_value': -9999.0,
+                'units': 'mm/day',
+                'long_name': 'Precip - V1.0',
+                'standard_name': 'Precip',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
             }
@@ -45,36 +44,33 @@ class OzoneProvider(BaseCubeSourceProvider):
         if self.old_indices:
             unused_indices = self.old_indices - new_indices
             for i in unused_indices:
-                file = self._get_file(i)
+                file, time_index = self._get_file_and_time_index(i)
                 self.dataset_cache.close_dataset(file)
 
         self.old_indices = new_indices
 
         if len(new_indices) == 1:
             i = next(iter(new_indices))
-            file = self._get_file(i)
+            file, time_index = self._get_file_and_time_index(i)
             dataset = self.dataset_cache.get_dataset(file)
-            ozone = dataset.variables['atmosphere_mole_content_of_ozone']
-            ozone = numpy.kron(ozone[:, :], numpy.ones((4, 4), dtype=numpy.float32))
-            print(ozone.shape)
+            precip = numpy.kron(dataset.variables[VAR_NAME][time_index, :, :], numpy.ones((2, 2)))
         else:
-            ozone_sum = numpy.zeros((self.cube_config.grid_height, self.cube_config.grid_width),
-                                    dtype=numpy.float32)
+            precip_sum = numpy.zeros((self.cube_config.grid_height, self.cube_config.grid_width),
+                                     dtype=numpy.float32)
             weight_sum = 0.0
             for i in new_indices:
                 weight = index_to_weight[i]
-                file = self._get_file(i)
+                file, time_index = self._get_file_and_time_index(i)
                 dataset = self.dataset_cache.get_dataset(file)
-                ozone = dataset.variables['atmosphere_mole_content_of_ozone']
-                ozone = numpy.kron(ozone[:, :], numpy.ones((4, 4), dtype=numpy.float32))
-                ozone_sum += weight * ozone
+                precip = dataset.variables[VAR_NAME]
+                precip_sum += weight * numpy.kron(precip[time_index, :, :], numpy.ones((2, 2)))
                 weight_sum += weight
-            ozone = ozone_sum / weight_sum
+            precip = precip_sum / weight_sum
 
-        return {VAR_NAME: ozone}
+        return {VAR_NAME: precip}
 
-    def _get_file(self, i):
-        return self.source_time_ranges[i][2]
+    def _get_file_and_time_index(self, i):
+        return self.source_time_ranges[i][2:4]
 
     def get_source_time_ranges(self):
         return self.source_time_ranges
@@ -86,16 +82,13 @@ class OzoneProvider(BaseCubeSourceProvider):
         self.dataset_cache.close_all_datasets()
 
     def _init_source_time_ranges(self):
+        source_time_ranges = []
         file_names = os.listdir(self.dir_path)
-        source_time_ranges = list()
         for file_name in file_names:
             file = os.path.join(self.dir_path, file_name)
-            dataset = netCDF4.Dataset(file)
-            t1 = dataset.time_coverage_start
-            t2 = dataset.time_coverage_end
-            dataset.close()
-            print('%s: %s ... %s' % (file, t1, t2))
-            source_time_ranges.append((datetime(int(t1[0:4]), int(t1[4:6]), int(t1[6:8])),
-                                       datetime(int(t2[0:4]), int(t2[4:6]), int(t2[6:8])),
-                                       file))
+            dataset = self.dataset_cache.get_dataset(file)
+            time = dataset.variables['time']
+            dates = netCDF4.num2date(time[:], calendar=time.calendar, units=time.units)
+            self.dataset_cache.close_dataset(file)
+            source_time_ranges += [(dates[i], dates[i] + timedelta(days=1), file, i) for i in range(len(dates))]
         self.source_time_ranges = sorted(source_time_ranges, key=lambda item: item[0])

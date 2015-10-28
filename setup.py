@@ -23,10 +23,11 @@ setup(
         'console_scripts': [
             'cube_cli = cablab.cube_cli:main',
         ],
-        'cablab.image_providers': [
+        'cablab.source_providers': [
             'burnt_area = cablab.providers.burnt_area:BurntAreaProvider',
             'c_emissions = cablab.providers.c_emissions:CEmissionsProvider',
             'ozone = cablab.providers.ozone:OzoneProvider',
+            'precip = cablab.providers.precip:PrecipProvider',
         ],
     },
     requires=['numpy', 'netCDF4']
