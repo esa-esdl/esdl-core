@@ -1,0 +1,1 @@
+This '_static' directory contains static documentation resources.

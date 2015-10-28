@@ -1,0 +1,1 @@
+This '_templates' directory contains any Sphinx templates.
