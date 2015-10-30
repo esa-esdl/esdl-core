@@ -28,6 +28,7 @@ setup(
             'c_emissions = cablab.providers.c_emissions:CEmissionsProvider',
             'ozone = cablab.providers.ozone:OzoneProvider',
             'precip = cablab.providers.precip:PrecipProvider',
+            'soil_moisture = cablab.providers.soil_moisture:SoilMoistureProvider',
         ],
     },
     requires=['numpy', 'netCDF4']
