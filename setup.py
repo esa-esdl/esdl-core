@@ -29,6 +29,7 @@ setup(
             'ozone = cablab.providers.ozone:OzoneProvider',
             'precip = cablab.providers.precip:PrecipProvider',
             'soil_moisture = cablab.providers.soil_moisture:SoilMoistureProvider',
+            'albedo = cablab.providers.albedo:AlbedoProvider',
         ],
     },
     requires=['numpy', 'netCDF4']
