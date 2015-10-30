@@ -416,6 +416,15 @@ class Cube:
         var_start_time = dataset.variables['start_time']
         var_end_time = dataset.variables['end_time']
         var_variable = dataset.variables[var_name]
+
+        # at the moment it will not add a new value if a time variable with the exact start and end date exists
+        # todo: as discussed, the better solution will be to clear any variable values prior to writing any
+        # (always overwrite)
+        for i in range(len(var_start_time)):
+            if var_start_time[i] == cablab.date2num(target_start_time) and var_end_time[i] == cablab.date2num(
+                    target_end_time):
+                return
+
         i = len(var_start_time)
         var_start_time[i] = cablab.date2num(target_start_time)
         var_end_time[i] = cablab.date2num(target_end_time)
@@ -529,7 +538,7 @@ class CubeData:
 
     def get_variable(self, var_index):
         """
-        Get a cube variable. Same as, e.g. cube.data['Ozone].
+        Get a cube variable. Same as, e.g. cube.data['Ozone'].
         :param index: The variable name or index according to the list returned by the variables property.
         :return: a data-access object representing the variable with the dimensions (time, latitude, longitude).
         """

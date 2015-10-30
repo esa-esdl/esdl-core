@@ -5,6 +5,7 @@ Developer note: make sure this module does not import any other cablab module!
 
 import os
 import gzip
+import datetime
 
 import netCDF4
 
@@ -42,6 +43,29 @@ def num2date(times):
     return netCDF4.num2date(times,
                             units=TIME_UNITS,
                             calendar=TIME_CALENDAR)
+
+
+def day2date(times):
+    """
+    Return datetime objects given numeric time values in year and day format.
+    For example, 2005021 corresponds to the 21st day of year 2005.
+
+    >>> day2date(2000001)
+    (datetime.datetime(2000, 1, 1, 0, 0), datetime.datetime(2000, 1, 9, 0, 0))
+    >>> day2date(2000361)
+    (datetime.datetime(2000, 12, 26, 0, 0), datetime.datetime(2001, 1, 3, 0, 0))
+
+    :param times: numeric time values
+    :return: datetime.datetime values
+    """
+    year = times // 1000
+    year_start_date = date2num(datetime.datetime(year, 1, 1))
+
+    day = times % 1000 - 1
+    actual_start_date = year_start_date + day
+    actual_end_date = actual_start_date + 8
+
+    return num2date(actual_start_date), num2date(actual_end_date)
 
 
 class NetCDFDatasetCache:
