@@ -288,18 +288,32 @@ class Cube:
 
     @property
     def base_dir(self):
+        """
+        The cube's base directory.
+        """
         return self._base_dir
 
     @property
     def config(self):
+        """
+        The cube's configuration. See CubeConfig class.
+        """
         return self._config
 
     @property
     def closed(self):
+        """
+        Checks if the cube has been closed.
+        """
         return self._closed
 
     @property
     def data(self):
+        """
+        The cube's data. See CubeData class.
+        """
+        if not self._data:
+            self._data = CubeData(self)
         return self._data
 
     @staticmethod
@@ -315,9 +329,7 @@ class Cube:
         if not os.path.exists(base_dir):
             raise IOError('data cube base directory does not exists: %s' % base_dir)
         config = CubeConfig.load(os.path.join(base_dir, 'cube.config'))
-        cube = Cube(base_dir, config)
-        cube._data = CubeData(cube)
-        return cube
+        return Cube(base_dir, config)
 
     @staticmethod
     def create(base_dir, config):
@@ -556,7 +568,6 @@ class CubeData:
         """
         return self.get_variable(index)
 
-    @property
     def get_data(self, var_indexes, time_range, lat_range, lon_range):
         """
         Get the cube's data.
