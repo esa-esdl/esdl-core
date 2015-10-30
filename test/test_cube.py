@@ -124,6 +124,18 @@ class CubeTest(TestCase):
         self.assertEqual((1, 1, 1), result[0].shape)
         self.assertEqual((1, 1, 1), result[1].shape)
 
+        array = data['LAI'][:, :, :]
+        self.assertEqual((9, 720, 1440), array.shape)
+        array = data['FAPAR'][:, :, :]
+        self.assertEqual((9, 720, 1440), array.shape)
+
+        scalar = data['LAI'][3, 320, 720]
+
+        self.assertEqual(numpy.float32, type(scalar))
+        self.assertEqual(numpy.array([0.14], dtype=numpy.float32), scalar)
+        scalar = data['FAPAR'][3, 320, 720]
+        self.assertEqual(numpy.array([0.62], dtype=numpy.float32), scalar)
+
         cube2.close()
 
 
