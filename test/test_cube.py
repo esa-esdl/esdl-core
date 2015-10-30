@@ -64,6 +64,15 @@ class CubeTest(TestCase):
         self.assertTrue(os.path.exists(CUBE_DIR + "/data/FAPAR/2012_FAPAR.nc"))
         self.assertTrue(os.path.exists(CUBE_DIR + "/data/FAPAR/2013_FAPAR.nc"))
 
+        data = cube2.data
+        self.assertIsNotNone(data)
+        self.assertEqual((2, 0, 720, 1440), data.shape)
+        self.assertEquals({'FAPAR': 0, 'LAI': 1}, data.variable_names)
+        self.assertIsNotNone(data.get_variable('LAI'))
+        self.assertIsNotNone(data.get_variable('FAPAR'))
+        self.assertIs(data.get_variable('LAI'), data['LAI'])
+        self.assertIs(data.get_variable('FAPAR'), data['FAPAR'])
+
         cube2.close()
 
 
