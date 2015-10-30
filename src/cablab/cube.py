@@ -2,6 +2,7 @@ from datetime import datetime
 import math
 import os
 from abc import ABCMeta, abstractmethod
+from collections import OrderedDict
 import time
 
 import netCDF4
@@ -277,12 +278,29 @@ class Cube:
     """
 
     def __init__(self, base_dir, config):
-        self.base_dir = base_dir
-        self.config = config
-        self.closed = False
+        self._base_dir = base_dir
+        self._config = config
+        self._closed = False
+        self._data = None
 
     def __repr__(self):
-        return 'Cube(%s, \'%s\')' % (self.config, self.base_dir)
+        return 'Cube(%s, \'%s\')' % (self._config, self._base_dir)
+
+    @property
+    def base_dir(self):
+        return self._base_dir
+
+    @property
+    def config(self):
+        return self._config
+
+    @property
+    def closed(self):
+        return self._closed
+
+    @property
+    def data(self):
+        return self._data
 
     @staticmethod
     def open(base_dir):
@@ -297,7 +315,9 @@ class Cube:
         if not os.path.exists(base_dir):
             raise IOError('data cube base directory does not exists: %s' % base_dir)
         config = CubeConfig.load(os.path.join(base_dir, 'cube.config'))
-        return Cube(base_dir, config)
+        cube = Cube(base_dir, config)
+        cube._data = CubeData(cube)
+        return cube
 
     @staticmethod
     def create(base_dir, config):
@@ -320,7 +340,10 @@ class Cube:
         """
         Closes the data cube.
         """
-        self.closed = True
+        if self._data:
+            self._data._close_datasets()
+            self._data = None
+        self._closed = True
 
     def update(self, provider):
         """
@@ -328,29 +351,29 @@ class Cube:
         :param provider: An instance of the abstract ImageProvider class
         """
 
-        if self.closed:
+        if self._closed:
             raise IOError('cube has been closed')
 
         provider.prepare()
 
         datasets = dict()
 
-        cube_ref_time = cablab.date2num(self.config.ref_time)
-        cube_temporal_res = self.config.temporal_res
+        cube_ref_time = cablab.date2num(self._config.ref_time)
+        cube_temporal_res = self._config.temporal_res
 
         target_start_time, target_end_time = provider.get_temporal_coverage()
-        if self.config.start_time and self.config.start_time > target_start_time:
-            target_start_time = self.config.start_time
-        if self.config.end_time and self.config.end_time < target_end_time:
-            target_end_time = self.config.end_time
+        if self._config.start_time and self._config.start_time > target_start_time:
+            target_start_time = self._config.start_time
+        if self._config.end_time and self._config.end_time < target_end_time:
+            target_end_time = self._config.end_time
         target_time_1 = cablab.date2num(target_start_time)
         target_time_2 = cablab.date2num(target_end_time)
 
         # compute adjusted target_time_1
-        n = _get_num_steps(cube_ref_time, target_time_1, cube_temporal_res)
+        n = self._get_num_steps(cube_ref_time, target_time_1, cube_temporal_res)
         target_time_1 = cube_ref_time + n * cube_temporal_res
 
-        steps = _get_num_steps(target_time_1, target_time_2, cube_temporal_res)
+        steps = self._get_num_steps(target_time_1, target_time_2, cube_temporal_res)
         for i in range(steps + 1):
             period_1 = target_time_1 + i * cube_temporal_res
             period_2 = target_time_1 + (i + 1) * cube_temporal_res
@@ -376,7 +399,7 @@ class Cube:
     def _write_image(self, provider, datasets, target_time_range, var_name, image):
         target_start_time, target_end_time = target_time_range
         folder_name = var_name
-        folder = os.path.join(os.path.join(self.base_dir, 'data', folder_name))
+        folder = os.path.join(os.path.join(self._base_dir, 'data', folder_name))
         if not os.path.exists(folder):
             os.makedirs(folder, exist_ok=True)
         filename = '%04d_%s.nc' % (target_start_time.year, var_name)
@@ -387,7 +410,7 @@ class Cube:
             if os.path.exists(file):
                 dataset = netCDF4.Dataset(file, 'a')
             else:
-                dataset = netCDF4.Dataset(file, 'w', format=self.config.format)
+                dataset = netCDF4.Dataset(file, 'w', format=self._config.format)
                 self._init_variable_dataset(provider, dataset, var_name)
             datasets[filename] = dataset
         var_start_time = dataset.variables['start_time']
@@ -420,13 +443,13 @@ class Cube:
         var_latitude = dataset.createVariable('latitude', 'f4', ('lat',))
         var_latitude.units = 'degrees north'
 
-        spatial_res = self.config.spatial_res
+        spatial_res = self._config.spatial_res
         # reference: lower-left pixel of images, lower-left corner of pixel
-        lon0 = self.config.easting + image_x0 * spatial_res
+        lon0 = self._config.easting + image_x0 * spatial_res
         for i in range(image_width):
             var_longitude[i] = lon0 + i * spatial_res
         # reference: upper-left pixel of images, lower-left corner of pixel
-        lat0 = self.config.northing + (image_height - 1) * spatial_res
+        lat0 = self._config.northing + (image_height - 1) * spatial_res
         for i in range(image_height):
             var_latitude[i] = lat0 - i * spatial_res
 
@@ -441,7 +464,7 @@ class Cube:
         variable_fill_value = variable_attributes['fill_value']
         var_variable = dataset.createVariable(variable_name, variable_data_type,
                                               ('time', 'lat', 'lon',),
-                                              zlib=self.config.compression,
+                                              zlib=self._config.compression,
                                               fill_value=variable_fill_value)
         var_variable.scale_factor = variable_attributes.get('scale_factor', 1.0)
         var_variable.add_offset = variable_attributes.get('add_offset', 0.0)
@@ -456,6 +479,99 @@ class Cube:
                     print('%s = %s failed!' % (name, value))
         return dataset
 
+    @staticmethod
+    def _get_num_steps(x1, x2, dx):
+        return int(math.floor((x2 - x1) / dx))
 
-def _get_num_steps(x1, x2, dx):
-    return int(math.floor((x2 - x1) / dx))
+
+class CubeData:
+    """
+    Represents the cube's read-only data.
+    """
+
+    def __init__(self, cube):
+        self._cube = cube
+        self._dataset_files = []
+        self._var_index_to_var_name = OrderedDict()
+        self._var_name_to_var_index = OrderedDict()
+        data_dir = os.path.join(cube.base_dir, 'data')
+        data_dir_entries = os.listdir(data_dir)
+        var_index = 0
+        for data_dir_entry in data_dir_entries:
+            var_dir = os.path.join(data_dir, data_dir_entry)
+            if os.path.isdir(var_dir):
+                var_name = data_dir_entry
+                var_dir_entries = os.listdir(var_dir)
+                var_dir_entries = [var_dir_entry for var_dir_entry in var_dir_entries if var_dir_entry.endswith('.nc')]
+                var_dir_entries = sorted(var_dir_entries)
+                var_dir_entries = [os.path.join(var_dir, var_dir_entry) for var_dir_entry in var_dir_entries]
+                self._var_index_to_var_name[var_index] = var_name
+                self._var_name_to_var_index[var_name] = var_index
+                self._dataset_files.append(var_dir_entries)
+                var_index += 1
+        self._datasets = [None] * len(self._dataset_files)
+        self._variables = [None] * len(self._dataset_files)
+
+    @property
+    def shape(self) -> tuple:
+        """
+        Return the shape of the data cube.
+        """
+        # todo - retrieve correct time size
+        return len(self._dataset_files), 0, self._cube.config.grid_height, self._cube.config.grid_width
+
+    @property
+    def variable_names(self) -> tuple:
+        """
+        Return a dictionary of variable names to indices.
+        """
+        return dict(self._var_name_to_var_index)
+
+    def get_variable(self, var_index):
+        """
+        Get a cube variable. Same as, e.g. cube.data['Ozone].
+        :param index: The variable name or index according to the list returned by the variables property.
+        :return: a data-access object representing the variable with the dimensions (time, latitude, longitude).
+        """
+        if isinstance(var_index, str):
+            var_index = self._var_name_to_var_index[var_index]
+        if self._variables[var_index]:
+            return self._variables[var_index]
+        return self._open_dataset(var_index)
+
+    def __getitem__(self, index):
+        """
+        Get a cube variable. Same as, e.g. cube.data.get_variable('Ozone).
+        :param index: The variable name or index according to the list returned by the variables property.
+        :return: a data-access object representing the variable with the dimensions (time, latitude, longitude).
+        """
+        return self.get_variable(index)
+
+    @property
+    def get_data(self, var_indexes, time_range, lat_range, lon_range):
+        """
+        Get the cube's data.
+        :param var_indexes: an variable index or key or an iterable returning multiple of these, (var1, var2, ...)
+        :param time_range: a tuple of datetime.datetime objects (time_start, time_end)
+        :param lat_range: a tuple of numbers objects (latitude_start, latitude_end)
+        :param lon_range: a tuple of numbers objects (longitude_start, longitude_end)
+        :return: a dictionary mapping variable names --> data arrays of dimension (time, latitude, longitude)
+        """
+        # todo - implement me
+        return None
+
+    def _open_dataset(self, var_index):
+        files = self._dataset_files[var_index]
+        var_name = self._var_index_to_var_name[var_index]
+        dataset = netCDF4.MFDataset(files)
+        variable = dataset.variables[var_name]
+        self._datasets[var_index] = dataset
+        self._variables[var_index] = variable
+        return variable
+
+    def _close_datasets(self):
+        for i in range(len(self._datasets)):
+            dataset = self._datasets[i]
+            dataset.close()
+            self._datasets[i] = None
+            self._variables[i] = None
