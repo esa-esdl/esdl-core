@@ -73,6 +73,36 @@ class CubeTest(TestCase):
         self.assertIs(data.get_variable('LAI'), data['LAI'])
         self.assertIs(data.get_variable('FAPAR'), data['FAPAR'])
 
+        result = data.get('FAPAR',
+                               [datetime(2013, 1, 1), datetime(2013, 2, 1)],
+                               [-90, 90],
+                               [-180, +180])
+        self.assertEqual(1, len(result))
+        self.assertEqual((5, 720, 1440), result[0].shape)
+
+        result = data.get(['FAPAR', 'LAI'],
+                               [datetime(2013, 1, 1), datetime(2013, 2, 1)],
+                               [50.0, 60.0],
+                               [10.0, 30.0])
+        self.assertEqual(2, len(result))
+        self.assertEqual((5, 40, 80), result[0].shape)
+        self.assertEqual((5, 40, 80), result[1].shape)
+
+        result = data.get(1,
+                               datetime(2013, 1, 15),
+                               0,
+                               0)
+        self.assertEqual(1, len(result))
+        self.assertEqual((1, 1, 1), result[0].shape)
+
+        result = data.get((0, 1),
+                               datetime(2013, 1, 1),
+                               53.4,
+                               13.1)
+        self.assertEqual(2, len(result))
+        self.assertEqual((1, 1, 1), result[0].shape)
+        self.assertEqual((1, 1, 1), result[1].shape)
+
         cube2.close()
 
 

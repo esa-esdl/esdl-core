@@ -1,10 +1,12 @@
 from datetime import datetime
+from datetime import timedelta
 import math
 import os
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 import time
 
+import numpy
 import netCDF4
 
 import cablab
@@ -195,10 +197,10 @@ class CubeConfig:
     """
 
     def __init__(self,
+                 grid_x0=0,
+                 grid_y0=0,
                  grid_width=1440,
                  grid_height=720,
-                 easting=-180.0,
-                 northing=-90.0,
                  spatial_res=0.25,
                  ref_time=datetime(2000, 1, 1),
                  start_time=datetime(2000, 1, 1),
@@ -210,10 +212,10 @@ class CubeConfig:
         """
         Create a configuration to be be used for creating new data cubes.
 
-        :param grid_width: The fixed image width in pixels (longitude direction).
-        :param grid_height: The fixed image height in pixels (latitude direction).
-        :param easting: The longitude position of the lower-left-most corner of the lower-left-most image pixel.
-        :param northing: The latitude position of the lower-left-most corner of the lower-left-most image pixel.
+        :param grid_x0: The fixed grid X offset (longitude direction).
+        :param grid_y0: The fixed grid Y offset (latitude direction).
+        :param grid_width: The fixed grid width in pixels (longitude direction).
+        :param grid_height: The fixed grid height in pixels (latitude direction).
         :param spatial_res: The spatial image resolution in degree.
         :param ref_time: Defines the absolute positioning of the cube's time periods which are given by
                          ref_time + i * temporal_res <= period <= ref_time + (i + 1) * temporal_res.
@@ -226,10 +228,10 @@ class CubeConfig:
         :param compression: Whether the data should be compressed.
         """
 
+        self.grid_x0 = grid_x0
+        self.grid_y0 = grid_y0
         self.grid_width = grid_width
         self.grid_height = grid_height
-        self.easting = easting
-        self.northing = northing
         self.spatial_res = spatial_res
         self.ref_time = ref_time
         self.start_time = start_time
@@ -243,6 +245,28 @@ class CubeConfig:
         return 'CubeConfig(%s, %s, %s, %s, %s)' % (
             self.grid_width, self.grid_height,
             self.easting, self.northing, self.spatial_res)
+
+    @property
+    def northing(self):
+        """
+        The longitude position of the upper-left-most corner of the upper-left-most grid cell given by (grid_x0, grid_y0).
+        """
+        return 90.0 - self.grid_y0 * self.spatial_res
+
+    @property
+    def easting(self):
+        """
+        The latitude position of the upper-left-most corner of the upper-left-most grid cell given by (grid_x0, grid_y0).
+        """
+        return -180.0 + self.grid_x0 * self.spatial_res
+
+    @property
+    def geo_bounds(self):
+        """
+        The geographical boundary given as ((LL-lon, LL-lat), (UR-lon, UR-lat)).
+        """
+        return ((self.easting - self.grid_height * self.spatial_res, self.easting),
+                (self.easting, self.easting + self.grid_width * self.spatial_res))
 
     @staticmethod
     def load(path):
@@ -465,12 +489,10 @@ class Cube:
         var_latitude.units = 'degrees north'
 
         spatial_res = self._config.spatial_res
-        # reference: lower-left pixel of images, lower-left corner of pixel
         lon0 = self._config.easting + image_x0 * spatial_res
         for i in range(image_width):
             var_longitude[i] = lon0 + i * spatial_res
-        # reference: upper-left pixel of images, lower-left corner of pixel
-        lat0 = self._config.northing + (image_height - 1) * spatial_res
+        lat0 = self._config.northing + image_y0 * spatial_res
         for i in range(image_height):
             var_latitude[i] = lat0 - i * spatial_res
 
@@ -568,17 +590,130 @@ class CubeData:
         """
         return self.get_variable(index)
 
-    def get_data(self, var_indexes, time_range, lat_range, lon_range):
+    def get(self, variable, time, latitude, longitude):
         """
         Get the cube's data.
-        :param var_indexes: an variable index or key or an iterable returning multiple of these, (var1, var2, ...)
-        :param time_range: a tuple of datetime.datetime objects (time_start, time_end)
-        :param lat_range: a tuple of numbers objects (latitude_start, latitude_end)
-        :param lon_range: a tuple of numbers objects (longitude_start, longitude_end)
+        :param variable: an variable index or name or an iterable returning multiple of these (var1, var2, ...)
+        :param time: a single datetime.datetime object or a 2-element iterable (time_start, time_end)
+        :param latitude: a single latitude value or a 2-element iterable (latitude_start, latitude_end)
+        :param longitude: a single longitude value or a 2-element iterable (longitude_start, longitude_end)
         :return: a dictionary mapping variable names --> data arrays of dimension (time, latitude, longitude)
         """
-        # todo - implement me
-        return None
+
+        var_indexes = self._get_var_indices(variable)
+        time_1, time_2 = self._get_time_range(time)
+        lat_1, lat_2 = self._get_lat_range(latitude)
+        lon_1, lon_2 = self._get_lon_range(longitude)
+
+        config = self._cube.config
+        time_index_1 = int(math.floor(((time_1 - config.ref_time) / timedelta(days=config.temporal_res))))
+        time_index_2 = int(math.floor(((time_2 - config.ref_time) / timedelta(days=config.temporal_res))))
+        grid_y1 = int(round((90.0 - lat_2) / config.spatial_res)) - config.grid_y0
+        grid_y2 = int(round((90.0 - lat_1) / config.spatial_res)) - config.grid_y0
+        grid_x1 = int(round((180.0 + lon_1) / config.spatial_res)) - config.grid_x0
+        grid_x2 = int(round((180.0 + lon_2) / config.spatial_res)) - config.grid_x0
+
+        if grid_y2 > grid_y1 and 90.0 - (grid_y2 + config.grid_y0) * config.spatial_res == lat_1:
+            grid_y2 -= 1
+        if grid_x2 > grid_x1 and -180.0 + (grid_x2 + config.grid_x0) * config.spatial_res == lon_2:
+            grid_x2 -= 1
+
+        global_grid_width = int(round(360.0 / config.spatial_res))
+        dateline_intersection = grid_x2 >= global_grid_width
+
+        if dateline_intersection:
+            grid_x11 = grid_x1
+            grid_x12 = global_grid_width - 1
+            grid_x21 = 0
+            grid_x22 = grid_x2
+            # todo - handle this case
+            print('dateline intersection! grid_x: %d-%d, %d-%d' % (grid_x11, grid_x12, grid_x21, grid_x22))
+            #raise ValueError('illegal longitude: %s: dateline intersection not yet implemented' % longitude)
+
+        # todo - replace dummy code by reading from netcdf variable
+        # todo - fill in NaN, where a variable does not provide any data
+        result = []
+        shape = time_index_2 - time_index_1 + 1, \
+                grid_y2 - grid_y1 + 1, \
+                grid_x2 - grid_x1 + 1
+        for _ in var_indexes:
+            result += [numpy.full(shape, numpy.NaN, dtype=numpy.float32)]
+
+        return result
+
+    def _get_lon_range(self, longitude):
+        try:
+            # Try using longitude as longitude pair
+            lon_1, lon_2 = longitude
+        except TypeError:
+            # Longitude scalar
+            lon_1 = longitude
+            lon_2 = longitude
+        # Adjust longitude to -180..+180
+        if lon_1 < -180:
+            lon_1 %= 180
+        if lon_1 > 180:
+            lon_1 %= -180
+        if lon_2 < -180:
+            lon_2 %= 180
+        if lon_2 > 180:
+            lon_2 %= -180
+        # If lon_1 > lon_2 --> dateline intersection, add 360 so that lon_1 < lon_2
+        if lon_1 > lon_2:
+            lon_2 += 360
+        return lon_1, lon_2
+
+    def _get_lat_range(self, latitude):
+        try:
+            # Try using latitude as latitude pair
+            lat_1, lat_2 = latitude
+        except TypeError:
+            # Latitude scalar
+            lat_1 = latitude
+            lat_2 = latitude
+        if lat_1 < -90 or lat_1 > 90 or lat_2 < -90 or lat_2 > 90 or lat_1 > lat_2:
+            raise ValueError('invalid latitude argument: %s' % latitude)
+        return lat_1, lat_2
+
+    def _get_time_range(self, time):
+        try:
+            # Try using time as time pair
+            time_1, time_2 = time
+        except TypeError:
+            # Time scalar
+            time_1 = time
+            time_2 = time
+        if time_1 > time_2:
+            raise ValueError('invalid time argument: %s' % time)
+        return time_1, time_2
+
+    def _get_var_indices(self, variable):
+        try:
+            # Try using variable as string name
+            var_index = self._var_name_to_var_index[variable]
+            return [var_index]
+        except (KeyError, TypeError):
+            try:
+                # Try using variable as integer index
+                _ = self._var_index_to_var_name[variable]
+                return [variable]
+            except (KeyError, TypeError):
+                # Try using variable as iterable of name and/or indexes
+                var_indexes = []
+                for v in variable:
+                    try:
+                        # Try using v as string name
+                        var_index = self._var_name_to_var_index[v]
+                        var_indexes += [var_index]
+                    except (KeyError, TypeError):
+                        try:
+                            # Try using v as integer index
+                            _ = self._var_index_to_var_name[v]
+                            var_index = v
+                            var_indexes += [var_index]
+                        except (KeyError, TypeError):
+                            raise ValueError('illegal variable argument: %s' % variable)
+                return var_indexes
 
     def _open_dataset(self, var_index):
         files = self._dataset_files[var_index]
