@@ -191,21 +191,18 @@ class BaseCubeSourceProvider(CubeSourceProvider):
 class CubeConfig:
     """
     A data cube's static configuration information.
-
-    >>> CubeConfig(2880, 1440)
-    CubeConfig(2880, 1440, -180.0, -90.0, 0.25)
     """
 
     def __init__(self,
+                 spatial_res=0.25,
                  grid_x0=0,
                  grid_y0=0,
                  grid_width=1440,
                  grid_height=720,
-                 spatial_res=0.25,
+                 temporal_res=8,
                  ref_time=datetime(2000, 1, 1),
                  start_time=datetime(2000, 1, 1),
                  end_time=datetime(2015, 1, 1),
-                 temporal_res=8,
                  variables=None,
                  format='NETCDF4_CLASSIC',
                  compression=False):
@@ -227,24 +224,27 @@ class CubeConfig:
                        or 'NETCDF3_64BIT'.
         :param compression: Whether the data should be compressed.
         """
-
+        self.spatial_res = spatial_res
         self.grid_x0 = grid_x0
         self.grid_y0 = grid_y0
         self.grid_width = grid_width
         self.grid_height = grid_height
-        self.spatial_res = spatial_res
+        self.temporal_res = temporal_res
         self.ref_time = ref_time
         self.start_time = start_time
         self.end_time = end_time
-        self.temporal_res = temporal_res
         self.variables = variables
         self.format = format
         self.compression = compression
+        self._validate()
 
     def __repr__(self):
-        return 'CubeConfig(%s, %s, %s, %s, %s)' % (
+        return 'CubeConfig(spatial_res=%f, grid_x0=%d, grid_y0=%d, grid_width=%d, grid_height=%d, temporal_res=%d, ref_time=%s)' % (
+            self.spatial_res,
+            self.grid_x0, self.grid_y0,
             self.grid_width, self.grid_height,
-            self.easting, self.northing, self.spatial_res)
+            self.temporal_res,
+            repr(self.ref_time))
 
     @property
     def northing(self):
@@ -265,8 +265,8 @@ class CubeConfig:
         """
         The geographical boundary given as ((LL-lon, LL-lat), (UR-lon, UR-lat)).
         """
-        return ((self.easting - self.grid_height * self.spatial_res, self.easting),
-                (self.easting, self.easting + self.grid_width * self.spatial_res))
+        return ((self.easting, self.northing - self.grid_height * self.spatial_res),
+                (self.easting + self.grid_width * self.spatial_res, self.northing))
 
     @staticmethod
     def load(path):
@@ -275,11 +275,11 @@ class CubeConfig:
         :param path: The file's path name.
         :return: A new CubeConfig instance
         """
-        config = CubeConfig()
+        kwargs = dict()
         with open(path) as fp:
             code = fp.read()
-            exec(code, {'datetime': __import__('datetime')}, config.__dict__)
-        return config
+            exec(code, {'datetime': __import__('datetime')}, kwargs)
+        return CubeConfig(**kwargs)
 
     def store(self, path):
         """
@@ -292,13 +292,27 @@ class CubeConfig:
                     value = self.__dict__[name]
                     fp.write('%s = %s\n' % (name, repr(value)))
 
+    def _validate(self):
+        if self.grid_x0 < 0:
+            raise ValueError('illegal grid_x0 value')
+
+        if self.grid_y0 < 0:
+            raise ValueError('illegal grid_y0 value')
+
+        lat1 = 90 - (self.grid_y0 + self.grid_height) * self.spatial_res
+        lat2 = 90 - self.grid_y0 * self.spatial_res
+        if lat1 >= lat2 or lat1 < -90 or lat1 > 90 or lat2 < -90 or lat2 > 90:
+            raise ValueError('illegal combination of grid_y0, grid_height, spatial_res values')
+
+        lon1 = -180 + self.grid_x0 * self.spatial_res
+        lon2 = -180 + (self.grid_x0 + self.grid_width) * self.spatial_res
+        if lon1 >= lon2 or lon1 < -180 or lon1 > 180 or lon2 < -180 or lon2 > 180:
+            raise ValueError('illegal combination of grid_x0, grid_width, spatial_res values')
+
 
 class Cube:
     """
-    Represents an existing data cube.
-
-    >>> Cube.create('/home/hans/mycube', CubeConfig())
-    Cube(CubeConfig(1440, 720, -180.0, -90.0, 0.25), '/home/hans/mycube')
+    Represents a data cube.
     """
 
     def __init__(self, base_dir, config):
@@ -628,7 +642,7 @@ class CubeData:
             grid_x22 = grid_x2
             # todo - handle this case
             print('dateline intersection! grid_x: %d-%d, %d-%d' % (grid_x11, grid_x12, grid_x21, grid_x22))
-            #raise ValueError('illegal longitude: %s: dateline intersection not yet implemented' % longitude)
+            # raise ValueError('illegal longitude: %s: dateline intersection not yet implemented' % longitude)
 
         # todo - replace dummy code by reading from netcdf variable
         # todo - fill in NaN, where a variable does not provide any data

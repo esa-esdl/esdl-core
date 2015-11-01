@@ -10,6 +10,29 @@ from cablab import CubeSourceProvider, CubeConfig, Cube
 CUBE_DIR = 'testcube'
 
 
+class CubeConfigTest(TestCase):
+    def test_validate(self):
+        with self.assertRaises(ValueError):
+            CubeConfig(grid_x0=1)
+        with self.assertRaises(ValueError):
+            CubeConfig(grid_y0=1)
+        with self.assertRaises(ValueError):
+            CubeConfig(grid_x0=-1)
+        with self.assertRaises(ValueError):
+            CubeConfig(grid_y0=-1)
+
+    def test_properties(self):
+        config = CubeConfig()
+        self.assertEqual(-180, config.easting)
+        self.assertEqual(90, config.northing)
+        self.assertEqual(((-180, -90), (180, 90)), config.geo_bounds)
+
+        config = CubeConfig(grid_x0=430, grid_y0=28, grid_width=100, grid_height=100, spatial_res=0.5)
+        self.assertEqual(35.0, config.easting)
+        self.assertEqual(76.0, config.northing)
+        self.assertEqual(((35.0, 26.0), (85.0, 76.0)), config.geo_bounds)
+
+
 class CubeTest(TestCase):
     def setUp(self):
         while os.path.exists(CUBE_DIR):
@@ -21,8 +44,6 @@ class CubeTest(TestCase):
         pass
 
     def test_update(self):
-        import os
-
         cube = Cube.create(CUBE_DIR, CubeConfig())
         self.assertTrue(os.path.exists(CUBE_DIR))
 
@@ -74,31 +95,31 @@ class CubeTest(TestCase):
         self.assertIs(data.get_variable('FAPAR'), data['FAPAR'])
 
         result = data.get('FAPAR',
-                               [datetime(2013, 1, 1), datetime(2013, 2, 1)],
-                               [-90, 90],
-                               [-180, +180])
+                          [datetime(2013, 1, 1), datetime(2013, 2, 1)],
+                          [-90, 90],
+                          [-180, +180])
         self.assertEqual(1, len(result))
         self.assertEqual((5, 720, 1440), result[0].shape)
 
         result = data.get(['FAPAR', 'LAI'],
-                               [datetime(2013, 1, 1), datetime(2013, 2, 1)],
-                               [50.0, 60.0],
-                               [10.0, 30.0])
+                          [datetime(2013, 1, 1), datetime(2013, 2, 1)],
+                          [50.0, 60.0],
+                          [10.0, 30.0])
         self.assertEqual(2, len(result))
         self.assertEqual((5, 40, 80), result[0].shape)
         self.assertEqual((5, 40, 80), result[1].shape)
 
         result = data.get(1,
-                               datetime(2013, 1, 15),
-                               0,
-                               0)
+                          datetime(2013, 1, 15),
+                          0,
+                          0)
         self.assertEqual(1, len(result))
         self.assertEqual((1, 1, 1), result[0].shape)
 
         result = data.get((0, 1),
-                               datetime(2013, 1, 1),
-                               53.4,
-                               13.1)
+                          datetime(2013, 1, 1),
+                          53.4,
+                          13.1)
         self.assertEqual(2, len(result))
         self.assertEqual((1, 1, 1), result[0].shape)
         self.assertEqual((1, 1, 1), result[1].shape)
