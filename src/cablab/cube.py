@@ -6,7 +6,6 @@ from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 import time
 
-import numpy
 import netCDF4
 
 import cablab
@@ -200,11 +199,11 @@ class CubeConfig:
                  grid_width=1440,
                  grid_height=720,
                  temporal_res=8,
-                 ref_time=datetime(2000, 1, 1),
-                 start_time=datetime(2000, 1, 1),
-                 end_time=datetime(2015, 1, 1),
+                 ref_time=datetime(2001, 1, 1),
+                 start_time=datetime(2001, 1, 1),
+                 end_time=datetime(2011, 1, 1),
                  variables=None,
-                 format='NETCDF4_CLASSIC',
+                 file_format='NETCDF4_CLASSIC',
                  compression=False):
         """
         Create a configuration to be be used for creating new data cubes.
@@ -220,8 +219,8 @@ class CubeConfig:
         :param end_time: The end time of the last image of any variable in the cube. None means unlimited.
         :param temporal_res: The temporal resolution in days.
         :param variables: A list of variable names to be included in the cube.
-        :param format: The data format used. Must be one of 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_CLASSIC'
-                       or 'NETCDF3_64BIT'.
+        :param file_format: The file format used. Must be one of 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_CLASSIC'
+                            or 'NETCDF3_64BIT'.
         :param compression: Whether the data should be compressed.
         """
         self.spatial_res = spatial_res
@@ -234,29 +233,32 @@ class CubeConfig:
         self.start_time = start_time
         self.end_time = end_time
         self.variables = variables
-        self.format = format
+        self.file_format = file_format
         self.compression = compression
         self._validate()
 
     def __repr__(self):
-        return 'CubeConfig(spatial_res=%f, grid_x0=%d, grid_y0=%d, grid_width=%d, grid_height=%d, temporal_res=%d, ref_time=%s)' % (
-            self.spatial_res,
-            self.grid_x0, self.grid_y0,
-            self.grid_width, self.grid_height,
-            self.temporal_res,
-            repr(self.ref_time))
+        return 'CubeConfig(spatial_res=%f, grid_x0=%d, grid_y0=%d, grid_width=%d, grid_height=%d, ' \
+               'temporal_res=%d, ref_time=%s)' % (
+                   self.spatial_res,
+                   self.grid_x0, self.grid_y0,
+                   self.grid_width, self.grid_height,
+                   self.temporal_res,
+                   repr(self.ref_time))
 
     @property
     def northing(self):
         """
-        The longitude position of the upper-left-most corner of the upper-left-most grid cell given by (grid_x0, grid_y0).
+        The longitude position of the upper-left-most corner of the upper-left-most grid cell
+        given by (grid_x0, grid_y0).
         """
         return 90.0 - self.grid_y0 * self.spatial_res
 
     @property
     def easting(self):
         """
-        The latitude position of the upper-left-most corner of the upper-left-most grid cell given by (grid_x0, grid_y0).
+        The latitude position of the upper-left-most corner of the upper-left-most grid cell
+        given by (grid_x0, grid_y0).
         """
         return -180.0 + self.grid_x0 * self.spatial_res
 
@@ -391,7 +393,7 @@ class Cube:
         Closes the data cube.
         """
         if self._data:
-            self._data._close_datasets()
+            self._data.close()
             self._data = None
         self._closed = True
 
@@ -533,7 +535,7 @@ class Cube:
                 try:
                     var_variable.__setattr__(name, value)
                 except ValueError as ve:
-                    print('%s = %s failed!' % (name, value))
+                    print('%s = %s failed (%s)!' % (name, value, str(ve)))
         return dataset
 
     @staticmethod
@@ -587,14 +589,12 @@ class CubeData:
     def get_variable(self, var_index):
         """
         Get a cube variable. Same as, e.g. cube.data['Ozone'].
-        :param index: The variable name or index according to the list returned by the variables property.
+        :param var_index: The variable name or index according to the list returned by the variables property.
         :return: a data-access object representing the variable with the dimensions (time, latitude, longitude).
         """
         if isinstance(var_index, str):
             var_index = self._var_name_to_var_index[var_index]
-        if self._variables[var_index]:
-            return self._variables[var_index]
-        return self._open_dataset(var_index)
+        return self._get_or_open_variable(var_index)
 
     def __getitem__(self, index):
         """
@@ -642,20 +642,31 @@ class CubeData:
             grid_x22 = grid_x2
             # todo - handle this case
             print('dateline intersection! grid_x: %d-%d, %d-%d' % (grid_x11, grid_x12, grid_x21, grid_x22))
-            # raise ValueError('illegal longitude: %s: dateline intersection not yet implemented' % longitude)
+            raise ValueError('illegal longitude: %s: dateline intersection not yet implemented' % longitude)
 
-        # todo - replace dummy code by reading from netcdf variable
         # todo - fill in NaN, where a variable does not provide any data
         result = []
-        shape = time_index_2 - time_index_1 + 1, \
-                grid_y2 - grid_y1 + 1, \
-                grid_x2 - grid_x1 + 1
-        for _ in var_indexes:
-            result += [numpy.full(shape, numpy.NaN, dtype=numpy.float32)]
-
+        # shape = time_index_2 - time_index_1 + 1, \
+        #         grid_y2 - grid_y1 + 1, \
+        #         grid_x2 - grid_x1 + 1
+        for var_index in var_indexes:
+            variable = self._get_or_open_variable(var_index)
+            # result += [numpy.full(shape, numpy.NaN, dtype=numpy.float32)]
+            print('variable.shape =', variable.shape)
+            array = variable[slice(time_index_1, time_index_2 + 1) if (time_index_1 < time_index_2) else time_index_1,
+                             slice(grid_y1, grid_y2 + 1) if (grid_y1 < grid_y2) else grid_y1,
+                             slice(grid_x1, grid_x2 + 1) if (grid_x1 < grid_x2) else grid_x1]
+            result += [array]
         return result
 
-    def _get_lon_range(self, longitude):
+    def close(self):
+        """
+        Closes this CubeData by closing all open datasets.
+        """
+        self._close_datasets()
+
+    @staticmethod
+    def _get_lon_range(longitude):
         try:
             # Try using longitude as longitude pair
             lon_1, lon_2 = longitude
@@ -677,7 +688,8 @@ class CubeData:
             lon_2 += 360
         return lon_1, lon_2
 
-    def _get_lat_range(self, latitude):
+    @staticmethod
+    def _get_lat_range(latitude):
         try:
             # Try using latitude as latitude pair
             lat_1, lat_2 = latitude
@@ -689,7 +701,8 @@ class CubeData:
             raise ValueError('invalid latitude argument: %s' % latitude)
         return lat_1, lat_2
 
-    def _get_time_range(self, time):
+    @staticmethod
+    def _get_time_range(time):
         try:
             # Try using time as time pair
             time_1, time_2 = time
@@ -728,6 +741,11 @@ class CubeData:
                         except (KeyError, TypeError):
                             raise ValueError('illegal variable argument: %s' % variable)
                 return var_indexes
+
+    def _get_or_open_variable(self, var_index):
+        if self._variables[var_index]:
+            return self._variables[var_index]
+        return self._open_dataset(var_index)
 
     def _open_dataset(self, var_index):
         files = self._dataset_files[var_index]

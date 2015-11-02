@@ -47,18 +47,18 @@ class CubeTest(TestCase):
         cube = Cube.create(CUBE_DIR, CubeConfig())
         self.assertTrue(os.path.exists(CUBE_DIR))
 
-        provider = CubeSourceProviderMock(cube.config, start_time=datetime(2000, 1, 1), end_time=datetime(2000, 2, 1))
+        provider = CubeSourceProviderMock(cube.config, start_time=datetime(2001, 1, 1), end_time=datetime(2001, 2, 1))
         cube.update(provider)
 
-        self.assertEqual([(datetime(2000, 1, 1, 0, 0), datetime(2000, 1, 9, 0, 0)),
-                          (datetime(2000, 1, 9, 0, 0), datetime(2000, 1, 17, 0, 0)),
-                          (datetime(2000, 1, 17, 0, 0), datetime(2000, 1, 25, 0, 0)),
-                          (datetime(2000, 1, 25, 0, 0), datetime(2000, 2, 1, 0, 0))],
+        self.assertEqual([(datetime(2001, 1, 1, 0, 0), datetime(2001, 1, 9, 0, 0)),
+                          (datetime(2001, 1, 9, 0, 0), datetime(2001, 1, 17, 0, 0)),
+                          (datetime(2001, 1, 17, 0, 0), datetime(2001, 1, 25, 0, 0)),
+                          (datetime(2001, 1, 25, 0, 0), datetime(2001, 2, 1, 0, 0))],
                          provider.trace)
 
         self.assertTrue(os.path.exists(CUBE_DIR + "/cube.config"))
-        self.assertTrue(os.path.exists(CUBE_DIR + "/data/LAI/2000_LAI.nc"))
-        self.assertTrue(os.path.exists(CUBE_DIR + "/data/FAPAR/2000_FAPAR.nc"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/data/LAI/2001_LAI.nc"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/data/FAPAR/2001_FAPAR.nc"))
 
         cube.close()
 
@@ -71,19 +71,19 @@ class CubeTest(TestCase):
         self.assertEqual(cube.config.format, cube2.config.format)
         self.assertEqual(cube.config.compression, cube2.config.compression)
 
-        provider = CubeSourceProviderMock(cube2.config, start_time=datetime(2013, 1, 1), end_time=datetime(2013, 2, 1))
+        provider = CubeSourceProviderMock(cube2.config, start_time=datetime(2006, 12, 15), end_time=datetime(2007, 1, 15))
         cube2.update(provider)
-        self.assertEqual([(datetime(2012, 12, 27, 0, 0), datetime(2013, 1, 4, 0, 0)),
-                          (datetime(2013, 1, 4, 0, 0), datetime(2013, 1, 12, 0, 0)),
-                          (datetime(2013, 1, 12, 0, 0), datetime(2013, 1, 20, 0, 0)),
-                          (datetime(2013, 1, 20, 0, 0), datetime(2013, 1, 28, 0, 0)),
-                          (datetime(2013, 1, 28, 0, 0), datetime(2013, 2, 1, 0, 0))],
+        self.assertEqual([(datetime(2006, 12, 9, 0, 0), datetime(2006, 12, 17, 0, 0)),
+                          (datetime(2006, 12, 17, 0, 0), datetime(2006, 12, 25, 0, 0)),
+                          (datetime(2006, 12, 25, 0, 0), datetime(2007, 1, 2, 0, 0)),
+                          (datetime(2007, 1, 2, 0, 0), datetime(2007, 1, 10, 0, 0)),
+                          (datetime(2007, 1, 10, 0, 0), datetime(2007, 1, 15, 0, 0))],
                          provider.trace)
 
-        self.assertTrue(os.path.exists(CUBE_DIR + "/data/LAI/2012_LAI.nc"))
-        self.assertTrue(os.path.exists(CUBE_DIR + "/data/LAI/2013_LAI.nc"))
-        self.assertTrue(os.path.exists(CUBE_DIR + "/data/FAPAR/2012_FAPAR.nc"))
-        self.assertTrue(os.path.exists(CUBE_DIR + "/data/FAPAR/2013_FAPAR.nc"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/data/LAI/2006_LAI.nc"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/data/LAI/2007_LAI.nc"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/data/FAPAR/2006_FAPAR.nc"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/data/FAPAR/2007_FAPAR.nc"))
 
         data = cube2.data
         self.assertIsNotNone(data)
@@ -110,34 +110,45 @@ class CubeTest(TestCase):
         self.assertEqual(numpy.array([0.62], dtype=numpy.float32), scalar)
 
         result = data.get('FAPAR',
-                          [datetime(2013, 1, 1), datetime(2013, 2, 1)],
+                          [datetime(2001, 1, 1), datetime(2001, 2, 1)],
                           [-90, 90],
                           [-180, +180])
         self.assertEqual(1, len(result))
-        self.assertEqual((5, 720, 1440), result[0].shape)
+        self.assertEqual((4, 720, 1440), result[0].shape)
 
         result = data.get(['FAPAR', 'LAI'],
-                          [datetime(2013, 1, 1), datetime(2013, 2, 1)],
+                          [datetime(2001, 1, 1), datetime(2001, 2, 1)],
                           [50.0, 60.0],
                           [10.0, 30.0])
         self.assertEqual(2, len(result))
-        self.assertEqual((5, 40, 80), result[0].shape)
-        self.assertEqual((5, 40, 80), result[1].shape)
+        self.assertEqual((4, 40, 80), result[0].shape)
+        self.assertEqual((4, 40, 80), result[1].shape)
 
         result = data.get(1,
-                          datetime(2013, 1, 15),
+                          datetime(2001, 1, 20),
                           0,
                           0)
         self.assertEqual(1, len(result))
-        self.assertEqual((1, 1, 1), result[0].shape)
+        self.assertEqual((), result[0].shape)
+        self.assertEqual(numpy.array([0.13], dtype=numpy.float32), result[0])
+
+        result = data.get(0,
+                          datetime(2001, 1, 20),
+                          -12.6,
+                          5.9)
+        self.assertEqual(1, len(result))
+        self.assertEqual((), result[0].shape)
+        self.assertEqual(numpy.array([0.61500001], dtype=numpy.float32), result[0])
 
         result = data.get((1, 0),
-                          datetime(2013, 1, 1),
+                          datetime(2001, 1, 20),
                           53.4,
                           13.1)
         self.assertEqual(2, len(result))
-        self.assertEqual((1, 1, 1), result[0].shape)
-        self.assertEqual((1, 1, 1), result[1].shape)
+        self.assertEqual((), result[0].shape)
+        self.assertEqual((), result[1].shape)
+        self.assertEqual(numpy.array([0.13], dtype=numpy.float32), result[0])
+        self.assertEqual(numpy.array([0.61500001], dtype=numpy.float32), result[1])
 
         cube2.close()
 
