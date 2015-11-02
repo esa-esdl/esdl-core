@@ -62,7 +62,7 @@ class CubeTest(TestCase):
 
         cube.close()
 
-        with self.assertRaises(IOError) as ioe:
+        with self.assertRaises(IOError):
             cube.update(provider)
 
         cube2 = Cube.open(CUBE_DIR)
@@ -89,10 +89,25 @@ class CubeTest(TestCase):
         self.assertIsNotNone(data)
         self.assertEqual((2, 0, 720, 1440), data.shape)
         self.assertEquals({'FAPAR': 0, 'LAI': 1}, data.variable_names)
+
         self.assertIsNotNone(data.get_variable('LAI'))
-        self.assertIsNotNone(data.get_variable('FAPAR'))
         self.assertIs(data.get_variable('LAI'), data['LAI'])
+        self.assertIs(data.get_variable('LAI'), data[1])
+        self.assertIs(data.get_variable(1), data[1])
+        array = data['LAI'][:, :, :]
+        self.assertEqual((9, 720, 1440), array.shape)
+        scalar = data['LAI'][3, 320, 720]
+        self.assertEqual(numpy.float32, type(scalar))
+        self.assertEqual(numpy.array([0.14], dtype=numpy.float32), scalar)
+
+        self.assertIsNotNone(data.get_variable('FAPAR'))
         self.assertIs(data.get_variable('FAPAR'), data['FAPAR'])
+        self.assertIs(data.get_variable('FAPAR'), data[0])
+        self.assertIs(data.get_variable(0), data[0])
+        array = data['FAPAR'][:, :, :]
+        self.assertEqual((9, 720, 1440), array.shape)
+        scalar = data['FAPAR'][3, 320, 720]
+        self.assertEqual(numpy.array([0.62], dtype=numpy.float32), scalar)
 
         result = data.get('FAPAR',
                           [datetime(2013, 1, 1), datetime(2013, 2, 1)],
@@ -116,25 +131,13 @@ class CubeTest(TestCase):
         self.assertEqual(1, len(result))
         self.assertEqual((1, 1, 1), result[0].shape)
 
-        result = data.get((0, 1),
+        result = data.get((1, 0),
                           datetime(2013, 1, 1),
                           53.4,
                           13.1)
         self.assertEqual(2, len(result))
         self.assertEqual((1, 1, 1), result[0].shape)
         self.assertEqual((1, 1, 1), result[1].shape)
-
-        array = data['LAI'][:, :, :]
-        self.assertEqual((9, 720, 1440), array.shape)
-        array = data['FAPAR'][:, :, :]
-        self.assertEqual((9, 720, 1440), array.shape)
-
-        scalar = data['LAI'][3, 320, 720]
-
-        self.assertEqual(numpy.float32, type(scalar))
-        self.assertEqual(numpy.array([0.14], dtype=numpy.float32), scalar)
-        scalar = data['FAPAR'][3, 320, 720]
-        self.assertEqual(numpy.array([0.62], dtype=numpy.float32), scalar)
 
         cube2.close()
 
