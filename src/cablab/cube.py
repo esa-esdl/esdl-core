@@ -1,9 +1,8 @@
-from datetime import datetime
-from datetime import timedelta
-import math
-import os
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
+from datetime import datetime, timedelta
+import math
+import os
 import time
 
 import netCDF4
@@ -134,9 +133,9 @@ class BaseCubeSourceProvider(CubeSourceProvider):
         index_to_weight = dict()
         for i in range(len(source_time_ranges)):
             source_start_time, source_end_time = source_time_ranges[i][0:2]
-            weight = self._temporal_weight(source_start_time, source_end_time,
-                                           period_start, period_end)
-            if weight > 0:
+            weight = cablab.util.temporal_weight(source_start_time, source_end_time,
+                                                 period_start, period_end)
+            if weight > 0.0:
                 index_to_weight[i] = weight
         if not index_to_weight:
             return None
@@ -166,26 +165,6 @@ class BaseCubeSourceProvider(CubeSourceProvider):
         """
         print('%s: %s' % (self.name, message))
 
-    @staticmethod
-    def _temporal_weight(a1, a2, b1, b2):
-        """
-        Compute a weight (0.0 to 1.0) from the overlap of time range a1...a2 with time range b1...b2.
-        If there is no overlap at all, return -1.
-        """
-        a1_in_b_range = b1 <= a1 <= b2
-        a2_in_b_range = b1 <= a2 <= b2
-        if a1_in_b_range and a2_in_b_range:
-            return 1.0
-        if a1_in_b_range:
-            return (b2 - a1) / (b2 - b1)
-        if a2_in_b_range:
-            return (a2 - b1) / (b2 - b1)
-        b1_in_a_range = a1 <= b1 <= a2
-        b2_in_a_range = a1 <= b2 <= a2
-        if b1_in_a_range and b2_in_a_range:
-            return 1.0
-        return -1.0
-
 
 class CubeConfig:
     """
@@ -199,6 +178,7 @@ class CubeConfig:
                  grid_width=1440,
                  grid_height=720,
                  temporal_res=8,
+                 calendar='gregorian',
                  ref_time=datetime(2001, 1, 1),
                  start_time=datetime(2001, 1, 1),
                  end_time=datetime(2011, 1, 1),
@@ -208,16 +188,18 @@ class CubeConfig:
         """
         Create a configuration to be be used for creating new data cubes.
 
+        :param spatial_res: The spatial image resolution in degree.
         :param grid_x0: The fixed grid X offset (longitude direction).
         :param grid_y0: The fixed grid Y offset (latitude direction).
         :param grid_width: The fixed grid width in pixels (longitude direction).
         :param grid_height: The fixed grid height in pixels (latitude direction).
-        :param spatial_res: The spatial image resolution in degree.
-        :param ref_time: Defines the absolute positioning of the cube's time periods which are given by
-                         ref_time + i * temporal_res <= period <= ref_time + (i + 1) * temporal_res.
-        :param start_time: The start time of the first image of any variable in the cube. None means unlimited.
-        :param end_time: The end time of the last image of any variable in the cube. None means unlimited.
         :param temporal_res: The temporal resolution in days.
+        :param ref_time: A datetime value which defines the units in which time values are given, namely
+        "days since <ref_time>".
+        :param start_time: The start time of the first image of any variable in the cube given as datetime value.
+        None means unlimited.
+        :param end_time: The end time of the last image of any variable in the cube given as datetime value.
+        None means unlimited.
         :param variables: A list of variable names to be included in the cube.
         :param file_format: The file format used. Must be one of 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_CLASSIC'
                             or 'NETCDF3_64BIT'.
@@ -229,6 +211,7 @@ class CubeConfig:
         self.grid_width = grid_width
         self.grid_height = grid_height
         self.temporal_res = temporal_res
+        self.calendar = calendar
         self.ref_time = ref_time
         self.start_time = start_time
         self.end_time = end_time
@@ -269,6 +252,15 @@ class CubeConfig:
         """
         return ((self.easting, self.northing - self.grid_height * self.spatial_res),
                 (self.easting + self.grid_width * self.spatial_res, self.northing))
+
+    @property
+    def time_units(self):
+        """
+        Returns the time units used by the data cube.
+        """
+        ref_time = self.ref_time
+        return 'days since %4d-%02d-%02d %02d:%02d' % \
+               (ref_time.year, ref_time.month, ref_time.day, ref_time.hour, ref_time.minute)
 
     @staticmethod
     def load(path):
@@ -402,40 +394,38 @@ class Cube:
         Updates the data cube with source data from the given image provider.
         :param provider: An instance of the abstract ImageProvider class
         """
-
         if self._closed:
             raise IOError('cube has been closed')
 
         provider.prepare()
-
-        datasets = dict()
-
-        cube_ref_time = cablab.date2num(self._config.ref_time)
-        cube_temporal_res = self._config.temporal_res
 
         target_start_time, target_end_time = provider.get_temporal_coverage()
         if self._config.start_time and self._config.start_time > target_start_time:
             target_start_time = self._config.start_time
         if self._config.end_time and self._config.end_time < target_end_time:
             target_end_time = self._config.end_time
-        target_time_1 = cablab.date2num(target_start_time)
-        target_time_2 = cablab.date2num(target_end_time)
+        target_year_1 = target_start_time.year
+        target_year_2 = target_end_time.year
 
-        # compute adjusted target_time_1
-        n = self._get_num_steps(cube_ref_time, target_time_1, cube_temporal_res)
-        target_time_1 = cube_ref_time + n * cube_temporal_res
-
-        steps = self._get_num_steps(target_time_1, target_time_2, cube_temporal_res)
-        for i in range(steps + 1):
-            period_1 = target_time_1 + i * cube_temporal_res
-            period_2 = target_time_1 + (i + 1) * cube_temporal_res
-            if period_1 < target_time_2:
-                if period_2 > target_time_2:
-                    period_2 = target_time_2
-                target_period = (cablab.num2date(period_1), cablab.num2date(period_2))
-                var_name_to_image = provider.compute_variable_images(*target_period)
-                if var_name_to_image:
-                    self._write_images(provider, datasets, target_period, var_name_to_image)
+        cube_temporal_res = self._config.temporal_res
+        num_periods_per_year = int(365.0 / cube_temporal_res)
+        datasets = dict()
+        for target_year in range(target_year_1, target_year_2 + 1):
+            time_min = datetime(target_year, 1, 1)
+            time_max = datetime(target_year + 1, 1, 1)
+            d_time = timedelta(days=cube_temporal_res)
+            time_1 = time_min
+            for period in range(num_periods_per_year):
+                time_2 = time_1 + d_time
+                if time_2 + d_time > time_max:
+                    time_2 = time_max
+                weight = cablab.util.temporal_weight(time_1, time_2, target_start_time, target_end_time)
+                # print('Period: %s to %s: %f' % (time_1, time_2, weight))
+                if weight > 0.0:
+                    var_name_to_image = provider.compute_variable_images(time_1, time_2)
+                    if var_name_to_image:
+                        self._write_images(provider, datasets, (time_1, time_2), var_name_to_image)
+                time_1 = time_2
 
         for key in datasets:
             datasets[key].close()
@@ -462,24 +452,20 @@ class Cube:
             if os.path.exists(file):
                 dataset = netCDF4.Dataset(file, 'a')
             else:
-                dataset = netCDF4.Dataset(file, 'w', format=self._config.format)
+                dataset = netCDF4.Dataset(file, 'w', format=self._config.file_format)
                 self._init_variable_dataset(provider, dataset, var_name)
             datasets[filename] = dataset
         var_start_time = dataset.variables['start_time']
         var_end_time = dataset.variables['end_time']
         var_variable = dataset.variables[var_name]
 
-        # at the moment it will not add a new value if a time variable with the exact start and end date exists
-        # todo: as discussed, the better solution will be to clear any variable values prior to writing any
-        # (always overwrite)
-        for i in range(len(var_start_time)):
-            if var_start_time[i] == cablab.date2num(target_start_time) and var_end_time[i] == cablab.date2num(
-                    target_end_time):
-                return
-
         i = len(var_start_time)
-        var_start_time[i] = cablab.date2num(target_start_time)
-        var_end_time[i] = cablab.date2num(target_end_time)
+        var_start_time[i] = netCDF4.date2num(target_start_time,
+                                             units=self._config.time_units,
+                                             calendar=self._config.calendar)
+        var_end_time[i] = netCDF4.date2num(target_end_time,
+                                           units=self._config.time_units,
+                                           calendar=self._config.calendar)
         var_variable[i, :, :] = image
 
     def _init_variable_dataset(self, provider, dataset, variable_name):
@@ -491,12 +477,12 @@ class Cube:
         dataset.createDimension('lon', image_width)
 
         var_start_time = dataset.createVariable('start_time', 'f8', ('time',))
-        var_start_time.units = cablab.TIME_UNITS
-        var_start_time.calendar = cablab.TIME_CALENDAR
+        var_start_time.units = self._config.time_units
+        var_start_time.calendar = self._config.calendar
 
         var_end_time = dataset.createVariable('end_time', 'f8', ('time',))
-        var_end_time.units = cablab.TIME_UNITS
-        var_end_time.calendar = cablab.TIME_CALENDAR
+        var_end_time.units = self._config.time_units
+        var_end_time.calendar = self._config.calendar
 
         var_longitude = dataset.createVariable('longitude', 'f4', ('lon',))
         var_longitude.units = 'degrees east'
@@ -652,7 +638,7 @@ class CubeData:
         for var_index in var_indexes:
             variable = self._get_or_open_variable(var_index)
             # result += [numpy.full(shape, numpy.NaN, dtype=numpy.float32)]
-            print('variable.shape =', variable.shape)
+            # print('variable.shape =', variable.shape)
             array = variable[slice(time_index_1, time_index_2 + 1) if (time_index_1 < time_index_2) else time_index_1,
                              slice(grid_y1, grid_y2 + 1) if (grid_y1 < grid_y2) else grid_y1,
                              slice(grid_x1, grid_x2 + 1) if (grid_x1 < grid_x2) else grid_x1]

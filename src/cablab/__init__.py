@@ -11,11 +11,6 @@ from cablab.cube import BaseCubeSourceProvider
 from cablab.cube import Cube
 from cablab.cube import CubeConfig
 from cablab.cube import CubeData
-from cablab.util import TIME_CALENDAR
-from cablab.util import TIME_UNITS
-from cablab.util import date2num
-from cablab.util import num2date
-
 
 def _load_source_providers():
     source_provider_classes = dict()
@@ -37,9 +32,5 @@ __all__ = [
     'CubeData',
     'CubeSourceProvider',
     'BaseCubeSourceProvider',
-    'date2num',
-    'num2date',
     'SOURCE_PROVIDERS',
-    'TIME_UNITS',
-    'TIME_CALENDAR',
 ]

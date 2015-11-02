@@ -53,7 +53,7 @@ class CubeTest(TestCase):
         self.assertEqual([(datetime(2001, 1, 1, 0, 0), datetime(2001, 1, 9, 0, 0)),
                           (datetime(2001, 1, 9, 0, 0), datetime(2001, 1, 17, 0, 0)),
                           (datetime(2001, 1, 17, 0, 0), datetime(2001, 1, 25, 0, 0)),
-                          (datetime(2001, 1, 25, 0, 0), datetime(2001, 2, 1, 0, 0))],
+                          (datetime(2001, 1, 25, 0, 0), datetime(2001, 2, 2, 0, 0))],
                          provider.trace)
 
         self.assertTrue(os.path.exists(CUBE_DIR + "/cube.config"))
@@ -68,16 +68,15 @@ class CubeTest(TestCase):
         cube2 = Cube.open(CUBE_DIR)
         self.assertEqual(cube.config.spatial_res, cube2.config.spatial_res)
         self.assertEqual(cube.config.temporal_res, cube2.config.temporal_res)
-        self.assertEqual(cube.config.format, cube2.config.format)
+        self.assertEqual(cube.config.file_format, cube2.config.file_format)
         self.assertEqual(cube.config.compression, cube2.config.compression)
 
         provider = CubeSourceProviderMock(cube2.config, start_time=datetime(2006, 12, 15), end_time=datetime(2007, 1, 15))
         cube2.update(provider)
-        self.assertEqual([(datetime(2006, 12, 9, 0, 0), datetime(2006, 12, 17, 0, 0)),
-                          (datetime(2006, 12, 17, 0, 0), datetime(2006, 12, 25, 0, 0)),
-                          (datetime(2006, 12, 25, 0, 0), datetime(2007, 1, 2, 0, 0)),
-                          (datetime(2007, 1, 2, 0, 0), datetime(2007, 1, 10, 0, 0)),
-                          (datetime(2007, 1, 10, 0, 0), datetime(2007, 1, 15, 0, 0))],
+        self.assertEqual([(datetime(2006, 12, 11, 0, 0), datetime(2006, 12, 19, 0, 0)),  #  8 days
+                          (datetime(2006, 12, 19, 0, 0), datetime(2007, 1, 1, 0, 0)),    # 13 days!
+                          (datetime(2007, 1, 1, 0, 0), datetime(2007, 1, 9, 0, 0)),      #  8 days
+                          (datetime(2007, 1, 9, 0, 0), datetime(2007, 1, 17, 0, 0))],    #  8 days
                          provider.trace)
 
         self.assertTrue(os.path.exists(CUBE_DIR + "/data/LAI/2006_LAI.nc"))
@@ -95,7 +94,7 @@ class CubeTest(TestCase):
         self.assertIs(data.get_variable('LAI'), data[1])
         self.assertIs(data.get_variable(1), data[1])
         array = data['LAI'][:, :, :]
-        self.assertEqual((9, 720, 1440), array.shape)
+        self.assertEqual((8, 720, 1440), array.shape)
         scalar = data['LAI'][3, 320, 720]
         self.assertEqual(numpy.float32, type(scalar))
         self.assertEqual(numpy.array([0.14], dtype=numpy.float32), scalar)
@@ -105,7 +104,7 @@ class CubeTest(TestCase):
         self.assertIs(data.get_variable('FAPAR'), data[0])
         self.assertIs(data.get_variable(0), data[0])
         array = data['FAPAR'][:, :, :]
-        self.assertEqual((9, 720, 1440), array.shape)
+        self.assertEqual((8, 720, 1440), array.shape)
         scalar = data['FAPAR'][3, 320, 720]
         self.assertEqual(numpy.array([0.62], dtype=numpy.float32), scalar)
 

@@ -9,40 +9,25 @@ import datetime
 
 import netCDF4
 
-TIME_UNITS = 'days since 0001-1-1 00:00'
-TIME_CALENDAR = 'gregorian'
 
-
-def date2num(dates):
+def temporal_weight(a1, a2, b1, b2):
     """
-    Return numeric time values given datetime objects.
-
-    >>> from datetime import datetime
-    >>> date2num([datetime(2015, 10, 22), datetime(2000, 1, 1)])
-    array([ 735894.,  730121.])
-
-    :param dates: datetime.datetime values
-    :return: numeric time values
+    Compute a weight (0.0 to 1.0) from the overlap of time range a1...a2 with time range b1...b2.
+    If there is no overlap at all, return 0.
     """
-    return netCDF4.date2num(dates,
-                            units=TIME_UNITS,
-                            calendar=TIME_CALENDAR)
-
-
-def num2date(times):
-    """
-    Return datetime objects given numeric time values.
-
-    >>> num2date([735894., 730121.])
-    array([datetime.datetime(2015, 10, 22, 0, 0),
-           datetime.datetime(2000, 1, 1, 0, 0)], dtype=object)
-
-    :param times: numeric time values
-    :return: datetime.datetime values
-    """
-    return netCDF4.num2date(times,
-                            units=TIME_UNITS,
-                            calendar=TIME_CALENDAR)
+    a1_in_b_range = b1 <= a1 <= b2
+    a2_in_b_range = b1 <= a2 <= b2
+    if a1_in_b_range and a2_in_b_range:
+        return 1.0
+    if a1_in_b_range:
+        return (b2 - a1) / (b2 - b1)
+    if a2_in_b_range:
+        return (a2 - b1) / (b2 - b1)
+    b1_in_a_range = a1 <= b1 <= a2
+    b2_in_a_range = a1 <= b2 <= a2
+    if b1_in_a_range and b2_in_a_range:
+        return 1.0
+    return 0.0
 
 
 def day2date(times):
