@@ -13,6 +13,7 @@ VAR_NAME = 'BurntArea'
 class BurntAreaProvider(BaseCubeSourceProvider):
     def __init__(self, cube_config, dir_path):
         super(BurntAreaProvider, self).__init__(cube_config)
+        # todo (nf 20151028) - remove check once we have addressed spatial aggregation/interpolation
         if cube_config.grid_width != 1440 or cube_config.grid_height != 720:
             raise ValueError('illegal cube configuration, '
                              'provider does not yet implement proper spatial aggregation/interpolation')
@@ -87,7 +88,7 @@ class BurntAreaProvider(BaseCubeSourceProvider):
             file = os.path.join(self.dir_path, file_name)
             dataset = self.dataset_cache.get_dataset(file)
             time_bnds = dataset.variables['time_bnds']
-            # todo - check datetime units, may be wrong in either the netCDF file (which is
+            # todo (nf 20151028) - check datetime units, may be wrong in either the netCDF file (which is
             # 'days since 1582-10-14 00:00') or the netCDF4 library
             dates1 = netCDF4.num2date(time_bnds[:, 0], 'days since 1582-10-24 00:00', calendar='gregorian')
             dates2 = netCDF4.num2date(time_bnds[:, 1], 'days since 1582-10-24 00:00', calendar='gregorian')

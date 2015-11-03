@@ -13,7 +13,7 @@ VAR_NAME = 'SoilMoisture'
 class SoilMoistureProvider(BaseCubeSourceProvider):
     def __init__(self, cube_config, dir_path):
         super(SoilMoistureProvider, self).__init__(cube_config)
-        # todo - remove check once we have addressed spatial aggregation/interpolation
+        # todo (hp 20151030) - remove check once we have addressed spatial aggregation/interpolation
         if cube_config.grid_width != 1440 or cube_config.grid_height != 720:
             raise ValueError('illegal cube configuration, '
                              'provider does not yet implement spatial aggregation/interpolation')
