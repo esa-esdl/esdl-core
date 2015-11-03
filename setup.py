@@ -32,5 +32,6 @@ setup(
             'albedo = cablab.providers.albedo:AlbedoProvider',
         ],
     },
-    requires=['numpy', 'netCDF4']
+    # *Minimum* requirements
+    install_requires=['numpy', 'netCDF4']
 )

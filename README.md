@@ -46,11 +46,9 @@ Install them using
 
 * netCDF4  >= 1.2
 * numpy >= 1.9
-
-## Sandbox code dependencies
-
+* scikit_image >= 0.11
 * scipy >= 0.16
 * matplotlib >= 1.4
-* scikit_image >= 0.11
+
 
 
