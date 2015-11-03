@@ -1,9 +1,9 @@
-from abc import ABCMeta, abstractmethod
-from collections import OrderedDict
-from datetime import datetime, timedelta
 import math
 import os
 import time
+from abc import ABCMeta, abstractmethod
+from collections import OrderedDict
+from datetime import datetime, timedelta
 
 import netCDF4
 
@@ -12,8 +12,10 @@ import cablab
 
 class CubeSourceProvider(metaclass=ABCMeta):
     """
-    An abstract interface for objects represent data source providers for the data cube.
+    An abstract interface for objects representing data source providers for the data cube.
     Cube source providers are passed to the Cube.update() method.
+
+    :param cube_config: Specifies the fixed layout and conventions used for the cube.
     """
 
     def __init__(self, cube_config):
@@ -34,8 +36,8 @@ class CubeSourceProvider(metaclass=ABCMeta):
     @abstractmethod
     def prepare(self):
         """
-        Called by a Cube instance's update() method before any other provider methods are called.
-        Provider instances should prepare themselves w.r.t. the given cube configuration cube_config.
+        Called by a Cube instance's **update()** method before any other provider methods are called.
+        Provider instances should prepare themselves w.r.t. the given cube configuration *cube_config*.
         """
         pass
 
@@ -43,6 +45,7 @@ class CubeSourceProvider(metaclass=ABCMeta):
     def get_temporal_coverage(self) -> tuple:
         """
         Return the start and end time of the available source data.
+
         :return: A tuple of datetime.datetime instances (start_time, end_time).
         """
         return None
@@ -50,8 +53,9 @@ class CubeSourceProvider(metaclass=ABCMeta):
     @abstractmethod
     def get_spatial_coverage(self) -> tuple:
         """
-        Return the spatial coverage as a rectangle represented by a tuple (x, y, width, height) in the cube's image
-        coordinates.
+        Return the spatial coverage as a rectangle represented by a tuple of integers (x, y, width, height) in the
+        cube's image coordinates.
+
         :return: A tuple of integers (x, y, width, height) in the cube's image coordinates.
         """
         return None
@@ -61,7 +65,8 @@ class CubeSourceProvider(metaclass=ABCMeta):
         """
         Return a variable name to variable descriptor mapping of all provided variables.
         Each descriptor is a dictionary of variable attribute names to their values.
-        The attributes 'datatype' (a numpy data type) and 'fill_value' are mandatory.
+        The attributes ``data_type`` (a numpy data type) and ``fill_value`` are mandatory.
+
         :return: dictionary of variable names to attribute dictionaries
         """
         return None
@@ -70,31 +75,37 @@ class CubeSourceProvider(metaclass=ABCMeta):
     def compute_variable_images(self, period_start, period_end) -> dict:
         """
         Return variable name to variable image mapping of all provided variables.
-        Each image is a numpy array with the shape (height, width) derived from the self.get_spatial_coverage() method.
-        The images must be computed (by aggregation or interpolation) from the source data in the given time period
-        period_start <= source_data_time < period_end and taking into account other data cube configuration settings.
-        The method is called by a Cube instance's update() method for all possible time periods in the time range
-        given by the self.get_temporal_coverage() method. The times given are adjusted w.r.t. the cube's reference
-        time and temporal resolution.
+        Each image is a numpy array with the shape (height, width) derived from the **get_spatial_coverage()** method.
 
-        :param: period_start The period start time as a datetime.datetime instance
-        :param: period_end The period end time as a datetime.datetime instance
-        :return: A dictionary variable name --> image (numpy array of size (width, height)) or None if no such
-        variables exists for the given target time range.
+        The images must be computed (by aggregation or interpolation or copy) from the source data in the given
+        time period *period_start* <= source_data_time < *period_end* and taking into account other data cube
+        configuration settings.
+
+        The method is called by a Cube instance's **update()** method for all possible time periods in the time
+        range given by the **get_temporal_coverage()** method. The times given are adjusted w.r.t. the cube's
+        reference time and temporal resolution.
+
+        :param period_start: The period start time as a datetime.datetime instance
+        :param period_end: The period end time as a datetime.datetime instance
+
+        :return: A dictionary variable name --> image. Each image must be numpy array-like object of shape
+                 (grid_height, grid_width) as given by the **CubeConfig**.
+                 Return ``None`` if no such variables exists for the given target time range.
         """
         return None
 
     @abstractmethod
     def close(self):
         """
-        Called by the cube's update() method after all images have been retrieved and the provider is no longer used.
+        Called by the cube's **update()** method after all images have been retrieved and the provider is no
+        longer used.
         """
         pass
 
 
 class BaseCubeSourceProvider(CubeSourceProvider):
     """
-    A partial implementation of the CubeSourceProvider interface that computes its output image data
+    A partial implementation of the **CubeSourceProvider** interface that computes its output image data
     using weighted averages. The weights are computed according to the overlap of source time ranges and a
     requested target time range.
     """
@@ -107,13 +118,13 @@ class BaseCubeSourceProvider(CubeSourceProvider):
         """
         Return a sorted list of all time ranges of every source file.
         Items in this list must be 2-element tuples of datetime instances.
-        The list should be pre-computed in the prepare() method.
+        The list should be pre-computed in the **prepare()** method.
         """
         return None
 
     def get_temporal_coverage(self) -> (datetime, datetime):
         """
-        Return the temporal coverage derived from the value returned by get_source_time_ranges().
+        Return the temporal coverage derived from the value returned by **get_source_time_ranges()**.
         """
         source_time_ranges = self.get_source_time_ranges()
         return source_time_ranges[0][0], source_time_ranges[-1][1]
@@ -122,7 +133,11 @@ class BaseCubeSourceProvider(CubeSourceProvider):
         """
         For each source time range that has an overlap with the given target time range compute a weight
         according to the overlapping range. Pass these weights as source index to weight mapping
-        to self.compute_variable_images_from_sources(index_to_weight) and return the result.
+        to **compute_variable_images_from_sources(index_to_weight)** and return the result.
+
+        :return: A dictionary variable name --> image. Each image must be numpy array-like object of shape
+                 (grid_height, grid_width) as given by the **CubeConfig**.
+                 Return ``None`` if no such variables exists for the given target time range.
         """
 
         t1 = time.time()
@@ -152,16 +167,25 @@ class BaseCubeSourceProvider(CubeSourceProvider):
     def compute_variable_images_from_sources(self, index_to_weight):
         """
         Compute the target images for all variables from the sources with the given time indices to weights mapping.
-        The time indices are guaranteed to point into the time ranges list returned by self.get_source_time_ranges().
-        The weights are float values computed from the overlap of source time ranges with a requested
-        target time range.
+
+        The time indices in *index_to_weight* are guaranteed to point into the time ranges list returned by
+        **get_source_time_ranges()**.
+
+        The weight values in *index_to_weight* are float values computed from the overlap of source time ranges with
+        a requested target time range.
+
+        :param index_to_weight: A dictionary mapping time indexes --> weight values.
+        :return: A dictionary variable name --> image. Each image must be numpy array-like object of shape
+                 (grid_height, grid_width) as specified by the cube's layout configuration **CubeConfig**.
+                 Return ``None`` if no such variables exists for the given target time range.
         """
         pass
 
     def log(self, message):
         """
-        Log a message.
-        :param message: The message
+        Log a *message*.
+
+        :param message: The message to be logged.
         """
         print('%s: %s' % (self.name, message))
 
@@ -169,6 +193,23 @@ class BaseCubeSourceProvider(CubeSourceProvider):
 class CubeConfig:
     """
     A data cube's static configuration information.
+
+    :param spatial_res: The spatial image resolution in degree.
+    :param grid_x0: The fixed grid X offset (longitude direction).
+    :param grid_y0: The fixed grid Y offset (latitude direction).
+    :param grid_width: The fixed grid width in pixels (longitude direction).
+    :param grid_height: The fixed grid height in pixels (latitude direction).
+    :param temporal_res: The temporal resolution in days.
+    :param ref_time: A datetime value which defines the units in which time values are given, namely
+                     'days since *ref_time*'.
+    :param start_time: The start time of the first image of any variable in the cube given as datetime value.
+                       ``None`` means unlimited.
+    :param end_time: The end time of the last image of any variable in the cube given as datetime value.
+                     ``None`` means unlimited.
+    :param variables: A list of variable names to be included in the cube.
+    :param file_format: The file format used. Must be one of 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_CLASSIC'
+                        or 'NETCDF3_64BIT'.
+    :param compression: Whether the data should be compressed.
     """
 
     def __init__(self,
@@ -185,26 +226,6 @@ class CubeConfig:
                  variables=None,
                  file_format='NETCDF4_CLASSIC',
                  compression=False):
-        """
-        Create a configuration to be be used for creating new data cubes.
-
-        :param spatial_res: The spatial image resolution in degree.
-        :param grid_x0: The fixed grid X offset (longitude direction).
-        :param grid_y0: The fixed grid Y offset (latitude direction).
-        :param grid_width: The fixed grid width in pixels (longitude direction).
-        :param grid_height: The fixed grid height in pixels (latitude direction).
-        :param temporal_res: The temporal resolution in days.
-        :param ref_time: A datetime value which defines the units in which time values are given, namely
-        "days since <ref_time>".
-        :param start_time: The start time of the first image of any variable in the cube given as datetime value.
-        None means unlimited.
-        :param end_time: The end time of the last image of any variable in the cube given as datetime value.
-        None means unlimited.
-        :param variables: A list of variable names to be included in the cube.
-        :param file_format: The file format used. Must be one of 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_CLASSIC'
-                            or 'NETCDF3_64BIT'.
-        :param compression: Whether the data should be compressed.
-        """
         self.spatial_res = spatial_res
         self.grid_x0 = grid_x0
         self.grid_y0 = grid_y0
@@ -266,6 +287,7 @@ class CubeConfig:
     def load(path):
         """
         Load a CubeConfig from a text file.
+
         :param path: The file's path name.
         :return: A new CubeConfig instance
         """
@@ -278,6 +300,7 @@ class CubeConfig:
     def store(self, path):
         """
         Store a CubeConfig in a text file.
+
         :param path: The file's path name.
         """
         with open(path, 'w') as fp:
@@ -307,6 +330,9 @@ class CubeConfig:
 class Cube:
     """
     Represents a data cube.
+
+    :param base_dir: The data cube's base directory path.
+    :param config: The data cube's configuration, usually a **CubeConfig** object.
     """
 
     def __init__(self, base_dir, config):
@@ -342,7 +368,7 @@ class Cube:
     @property
     def data(self):
         """
-        The cube's data. See CubeData class.
+        The cube's data. See **CubeData** class.
         """
         if not self._data:
             self._data = CubeData(self)
@@ -351,7 +377,7 @@ class Cube:
     @staticmethod
     def open(base_dir):
         """
-        Open an existing data cube. Use the Cube.update(provider) method to add data to the cube
+        Open an existing data cube. Use the **Cube.update**(provider) method to add data to the cube
         via a source data provider.
 
         :param base_dir: The data cube's base directory which must be empty or non-existent.
@@ -392,6 +418,7 @@ class Cube:
     def update(self, provider):
         """
         Updates the data cube with source data from the given image provider.
+
         :param provider: An instance of the abstract ImageProvider class
         """
         if self._closed:
@@ -532,6 +559,8 @@ class Cube:
 class CubeData:
     """
     Represents the cube's read-only data.
+
+    :param cube: A **DataCube** object.
     """
 
     def __init__(self, cube):
@@ -574,7 +603,8 @@ class CubeData:
 
     def get_variable(self, var_index):
         """
-        Get a cube variable. Same as, e.g. cube.data['Ozone'].
+        Get a cube variable. Same as, e.g. ``cube.data['Ozone']``.
+
         :param var_index: The variable name or index according to the list returned by the variables property.
         :return: a data-access object representing the variable with the dimensions (time, latitude, longitude).
         """
@@ -584,7 +614,8 @@ class CubeData:
 
     def __getitem__(self, index):
         """
-        Get a cube variable. Same as, e.g. cube.data.get_variable('Ozone).
+        Get a cube variable. Same as, e.g. ``cube.data.get_variable('Ozone')``.
+
         :param index: The variable name or index according to the list returned by the variables property.
         :return: a data-access object representing the variable with the dimensions (time, latitude, longitude).
         """
@@ -593,6 +624,7 @@ class CubeData:
     def get(self, variable, time, latitude, longitude):
         """
         Get the cube's data.
+
         :param variable: an variable index or name or an iterable returning multiple of these (var1, var2, ...)
         :param time: a single datetime.datetime object or a 2-element iterable (time_start, time_end)
         :param latitude: a single latitude value or a 2-element iterable (latitude_start, latitude_end)
@@ -647,7 +679,7 @@ class CubeData:
 
     def close(self):
         """
-        Closes this CubeData by closing all open datasets.
+        Closes this **CubeData** by closing all open datasets.
         """
         self._close_datasets()
 
