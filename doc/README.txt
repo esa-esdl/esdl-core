@@ -10,6 +10,11 @@ To build the CAB-LAB documentation run:
      > cd cablab-core/doc
      > make html
 
+or to force regeneration of docs, run:
+
+     > cd cablab-core
+     > sphinx-build -E -a -b html doc doc/_build/html
+
 Then find the html documentation in cablab-core/doc/_build/html
 
 More info:
