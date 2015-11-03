@@ -1,8 +1,10 @@
 
 # CAB-LAB Components:
 
-* `cablab.cube` - Data Cube Generation and Access
-* `cablab.cli` - Command-line interface
+* `cablab` - CAB-LAB API
+* `cablab.cube` - Data Cube Generation and Access (protected, public parts expr) 
+* `cablab.cube_cli` - Command-line interface (protected) 
+* `cablab.util` - Common utility functions (protected)
 
 # Extension points and extensions
 
