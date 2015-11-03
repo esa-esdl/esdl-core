@@ -13,7 +13,7 @@ import cablab
 class CubeSourceProvider(metaclass=ABCMeta):
     """
     An abstract interface for objects representing data source providers for the data cube.
-    Cube source providers are passed to the Cube.update() method.
+    Cube source providers are passed to the **Cube.update()** method.
 
     :param cube_config: Specifies the fixed layout and conventions used for the cube.
     """
@@ -329,10 +329,7 @@ class CubeConfig:
 
 class Cube:
     """
-    Represents a data cube.
-
-    :param base_dir: The data cube's base directory path.
-    :param config: The data cube's configuration, usually a **CubeConfig** object.
+    Represents a data cube. Use the static **open()** or **create()** methods to obtain data cube objects.
     """
 
     def __init__(self, base_dir, config):
@@ -377,7 +374,7 @@ class Cube:
     @staticmethod
     def open(base_dir):
         """
-        Open an existing data cube. Use the **Cube.update**(provider) method to add data to the cube
+        Open an existing data cube. Use the **Cube.update(provider)** method to add data to the cube
         via a source data provider.
 
         :param base_dir: The data cube's base directory which must be empty or non-existent.
@@ -390,13 +387,13 @@ class Cube:
         return Cube(base_dir, config)
 
     @staticmethod
-    def create(base_dir, config):
+    def create(base_dir, config=CubeConfig()):
         """
-        Create a new data cube. Use the Cube.update(provider) method to add data to the cube
+        Create a new data cube. Use the **Cube.update(provider)** method to add data to the cube
         via a source data provider.
 
         :param base_dir: The data cube's base directory. Must not exists.
-        :param config: The data cube's static information. Use an instance of CubeConfig.
+        :param config: The data cube's static information.
         :return: A cube instance.
         """
 

@@ -1,16 +1,32 @@
 """
-The CAB-LAB parent module.
-"""
 
-__author__ = 'Brockmann Consult GmbH'
+Data Cube read-only access::
+
+    from cablab import Cube
+    from datetime import datetime
+    cube = Cube.open('./cablab-cube-v05')
+    data = cube.data.get(['LAI', 'Precip'], [datetime(2001, 6, 1), datetime(2012, 1, 1)], 53.2, 12.8)
+
+Data Cube creation/update::
+
+    from cablab import Cube, CubeConfig
+    from datetime import datetime
+    cube = Cube.create('./my-cablab-cube', CubeConfig(spatial_res=0.05))
+    cube.update(MyVar1SourceDataProvider(cube.config, './my-data-sources/var1'))
+    cube.update(MyVar2SourceDataProvider(cube.config, './my-data-sources/var2'))
+
+"""
 
 from pkg_resources import iter_entry_points
 
-from cablab.cube import CubeSourceProvider
 from cablab.cube import BaseCubeSourceProvider
 from cablab.cube import Cube
 from cablab.cube import CubeConfig
 from cablab.cube import CubeData
+from cablab.cube import CubeSourceProvider
+
+__author__ = 'Brockmann Consult GmbH'
+
 
 def _load_source_providers():
     source_provider_classes = dict()
