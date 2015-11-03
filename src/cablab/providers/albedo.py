@@ -1,10 +1,12 @@
 import os
 
 import numpy
+import datetime
 
 from cablab import BaseCubeSourceProvider
-from cablab.util import NetCDFDatasetCache, day2date
+from cablab.util import NetCDFDatasetCache
 from skimage.transform import resize
+from netCDF4 import date2num, num2date
 
 VAR_NAME = 'Snow_Fraction'
 
@@ -12,7 +14,7 @@ VAR_NAME = 'Snow_Fraction'
 class AlbedoProvider(BaseCubeSourceProvider):
     def __init__(self, cube_config, dir_path):
         super(AlbedoProvider, self).__init__(cube_config)
-        # todo - remove check once we have addressed spatial aggregation/interpolation
+        # todo (hp 20151030) - remove check once we have addressed spatial aggregation/interpolation
         if cube_config.grid_width != 1440 or cube_config.grid_height != 720:
             raise ValueError('illegal cube configuration, '
                              'provider does not yet implement spatial aggregation/interpolation')
@@ -94,7 +96,34 @@ class AlbedoProvider(BaseCubeSourceProvider):
                         file = os.path.join(sub_dir_path, file_name)
                         self.dataset_cache.get_dataset(file)
                         time_info = file_name.split('.', 2)[1]
-                        t1, t2 = day2date(int(time_info))
+                        t1, t2 = self._day2date(int(time_info))
                         self.dataset_cache.close_dataset(file)
                         source_time_ranges.append((t1, t2, file, 0))
         self.source_time_ranges = sorted(source_time_ranges, key=lambda item: item[0])
+
+    @staticmethod
+    def _day2date(times):
+
+        """
+        Return datetime objects given numeric time values in year and day format.
+        For example, 2005021 corresponds to the 21st day of year 2005.
+
+        >>> AlbedoProvider._day2date(2000001)
+        (datetime.datetime(2000, 1, 1, 0, 0), datetime.datetime(2000, 1, 9, 0, 0))
+        >>> AlbedoProvider._day2date(2000361)
+        (datetime.datetime(2000, 12, 26, 0, 0), datetime.datetime(2001, 1, 3, 0, 0))
+
+        :param times: numeric time values
+        :return: datetime.datetime values
+        """
+        year = times // 1000
+        year_start_date = date2num(datetime.datetime(year, 1, 1), units='days since 0001-1-1 00:00',
+                                   calendar='gregorian')
+
+        day = times % 1000 - 1
+        actual_start_date = year_start_date + day
+        actual_end_date = actual_start_date + 8
+
+        return num2date(actual_start_date, units='days since 0001-1-1 00:00', calendar='gregorian'), num2date(
+            actual_end_date, units='days since 0001-1-1 00:00',
+            calendar='gregorian')
