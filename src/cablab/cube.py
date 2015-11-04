@@ -509,10 +509,10 @@ class Cube:
         var_end_time.calendar = self._config.calendar
 
         var_longitude = dataset.createVariable('lon', 'f4', ('lon',))
-        var_longitude.units = 'degrees east'
+        var_longitude.units = 'degrees_east'
 
         var_latitude = dataset.createVariable('lat', 'f4', ('lat',))
-        var_latitude.units = 'degrees north'
+        var_latitude.units = 'degrees_north'
 
         spatial_res = self._config.spatial_res
         lon0 = self._config.easting + image_x0 * spatial_res
