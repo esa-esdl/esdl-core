@@ -13,6 +13,7 @@ Contents:
    cube_usage
    collaboration
    api_reference
+   annex
 
 
 Indices and Tables

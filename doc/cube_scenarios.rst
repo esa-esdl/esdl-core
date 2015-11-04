@@ -10,4 +10,8 @@ Write me!
 Legal Constraints
 =================
 
+*Remarks: including citation*
+
+*Responsible: CB*
+
 Write me!
