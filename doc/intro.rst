@@ -1,5 +1,24 @@
-====================
-CAB-LAB Introduction
-====================
+============
+Introduction
+============
 
-TODO!
+Purpose
+=======
+
+Write me!
+
+Scope
+=====
+
+Write me!
+
+References
+==========
+
+Write me!
+
+Terms and Abbreviations
+=======================
+
+Write me!
+
