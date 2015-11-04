@@ -5,11 +5,14 @@ CAB-LAB User Guide
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    intro
-   tutorial
-   reference
+   cube_explanation
+   cube_scenarios
+   cube_usage
+   collaboration
+   api_reference
 
 
 Indices and Tables
@@ -18,4 +21,5 @@ Indices and Tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
 

@@ -12,8 +12,8 @@ Data Cube creation/update::
     from cablab import Cube, CubeConfig
     from datetime import datetime
     cube = Cube.create('./my-cablab-cube', CubeConfig(spatial_res=0.05))
-    cube.update(MyVar1SourceDataProvider(cube.config, './my-data-sources/var1'))
-    cube.update(MyVar2SourceDataProvider(cube.config, './my-data-sources/var2'))
+    cube.update(MyVar1SourceProvider(cube.config, './my-cube-sources/var1'))
+    cube.update(MyVar2SourceProvider(cube.config, './my-cube-sources/var2'))
 
 """
 

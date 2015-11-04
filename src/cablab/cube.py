@@ -618,7 +618,7 @@ class CubeData:
         """
         return self.get_variable(index)
 
-    def get(self, variable, time, latitude, longitude):
+    def get(self, variable=None, time=None, latitude=None, longitude=None):
         """
         Get the cube's data.
 
@@ -680,8 +680,9 @@ class CubeData:
         """
         self._close_datasets()
 
-    @staticmethod
-    def _get_lon_range(longitude):
+    def _get_lon_range(self, longitude):
+        if longitude is None:
+            return -180, 180
         try:
             # Try using longitude as longitude pair
             lon_1, lon_2 = longitude
@@ -703,8 +704,9 @@ class CubeData:
             lon_2 += 360
         return lon_1, lon_2
 
-    @staticmethod
-    def _get_lat_range(latitude):
+    def _get_lat_range(self, latitude):
+        if latitude is None:
+            return -90, 90
         try:
             # Try using latitude as latitude pair
             lat_1, lat_2 = latitude
@@ -716,8 +718,9 @@ class CubeData:
             raise ValueError('invalid latitude argument: %s' % latitude)
         return lat_1, lat_2
 
-    @staticmethod
-    def _get_time_range(time):
+    def _get_time_range(self, time):
+        if time is None:
+            return self._cube.config.start_time, self._cube.config.end_time
         try:
             # Try using time as time pair
             time_1, time_2 = time
@@ -730,6 +733,8 @@ class CubeData:
         return time_1, time_2
 
     def _get_var_indices(self, variable):
+        if variable is None:
+            return self._var_index_to_var_name.keys()
         try:
             # Try using variable as string name
             var_index = self._var_name_to_var_index[variable]
