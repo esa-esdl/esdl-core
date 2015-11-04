@@ -432,7 +432,7 @@ class Cube:
         target_year_2 = target_end_time.year
 
         cube_temporal_res = self._config.temporal_res
-        num_periods_per_year = int(365.0 / cube_temporal_res)
+        num_periods_per_year = math.ceil(365.0 / cube_temporal_res)
         datasets = dict()
         for target_year in range(target_year_1, target_year_2 + 1):
             time_min = datetime(target_year, 1, 1)
@@ -441,7 +441,7 @@ class Cube:
             time_1 = time_min
             for period in range(num_periods_per_year):
                 time_2 = time_1 + d_time
-                if time_2 + d_time > time_max:
+                if time_2 > time_max:
                     time_2 = time_max
                 weight = cablab.util.temporal_weight(time_1, time_2, target_start_time, target_end_time)
                 # print('Period: %s to %s: %f' % (time_1, time_2, weight))
@@ -508,10 +508,10 @@ class Cube:
         var_end_time.units = self._config.time_units
         var_end_time.calendar = self._config.calendar
 
-        var_longitude = dataset.createVariable('longitude', 'f4', ('lon',))
+        var_longitude = dataset.createVariable('lon', 'f4', ('lon',))
         var_longitude.units = 'degrees east'
 
-        var_latitude = dataset.createVariable('latitude', 'f4', ('lat',))
+        var_latitude = dataset.createVariable('lat', 'f4', ('lat',))
         var_latitude.units = 'degrees north'
 
         spatial_res = self._config.spatial_res

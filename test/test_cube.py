@@ -74,7 +74,8 @@ class CubeTest(TestCase):
         provider = CubeSourceProviderMock(cube2.config, start_time=datetime(2006, 12, 15), end_time=datetime(2007, 1, 15))
         cube2.update(provider)
         self.assertEqual([(datetime(2006, 12, 11, 0, 0), datetime(2006, 12, 19, 0, 0)),  #  8 days
-                          (datetime(2006, 12, 19, 0, 0), datetime(2007, 1, 1, 0, 0)),    # 13 days!
+                          (datetime(2006, 12, 19, 0, 0), datetime(2006, 12, 27, 0, 0)),    # 8 days
+                          (datetime(2006, 12, 27, 0, 0), datetime(2007, 1, 1, 0, 0)),    # 8 days
                           (datetime(2007, 1, 1, 0, 0), datetime(2007, 1, 9, 0, 0)),      #  8 days
                           (datetime(2007, 1, 9, 0, 0), datetime(2007, 1, 17, 0, 0))],    #  8 days
                          provider.trace)
@@ -94,7 +95,7 @@ class CubeTest(TestCase):
         self.assertIs(data.get_variable('LAI'), data[1])
         self.assertIs(data.get_variable(1), data[1])
         array = data['LAI'][:, :, :]
-        self.assertEqual((8, 720, 1440), array.shape)
+        self.assertEqual((9, 720, 1440), array.shape)
         scalar = data['LAI'][3, 320, 720]
         self.assertEqual(numpy.float32, type(scalar))
         self.assertEqual(numpy.array([0.14], dtype=numpy.float32), scalar)
@@ -104,7 +105,7 @@ class CubeTest(TestCase):
         self.assertIs(data.get_variable('FAPAR'), data[0])
         self.assertIs(data.get_variable(0), data[0])
         array = data['FAPAR'][:, :, :]
-        self.assertEqual((8, 720, 1440), array.shape)
+        self.assertEqual((9, 720, 1440), array.shape)
         scalar = data['FAPAR'][3, 320, 720]
         self.assertEqual(numpy.array([0.62], dtype=numpy.float32), scalar)
 
