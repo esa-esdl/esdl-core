@@ -20,6 +20,7 @@ Data Cube creation/update::
 from pkg_resources import iter_entry_points
 
 from cablab.cube import BaseCubeSourceProvider
+from cablab.cube import CUBE_MODEL_VERSION
 from cablab.cube import Cube
 from cablab.cube import CubeConfig
 from cablab.cube import CubeData
@@ -43,10 +44,11 @@ def _load_source_providers():
 SOURCE_PROVIDERS = _load_source_providers()
 
 __all__ = [
+    'BaseCubeSourceProvider',
+    'CUBE_MODEL_VERSION',
     'Cube',
     'CubeConfig',
     'CubeData',
     'CubeSourceProvider',
-    'BaseCubeSourceProvider',
     'SOURCE_PROVIDERS',
 ]

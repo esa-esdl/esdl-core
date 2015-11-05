@@ -8,6 +8,10 @@ from datetime import datetime, timedelta
 import netCDF4
 
 import cablab
+import cablab.util
+
+# The current version of the data cube's configuration and data model.
+CUBE_MODEL_VERSION = '0.1'
 
 
 class CubeSourceProvider(metaclass=ABCMeta):
@@ -225,7 +229,9 @@ class CubeConfig:
                  end_time=datetime(2011, 1, 1),
                  variables=None,
                  file_format='NETCDF4_CLASSIC',
-                 compression=False):
+                 compression=False,
+                 model_version=CUBE_MODEL_VERSION):
+        self.model_version = model_version
         self.spatial_res = spatial_res
         self.grid_x0 = grid_x0
         self.grid_y0 = grid_y0
@@ -291,11 +297,21 @@ class CubeConfig:
         :param path: The file's path name.
         :return: A new CubeConfig instance
         """
-        kwargs = dict()
+        config = dict()
         with open(path) as fp:
             code = fp.read()
-            exec(code, {'datetime': __import__('datetime')}, kwargs)
-        return CubeConfig(**kwargs)
+            exec(code, {'datetime': __import__('datetime')}, config)
+
+        CubeConfig._ensure_compatible_config(config)
+
+        return CubeConfig(**config)
+
+    @staticmethod
+    def _ensure_compatible_config(config_dict):
+        model_version = config_dict.get('model_version', None)
+        # Here: check for compatibility with Cube.MODEL_VERSION, convert if possible, otherwise raise error.
+        if model_version is None or model_version < CUBE_MODEL_VERSION:
+            print('WARNING: outdated cube model version, current version is %s' % CUBE_MODEL_VERSION)
 
     def store(self, path):
         """

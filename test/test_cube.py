@@ -1,11 +1,11 @@
-from unittest import TestCase
+import os
 import shutil
 from datetime import datetime
-import os
+from unittest import TestCase
 
 import numpy
 
-from cablab import CubeSourceProvider, CubeConfig, Cube
+from cablab import CubeSourceProvider, CubeConfig, Cube, CUBE_MODEL_VERSION
 
 CUBE_DIR = 'testcube'
 
@@ -21,8 +21,13 @@ class CubeConfigTest(TestCase):
         with self.assertRaises(ValueError):
             CubeConfig(grid_y0=-1)
 
+    def test_model_version_is_current(self):
+        config = CubeConfig()
+        self.assertEqual(CUBE_MODEL_VERSION, config.model_version)
+
     def test_properties(self):
         config = CubeConfig()
+
         self.assertEqual(-180, config.easting)
         self.assertEqual(90, config.northing)
         self.assertEqual(((-180, -90), (180, 90)), config.geo_bounds)
@@ -71,13 +76,14 @@ class CubeTest(TestCase):
         self.assertEqual(cube.config.file_format, cube2.config.file_format)
         self.assertEqual(cube.config.compression, cube2.config.compression)
 
-        provider = CubeSourceProviderMock(cube2.config, start_time=datetime(2006, 12, 15), end_time=datetime(2007, 1, 15))
+        provider = CubeSourceProviderMock(cube2.config, start_time=datetime(2006, 12, 15),
+                                          end_time=datetime(2007, 1, 15))
         cube2.update(provider)
-        self.assertEqual([(datetime(2006, 12, 11, 0, 0), datetime(2006, 12, 19, 0, 0)),  #  8 days
-                          (datetime(2006, 12, 19, 0, 0), datetime(2006, 12, 27, 0, 0)),    # 8 days
-                          (datetime(2006, 12, 27, 0, 0), datetime(2007, 1, 1, 0, 0)),    # 8 days
-                          (datetime(2007, 1, 1, 0, 0), datetime(2007, 1, 9, 0, 0)),      #  8 days
-                          (datetime(2007, 1, 9, 0, 0), datetime(2007, 1, 17, 0, 0))],    #  8 days
+        self.assertEqual([(datetime(2006, 12, 11, 0, 0), datetime(2006, 12, 19, 0, 0)),  # 8 days
+                          (datetime(2006, 12, 19, 0, 0), datetime(2006, 12, 27, 0, 0)),  # 8 days
+                          (datetime(2006, 12, 27, 0, 0), datetime(2007, 1, 1, 0, 0)),  # 8 days
+                          (datetime(2007, 1, 1, 0, 0), datetime(2007, 1, 9, 0, 0)),  # 8 days
+                          (datetime(2007, 1, 9, 0, 0), datetime(2007, 1, 17, 0, 0))],  # 8 days
                          provider.trace)
 
         self.assertTrue(os.path.exists(CUBE_DIR + "/data/LAI/2006_LAI.nc"))
