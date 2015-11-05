@@ -5,7 +5,7 @@ import numpy
 import netCDF4
 
 from cablab import BaseCubeSourceProvider
-from cablab.util import NetCDFDatasetCache
+from cablab.util import NetCDFDatasetCache, aggregate_images
 
 VAR_NAME = 'Ozone'
 
@@ -58,18 +58,17 @@ class OzoneProvider(BaseCubeSourceProvider):
             ozone = numpy.kron(ozone[:, :], numpy.ones((4, 4), dtype=numpy.float32))
             print(ozone.shape)
         else:
-            ozone_sum = numpy.zeros((self.cube_config.grid_height, self.cube_config.grid_width),
-                                    dtype=numpy.float32)
-            weight_sum = 0.0
+            images = [None] * len(new_indices)
+            weights = [None] * len(new_indices)
+            j = 0
             for i in new_indices:
-                weight = index_to_weight[i]
                 file = self._get_file(i)
                 dataset = self.dataset_cache.get_dataset(file)
-                ozone = dataset.variables['atmosphere_mole_content_of_ozone']
-                ozone = numpy.kron(ozone[:, :], numpy.ones((4, 4), dtype=numpy.float32))
-                ozone_sum += weight * ozone
-                weight_sum += weight
-            ozone = ozone_sum / weight_sum
+                variable = dataset.variables['atmosphere_mole_content_of_ozone']
+                images[j] = numpy.kron(variable[:, :], numpy.ones((4, 4), dtype=numpy.float32))
+                weights[j] = index_to_weight[i]
+                j += 1
+            ozone = aggregate_images(images, weights=weights)
 
         return {VAR_NAME: ozone}
 

@@ -5,7 +5,7 @@ import numpy
 import netCDF4
 
 from cablab import BaseCubeSourceProvider
-from cablab.util import NetCDFDatasetCache
+from cablab.util import NetCDFDatasetCache, aggregate_images
 
 VAR_NAME = 'BurntArea'
 
@@ -55,17 +55,17 @@ class BurntAreaProvider(BaseCubeSourceProvider):
             dataset = self.dataset_cache.get_dataset(file)
             burnt_area = dataset.variables[VAR_NAME][time_index, :, :]
         else:
-            burnt_area_sum = numpy.zeros((self.cube_config.grid_height, self.cube_config.grid_width),
-                                         dtype=numpy.float32)
-            weight_sum = 0.0
+            images = [None] * len(new_indices)
+            weights = [None] * len(new_indices)
+            j = 0
             for i in new_indices:
-                weight = index_to_weight[i]
                 file, time_index = self._get_file_and_time_index(i)
                 dataset = self.dataset_cache.get_dataset(file)
-                burnt_area = dataset.variables[VAR_NAME]
-                burnt_area_sum += weight * burnt_area[time_index, :, :]
-                weight_sum += weight
-            burnt_area = burnt_area_sum / weight_sum
+                variable = dataset.variables[VAR_NAME]
+                images[j] = variable[time_index, :, :]
+                weights[j] = index_to_weight[i]
+                j += 1
+            burnt_area = aggregate_images(images, weights=weights)
 
         return {VAR_NAME: burnt_area}
 

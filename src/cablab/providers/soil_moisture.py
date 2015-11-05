@@ -5,7 +5,7 @@ import numpy
 import netCDF4
 
 from cablab import BaseCubeSourceProvider
-from cablab.util import NetCDFDatasetCache
+from cablab.util import NetCDFDatasetCache, aggregate_images
 
 VAR_NAME = 'SoilMoisture'
 
@@ -55,17 +55,17 @@ class SoilMoistureProvider(BaseCubeSourceProvider):
             dataset = self.dataset_cache.get_dataset(file)
             soil_moisture = dataset.variables[VAR_NAME][time_index, :, :]
         else:
-            soil_moisture_sum = numpy.zeros((self.cube_config.grid_height, self.cube_config.grid_width),
-                                            dtype=numpy.float32)
-            weight_sum = 0.0
+            images = [None] * len(new_indices)
+            weights = [None] * len(new_indices)
+            j = 0
             for i in new_indices:
-                weight = index_to_weight[i]
                 file, time_index = self._get_file_and_time_index(i)
                 dataset = self.dataset_cache.get_dataset(file)
-                soil_moisture = dataset.variables[VAR_NAME]
-                soil_moisture_sum += weight * soil_moisture[time_index, :, :]
-                weight_sum += weight
-            soil_moisture = soil_moisture_sum / weight_sum
+                variable = dataset.variables[VAR_NAME]
+                images[j] = variable[time_index, :, :]
+                weights[j] = index_to_weight[i]
+                j += 1
+            soil_moisture = aggregate_images(images, weights=weights)
 
         return {VAR_NAME: soil_moisture}
 

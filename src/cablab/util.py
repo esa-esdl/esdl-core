@@ -3,10 +3,11 @@ Various utility constants, functions and classes.
 Developer note: make sure this module does not import any other cablab module!
 """
 
-import os
 import gzip
+import os
 
 import netCDF4
+import numpy
 
 
 def temporal_weight(a1, a2, b1, b2):
@@ -27,6 +28,18 @@ def temporal_weight(a1, a2, b1, b2):
     if b1_in_a_range and b2_in_a_range:
         return 1.0
     return 0.0
+
+
+def aggregate_images(images, weights=None):
+    reshaped_images = []
+    for i in range(len(images)):
+        image = images[i]
+        reshaped_image = image.reshape((1,) + image.shape)
+        if weights:
+            reshaped_image *= weights[i]
+        reshaped_images.append(reshaped_image)
+    image_stack = numpy.ma.concatenate(reshaped_images)
+    return numpy.ma.average(image_stack, axis=0)
 
 
 class NetCDFDatasetCache:

@@ -4,7 +4,7 @@ import numpy
 import datetime
 
 from cablab import BaseCubeSourceProvider
-from cablab.util import NetCDFDatasetCache
+from cablab.util import NetCDFDatasetCache, aggregate_images
 from skimage.transform import resize
 from netCDF4 import date2num, num2date
 
@@ -57,18 +57,17 @@ class AlbedoProvider(BaseCubeSourceProvider):
             snow_fraction = dataset.variables[VAR_NAME][:, :]
             snow_fraction = resize(snow_fraction, (720, 1440), preserve_range=True, order=3)
         else:
-            snow_fraction_sum = numpy.zeros((self.cube_config.grid_height, self.cube_config.grid_width),
-                                            dtype=numpy.float32)
-            weight_sum = 0.0
+            images = [None] * len(new_indices)
+            weights = [None] * len(new_indices)
+            j = 0
             for i in new_indices:
-                weight = index_to_weight[i]
                 file, time_index = self._get_file_and_time_index(i)
                 dataset = self.dataset_cache.get_dataset(file)
-                snow_fraction = dataset.variables[VAR_NAME][:, :]
-                snow_fraction = resize(snow_fraction, (720, 1440), preserve_range=True, order=3)
-                snow_fraction_sum += weight * snow_fraction[:, :]
-                weight_sum += weight
-            snow_fraction = snow_fraction_sum / weight_sum
+                variable = dataset.variables[VAR_NAME][:, :]
+                images[j] = resize(variable[:, :], (720, 1440), preserve_range=True, order=3)
+                weights[j] = index_to_weight[i]
+                j += 1
+            snow_fraction = aggregate_images(images, weights=weights)
 
         return {VAR_NAME: snow_fraction}
 
