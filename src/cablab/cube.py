@@ -371,6 +371,13 @@ class Cube:
         """
         return self._config
 
+    def info(self):
+        """
+        Return a human-readable information string about this data cube (markdown formatted).
+        """
+        # todo (nf 20151104) - read from data cube's dir, see issue #5
+        return ''
+
     @property
     def closed(self):
         """
