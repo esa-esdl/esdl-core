@@ -12,7 +12,7 @@ import numpy
 
 def temporal_weight(a1, a2, b1, b2):
     """
-    Compute a weight (0.0 to 1.0) from the overlap of time range a1...a2 with time range b1...b2.
+    Compute a weight (0.0 to 1.0) from the overlap of time range *a1*...*a2* with time range *b1*...*b2*.
     If there is no overlap at all, return 0.
     """
     a1_in_b_range = b1 <= a1 <= b2
@@ -31,6 +31,13 @@ def temporal_weight(a1, a2, b1, b2):
 
 
 def aggregate_images(images, weights=None):
+    """
+    Aggregates the list of masked *images* by averaging them using the optional *weights*.
+
+    :param images: 2D images (numpy array-like objects)
+    :param weights: a weight 0..1 for each image
+    :return: A combined, masked image.
+    """
     reshaped_images = []
     for i in range(len(images)):
         image = images[i]
@@ -85,3 +92,65 @@ class NetCDFDatasetCache:
                 with open(real_file, 'wb') as ostream:
                     ostream.write(istream.read())
         return real_file
+
+
+class Config:
+    """
+    Global CAB-LAB configuration.
+
+    :param cube_sources_root: The root directory for the Cube's source data files.
+    """
+
+    # The default file name for CAB-LAB configurations
+    DEFAULT_FILE_NAME = 'cablab-config.py'
+
+    _INSTANCE = None
+
+    def __init__(self, cube_sources_root=''):
+        # The root directory for the Cube's source data files
+        self.cube_sources_root = cube_sources_root
+
+    def get_cube_source_path(self, *paths):
+        """
+        Gets a path into the Cube's source data directory.
+
+        :param paths: paths to be appended to the value of the *cube_sources_path* configuration parameter.
+        :return: A path into the Cube's source directory.
+        """
+        return os.path.join(self.cube_sources_root, *paths)
+
+    @staticmethod
+    def instance():
+        """
+        :return: The CAB-LAB configuration singleton.
+        """
+        if Config._INSTANCE is None:
+            config = None
+            if os.path.exists(Config.DEFAULT_FILE_NAME):
+                config = Config._load(Config.DEFAULT_FILE_NAME)
+            else:
+                dir_path = os.path.dirname(__file__)
+                while os.path.exists(dir_path):
+                    config_file = os.path.abspath(os.path.join(dir_path, Config.DEFAULT_FILE_NAME))
+                    if os.path.exists(config_file):
+                        config = Config._load(config_file)
+                        break
+                    setup_py = os.path.join(dir_path, 'setup.py')
+                    if os.path.exists(setup_py):
+                        break
+                    dir_path = os.path.join(dir_path, '..')
+                if config is None:
+                    config = Config()
+                    print('Warning: no CAB-LAB configuration file (\'%s\') found in any known directory' %
+                          Config.DEFAULT_FILE_NAME)
+            Config._INSTANCE = config
+        return Config._INSTANCE
+
+    @staticmethod
+    def _load(file_path):
+        config = Config()
+        with open(file_path, 'r') as fp:
+            python_code = fp.read()
+        exec(python_code, None, config.__dict__)
+        print('CAB-LAB configuration loaded from %s' % file_path)
+        return config

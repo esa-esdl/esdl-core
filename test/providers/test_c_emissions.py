@@ -1,11 +1,12 @@
-from datetime import datetime
-import unittest
 import os
+import unittest
+from datetime import datetime
 
 from cablab import CubeConfig
 from cablab.providers.c_emissions import CEmissionsProvider
+from cablab.util import Config
 
-SOURCE_DIR = 'W:\\Emissions'
+SOURCE_DIR = Config.instance().get_cube_source_path('Emissions')
 
 
 class CEmissionsProviderTest(unittest.TestCase):

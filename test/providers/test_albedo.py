@@ -1,12 +1,13 @@
-from datetime import datetime
-import unittest
 import os
+import unittest
+from datetime import datetime
 
 from cablab import CubeConfig
 from cablab.providers.albedo import AlbedoProvider
+from cablab.util import Config
 
 # Only the first 3 files of each year (2000,2001,2002) were included due to their large size
-SOURCE_DIR = 'C:\\Personal\\CabLab\\EO data\\globalbedo'
+SOURCE_DIR = Config.instance().get_cube_source_path('globalbedo')
 
 
 class AlbedoProviderTest(unittest.TestCase):

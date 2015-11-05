@@ -1,11 +1,12 @@
-from datetime import datetime
 import os
 import unittest
+from datetime import datetime
 
 from cablab import CubeConfig
 from cablab.providers.burnt_area import BurntAreaProvider
+from cablab.util import Config
 
-SOURCE_DIR = 'W:\\BurntArea'
+SOURCE_DIR = Config.instance().get_cube_source_path('BurntArea')
 
 
 class BurntAreaProviderTest(unittest.TestCase):
@@ -39,7 +40,7 @@ class BurntAreaProviderTest(unittest.TestCase):
         temporal_coverage = provider.get_temporal_coverage()
         self.assertEqual((datetime(1995, 1, 6, 0, 0),
                           datetime(2014, 3, 1, 0, 0)),
-                          temporal_coverage)
+                         temporal_coverage)
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_get_images(self):

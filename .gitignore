@@ -59,7 +59,8 @@ target/
 # PyCharm / IDEA
 .idea
 
-# Data Cube files
+# Ignored CAB-LAB (Data Cube) files
 *.nc
 cube.config
+cablab-config.py
 
