@@ -4,6 +4,7 @@ import os
 
 import cablab
 from cablab import Cube, CubeConfig
+from cablab.util import Config
 
 __VERSION__ = '0.1'
 
@@ -46,9 +47,10 @@ def main(args=None):
         if not is_new and cube_config_file:
             parser.error('TARGET directory must be empty')
         for source in cube_sources:
-            source.index(':')
             source_provider_name, source_args = source.split(':', maxsplit=1)
             source_provider_class = cablab.SOURCE_PROVIDERS.get(source_provider_name)
+            if not os.path.isabs(source_args):
+                source_args = Config.instance().get_cube_source_path(source_args)
             if source_provider_class:
                 source_providers.append((source_provider_class, source_args))
             else:

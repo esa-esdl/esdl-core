@@ -21,7 +21,7 @@ setup(
     package_dir={'': 'src'},
     entry_points={
         'console_scripts': [
-            'cube_cli = cablab.cube_cli:main',
+            'cube-cli = cablab.cube_cli:main',
         ],
         'cablab.source_providers': [
             'burnt_area = cablab.providers.burnt_area:BurntAreaProvider',
