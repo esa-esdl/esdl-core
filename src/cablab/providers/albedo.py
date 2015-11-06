@@ -61,10 +61,9 @@ class AlbedoProvider(BaseCubeSourceProvider):
             weights = [None] * len(new_indices)
             j = 0
             for i in new_indices:
-                file, time_index = self._get_file_and_time_index(i)
+                file, _ = self._get_file_and_time_index(i)
                 dataset = self.dataset_cache.get_dataset(file)
-                variable = dataset.variables[VAR_NAME][:, :]
-                images[j] = resize(variable[:, :], (720, 1440), preserve_range=True, order=3)
+                images[j] = resize(dataset.variables[VAR_NAME][:, :], (720, 1440), preserve_range=True, order=3)
                 weights[j] = index_to_weight[i]
                 j += 1
             snow_fraction = aggregate_images(images, weights=weights)
@@ -88,16 +87,20 @@ class AlbedoProvider(BaseCubeSourceProvider):
 
         for root, sub_dirs, files in os.walk(self.dir_path):
             for sub_dir in sub_dirs:
-                sub_dir_path = os.path.join(self.dir_path, sub_dir)
-                file_names = os.listdir(sub_dir_path)
-                for file_name in file_names:
-                    if file_name.endswith('.nc.gz'):
-                        file = os.path.join(sub_dir_path, file_name)
-                        self.dataset_cache.get_dataset(file)
+                source_year = int(sub_dir)
+                if self.cube_config.start_time.year <= source_year <= self.cube_config.end_time.year:
+                    sub_dir_path = os.path.join(self.dir_path, sub_dir)
+                    file_names = os.listdir(sub_dir_path)
+                    for file_name in file_names:
                         time_info = file_name.split('.', 2)[1]
                         t1, t2 = self._day2date(int(time_info))
-                        self.dataset_cache.close_dataset(file)
-                        source_time_ranges.append((t1, t2, file, 0))
+                        if (self.cube_config.start_time <= t1 <= self.cube_config.end_time or
+                            self.cube_config.start_time <= t2 <= self.cube_config.end_time) and \
+                                file_name.endswith('.nc.gz'):
+                            file = os.path.join(sub_dir_path, file_name)
+                            self.dataset_cache.get_dataset(file)
+                            self.dataset_cache.close_dataset(file)
+                            source_time_ranges.append((t1, t2, file, 0))
         self.source_time_ranges = sorted(source_time_ranges, key=lambda item: item[0])
 
     @staticmethod
