@@ -30,6 +30,7 @@ setup(
             'precip = cablab.providers.precip:PrecipProvider',
             'soil_moisture = cablab.providers.soil_moisture:SoilMoistureProvider',
             'albedo = cablab.providers.albedo:AlbedoProvider',
+            'snow_area_extent = cablab.providers.snow_area_extent:SnowAreaExtentProvider',
         ],
     },
     # *Minimum* requirements
