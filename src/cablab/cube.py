@@ -518,15 +518,14 @@ class Cube:
                 dataset = netCDF4.Dataset(file, 'w', format=self._config.file_format)
                 self._init_variable_dataset(provider, dataset, var_name)
             datasets[filename] = dataset
+
         var_start_time = dataset.variables['start_time']
-        var_end_time = dataset.variables['end_time']
-        var_variable = dataset.variables[var_name]
-
-        # todo (nf 20151104) - need to address possible gaps between this time_index and a former one
-        # Question here: how are NetCDF variables initialised? If never set, are all pixel values = fill values?
-
         var_start_time[time_index] = self._config.date2num(target_start_time)
+
+        var_end_time = dataset.variables['end_time']
         var_end_time[time_index] = self._config.date2num(target_end_time)
+
+        var_variable = dataset.variables[var_name]
         var_variable[time_index, :, :] = image
 
     def _init_variable_dataset(self, provider, dataset, variable_name):
