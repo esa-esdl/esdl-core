@@ -1,7 +1,5 @@
 import unittest
-from datetime import datetime
 
-import netCDF4
 import numpy
 
 from cablab.util import aggregate_images
@@ -9,22 +7,6 @@ from cablab.util import temporal_weight
 
 
 class UtilTest(unittest.TestCase):
-    def test_num2date(self):
-        # From Precip
-        # -----------
-        self.assertEqual(datetime(1987, 1, 1, 0, 0),
-                         netCDF4.num2date(numpy.array([147636.0], dtype=numpy.float32), 'days since 1582-10-15 00:00',
-                                          'gregorian'))
-        # From BurntArea
-        # --------------
-        # todo - check why in the file we have units='days since 1582-10-14 00:00' which is one day less than
-        # actual start of gregorian calendar!
-        # Panoply result: 155297.0 --> 2008-01-01
-        self.assertEqual(datetime(2008, 1, 1, 0, 0),
-                         netCDF4.num2date(155297.0, 'days since 1582-10-24 00:00', 'gregorian'))
-        # netCDF4 result: ValueError: impossible date (falls in gap between end of Julian calendar and beginning of Gregorian calendar
-        # self.assertEqual(datetime(2008, 1, 1, 0, 0), netCDF4.num2date(155297.0, 'days since 1582-10-14 00:00', 'gregorian'))
-
     def test_temporal_weight(self):
         self.assertEqual(temporal_weight(1, 3, 4, 8), 0.0)
         self.assertEqual(temporal_weight(1, 4, 4, 8), 0.0)
@@ -62,6 +44,6 @@ class UtilTest(unittest.TestCase):
         self.assertTrue(numpy.ma.is_masked(im))
 
         self.assertAlmostEqual(im[0][0], 2.2, places=3)
-        self.assertAlmostEqual(im[0][1], (0.5*2.1 + 0.25*4.3) / 2, places=4)
+        self.assertAlmostEqual(im[0][1], (0.5 * 2.1 + 0.25 * 4.3) / 2, places=4)
         self.assertIs(im[1][0], numpy.ma.masked)
-        self.assertAlmostEqual(im[1][1], (0.5*4.1 + 1.0*5.2 + 0.25*6.3) / 3, places=3)
+        self.assertAlmostEqual(im[1][1], (0.5 * 4.1 + 1.0 * 5.2 + 0.25 * 6.3) / 3, places=3)
