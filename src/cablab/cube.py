@@ -283,11 +283,27 @@ class CubeConfig:
     @property
     def time_units(self):
         """
-        Returns the time units used by the data cube.
+        Return the time units used by the data cube as string using the format 'days since *ref_time*'.
         """
         ref_time = self.ref_time
         return 'days since %4d-%02d-%02d %02d:%02d' % \
                (ref_time.year, ref_time.month, ref_time.day, ref_time.hour, ref_time.minute)
+
+    @property
+    def num_periods_per_year(self):
+        """
+        Return the number of target periods per year.
+        """
+        return math.ceil(365.0 / self.temporal_res)
+
+    def date2num(self, date):
+        """
+        Return the number of days for the given *date* as a number in the time units
+        given by the ``time_units`` property.
+
+        :param date: The date as a datetime.datetime value
+        """
+        return netCDF4.date2num(date, self.time_units, calendar=self.calendar)
 
     @staticmethod
     def load(path):
@@ -455,14 +471,14 @@ class Cube:
         target_year_2 = target_end_time.year
 
         cube_temporal_res = self._config.temporal_res
-        num_periods_per_year = math.ceil(365.0 / cube_temporal_res)
+        num_periods_per_year = self._config.num_periods_per_year
         datasets = dict()
         for target_year in range(target_year_1, target_year_2 + 1):
             time_min = datetime(target_year, 1, 1)
             time_max = datetime(target_year + 1, 1, 1)
             d_time = timedelta(days=cube_temporal_res)
             time_1 = time_min
-            for period in range(num_periods_per_year):
+            for time_index in range(num_periods_per_year):
                 time_2 = time_1 + d_time
                 if time_2 > time_max:
                     time_2 = time_max
@@ -471,7 +487,7 @@ class Cube:
                 if weight > 0.0:
                     var_name_to_image = provider.compute_variable_images(time_1, time_2)
                     if var_name_to_image:
-                        self._write_images(provider, datasets, (time_1, time_2), var_name_to_image)
+                        self._write_images(provider, datasets, (time_index, time_1, time_2), var_name_to_image)
                 time_1 = time_2
 
         for key in datasets:
@@ -479,14 +495,14 @@ class Cube:
 
         provider.close()
 
-    def _write_images(self, provider, datasets, target_time_range, var_name_to_image):
+    def _write_images(self, provider, datasets, target_time, var_name_to_image):
         for var_name in var_name_to_image:
             image = var_name_to_image[var_name]
             if image is not None:
-                self._write_image(provider, datasets, target_time_range, var_name, image)
+                self._write_image(provider, datasets, target_time, var_name, image)
 
-    def _write_image(self, provider, datasets, target_time_range, var_name, image):
-        target_start_time, target_end_time = target_time_range
+    def _write_image(self, provider, datasets, target_time, var_name, image):
+        time_index, target_start_time, target_end_time = target_time
         folder_name = var_name
         folder = os.path.join(os.path.join(self._base_dir, 'data', folder_name))
         if not os.path.exists(folder):
@@ -506,25 +522,18 @@ class Cube:
         var_end_time = dataset.variables['end_time']
         var_variable = dataset.variables[var_name]
 
-        time_index = len(var_start_time)
+        # todo (nf 20151104) - need to address possible gaps between this time_index and a former one
+        # Question here: how are NetCDF variables initialised? If never set, are all pixel values = fill values?
 
-        target_start_time_num = netCDF4.date2num(target_start_time, units=self._config.time_units,
-                                                 calendar=self._config.calendar)
-        target_end_time_num = netCDF4.date2num(target_end_time, units=self._config.time_units,
-                                               calendar=self._config.calendar)
-        for i in range(len(var_start_time)):
-            if var_start_time[i] == target_start_time_num and var_end_time[i] == target_end_time_num:
-                time_index = i
-
-        var_start_time[time_index] = target_start_time_num
-        var_end_time[time_index] = target_end_time_num
+        var_start_time[time_index] = self._config.date2num(target_start_time)
+        var_end_time[time_index] = self._config.date2num(target_end_time)
         var_variable[time_index, :, :] = image
 
     def _init_variable_dataset(self, provider, dataset, variable_name):
 
         image_x0, image_y0, image_width, image_height = provider.get_spatial_coverage()
 
-        dataset.createDimension('time', None)
+        dataset.createDimension('time', self._config.num_periods_per_year)
         dataset.createDimension('lat', image_height)
         dataset.createDimension('lon', image_width)
 
@@ -798,7 +807,7 @@ class CubeData:
     def _open_dataset(self, var_index):
         files = self._dataset_files[var_index]
         var_name = self._var_index_to_var_name[var_index]
-        dataset = netCDF4.MFDataset(files)
+        dataset = netCDF4.MFDataset(files, aggdim='time')
         variable = dataset.variables[var_name]
         self._datasets[var_index] = dataset
         self._variables[var_index] = variable

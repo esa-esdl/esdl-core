@@ -101,7 +101,7 @@ class CubeTest(TestCase):
         self.assertIs(data.get_variable('LAI'), data[1])
         self.assertIs(data.get_variable(1), data[1])
         array = data['LAI'][:, :, :]
-        self.assertEqual((9, 720, 1440), array.shape)
+        self.assertEqual((138, 720, 1440), array.shape)
         scalar = data['LAI'][3, 320, 720]
         self.assertEqual(numpy.float32, type(scalar))
         self.assertEqual(numpy.array([0.14], dtype=numpy.float32), scalar)
@@ -111,7 +111,7 @@ class CubeTest(TestCase):
         self.assertIs(data.get_variable('FAPAR'), data[0])
         self.assertIs(data.get_variable(0), data[0])
         array = data['FAPAR'][:, :, :]
-        self.assertEqual((9, 720, 1440), array.shape)
+        self.assertEqual((138, 720, 1440), array.shape)
         scalar = data['FAPAR'][3, 320, 720]
         self.assertEqual(numpy.array([0.62], dtype=numpy.float32), scalar)
 

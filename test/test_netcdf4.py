@@ -1,16 +1,53 @@
 """
 Test some properties of the netCDF4 library.
 """
+import time
+from datetime import datetime
 from unittest import TestCase
 
 import netCDF4
 import numpy
-import time
 
 
 class NetCDF4Test(TestCase):
+    def test_num2date(self):
+        # From Precip
+        # -----------
+        self.assertEqual(datetime(1987, 1, 1, 0, 0),
+                         netCDF4.num2date(numpy.array([147636.0], dtype=numpy.float32), 'days since 1582-10-15 00:00',
+                                          'gregorian'))
+        # From BurntArea
+        # --------------
+        # Check why in the file we have units='days since 1582-10-14 00:00' which is one day less than
+        # actual start of gregorian calendar!
+        # Panoply result: 155297.0 --> 2008-01-01
+        #
+        # Resolution: Fabian told us that units='days since 1582-10-14 00:00' is an error in the MPI netCDF files.
+        #
+        self.assertEqual(datetime(2008, 1, 1, 0, 0),
+                         netCDF4.num2date(155297.0, 'days since 1582-10-24 00:00', 'gregorian'))
+        # netCDF4 result: ValueError: impossible date (falls in gap between end of Julian calendar and beginning of Gregorian calendar
+        # self.assertEqual(datetime(2008, 1, 1, 0, 0), netCDF4.num2date(155297.0, 'days since 1582-10-14 00:00', 'gregorian'))
+
+    def test_that_empty_variables_are_filled_with_fill_values(self):
+        ds = netCDF4.Dataset('test.nc', mode='w', format='NETCDF4_CLASSIC')
+        ds.createDimension('d1', 4)
+        ds.createVariable('v1', 'f4', dimensions=('d1',), fill_value=-9999.0)
+        ds.close()
+
+        ds = netCDF4.Dataset('test.nc')
+        var = ds.variables['v1']
+        array = var[:]
+        ds.close()
+
+        self.assertTrue(numpy.ma.is_masked(array))
+        self.assertIs(numpy.ma.masked, array[0], msg='at index 0')
+        self.assertIs(numpy.ma.masked, array[1], msg='at index 1')
+        self.assertIs(numpy.ma.masked, array[2], msg='at index 2')
+        self.assertIs(numpy.ma.masked, array[3], msg='at index 3')
+
     def test_that_fill_value_from_netcdf_works_with_numpy_ma(self):
-        ds = netCDF4.Dataset('test.nc', mode='w', format='NETCDF4')
+        ds = netCDF4.Dataset('test.nc', mode='w', format='NETCDF4_CLASSIC')
         ds.createDimension('d1', 4)
         var = ds.createVariable('v1', 'f4', dimensions=('d1',), fill_value=-9999.0)
         var[:] = numpy.array([1.0, -9999.0, 3.0, numpy.NaN])
@@ -73,13 +110,13 @@ class NetCDF4Test(TestCase):
         self.assertTrue(numpy.isnan(new_array[6]), msg='at index 6')
         self.assertTrue(numpy.isnan(new_array[7]), msg='at index 7')
 
-    def test_chunking(self):
+    def chunking_test(self):
         names = [
             'test-chunk-none.nc',
-            #'test-chunk-1.720.1440.nc',
-            #'test-chunk-460.18.36.nc',
-            #'test-chunk-460.720.1.nc',
-            #'test-chunk-460.1.1440.nc',
+            # 'test-chunk-1.720.1440.nc',
+            # 'test-chunk-460.18.36.nc',
+            # 'test-chunk-460.720.1.nc',
+            # 'test-chunk-460.1.1440.nc',
         ]
         chunks = [
             None,
@@ -90,7 +127,7 @@ class NetCDF4Test(TestCase):
         ]
         for i in range(len(names)):
             print('Creating ' + names[i] + "...")
-            self.create_ds(names[i], chunks[i])
+            self._create_ds(names[i], chunks[i])
 
         import random
         self._x = [0] * 100
@@ -100,18 +137,17 @@ class NetCDF4Test(TestCase):
             self._y[i] = int(100 * random.random())
 
         for name in names:
-            self.test_it('test_1', name, self.test_1)
+            self._test_it('test_1', name, self.__test_1)
         for name in names:
-            self.test_it('test_2', name, self.test_2)
+            self._test_it('test_2', name, self.__test_2)
         for name in names:
-            self.test_it('test_3', name, self.test_3)
+            self._test_it('test_3', name, self.__test_3)
         for name in names:
-            self.test_it('test_4', name, self.test_4)
+            self._test_it('test_4', name, self.__test_4)
         for name in names:
-            self.test_it('test_5', name, self.test_5)
+            self._test_it('test_5', name, self.__test_5)
 
-
-    def test_it(self, test_name, file, test_fn):
+    def _test_it(self, test_name, file, test_fn):
         print('%s, %s...' % (test_name, file))
         ds = netCDF4.Dataset(file)
         v = ds.variables['v']
@@ -121,37 +157,36 @@ class NetCDF4Test(TestCase):
         ds.close()
         print('%s, %s, time: %f s' % (test_name, file, t2 - t1))
 
-    def test_1(self, v):
+    def __test_1(self, v):
         for y in range(10):
             for x in range(10):
                 z = v[:, y, x]
-                self.process(z)
+                self.___process(z)
 
-    def test_2(self, v):
+    def __test_2(self, v):
         for y in range(100):
             z = v[:, y, 1]
-            self.process(z)
+            self.___process(z)
 
-    def test_3(self, v):
+    def __test_3(self, v):
         for x in range(100):
             z = v[:, 1, x]
-            self.process(z)
+            self.___process(z)
 
-    def test_4(self, v):
+    def __test_4(self, v):
         for i in range(100):
             z = v[:, i, i]
-            self.process(z)
+            self.___process(z)
 
-    def test_5(self, v):
+    def __test_5(self, v):
         for i in range(100):
             z = v[:, self._y[i], self._x[i]]
-            self.process(z)
+            self.___process(z)
 
-
-    def process(self,z):
+    def ___process(self, z):
         pass
 
-    def create_ds(self,name, chunksizes):
+    def _create_ds(self, name, chunksizes):
         ds = netCDF4.Dataset(name, mode='w', format='NETCDF4_CLASSIC')
         ds.createDimension('time', 460)
         ds.createDimension('lat', 720)
