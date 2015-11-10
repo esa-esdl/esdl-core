@@ -506,14 +506,19 @@ class Cube:
         var_end_time = dataset.variables['end_time']
         var_variable = dataset.variables[var_name]
 
-        i = len(var_start_time)
-        var_start_time[i] = netCDF4.date2num(target_start_time,
-                                             units=self._config.time_units,
-                                             calendar=self._config.calendar)
-        var_end_time[i] = netCDF4.date2num(target_end_time,
-                                           units=self._config.time_units,
-                                           calendar=self._config.calendar)
-        var_variable[i, :, :] = image
+        time_index = len(var_start_time)
+
+        target_start_time_num = netCDF4.date2num(target_start_time, units=self._config.time_units,
+                                                 calendar=self._config.calendar)
+        target_end_time_num = netCDF4.date2num(target_end_time, units=self._config.time_units,
+                                               calendar=self._config.calendar)
+        for i in range(len(var_start_time)):
+            if var_start_time[i] == target_start_time_num and var_end_time[i] == target_end_time_num:
+                time_index = i
+
+        var_start_time[time_index] = target_start_time_num
+        var_end_time[time_index] = target_end_time_num
+        var_variable[time_index, :, :] = image
 
     def _init_variable_dataset(self, provider, dataset, variable_name):
 
