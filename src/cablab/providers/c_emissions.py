@@ -7,7 +7,7 @@ import netCDF4
 from cablab import BaseCubeSourceProvider
 from cablab.util import NetCDFDatasetCache, aggregate_images
 
-VAR_NAME = 'C_Emissions'
+VAR_NAME = 'Emission'
 
 
 class CEmissionsProvider(BaseCubeSourceProvider):
@@ -85,19 +85,18 @@ class CEmissionsProvider(BaseCubeSourceProvider):
         source_time_ranges = []
         file_names = os.listdir(self.dir_path)
         for file_name in file_names:
-            if file_name.endswith('.nc.gz'):
-                file = os.path.join(self.dir_path, file_name)
-                dataset = self.dataset_cache.get_dataset(file)
-                time = dataset.variables['time']
-                # dates = netCDF4.num2date(time[:], time.units, calendar=time.calendar)
-                dates = netCDF4.num2date(time[:], 'days since 1582-10-15 00:00', calendar='gregorian')
-                self.dataset_cache.close_dataset(file)
-                n = len(dates)
-                for i in range(n):
-                    t1 = dates[i]
-                    if i < n - 1:
-                        t2 = dates[i + 1]
-                    else:
-                        t2 = t1 + timedelta(days=31)  # assuming it's December
-                    source_time_ranges.append((t1, t2, file, i))
+            file = os.path.join(self.dir_path, file_name)
+            dataset = self.dataset_cache.get_dataset(file)
+            time = dataset.variables['time']
+            # dates = netCDF4.num2date(time[:], time.units, calendar=time.calendar)
+            dates=[datetime(yr,mo,1) for yr in range(2001,2011) for mo in range(1,13)]
+            self.dataset_cache.close_dataset(file)
+            n = len(dates)
+            for i in range(n):
+                t1 = dates[i]
+                if i < n - 1:
+                    t2 = dates[i + 1]
+                else:
+                    t2 = t1 + timedelta(days=31)  # assuming it's December
+                source_time_ranges.append((t1, t2, file, i))
         self.source_time_ranges = sorted(source_time_ranges, key=lambda item: item[0])
