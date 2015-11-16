@@ -536,13 +536,15 @@ class Cube:
         dataset.createDimension('lat', image_height)
         dataset.createDimension('lon', image_width)
 
-        var_start_time = dataset.createVariable('start_time', 'f8', ('time',))
+        var_start_time = dataset.createVariable('start_time', 'f8', ('time',), fill_value=-9999.0)
         var_start_time.units = self._config.time_units
         var_start_time.calendar = self._config.calendar
+        var_start_time[:] = -9999.0
 
-        var_end_time = dataset.createVariable('end_time', 'f8', ('time',))
+        var_end_time = dataset.createVariable('end_time', 'f8', ('time',), fill_value=-9999.0)
         var_end_time.units = self._config.time_units
         var_end_time.calendar = self._config.calendar
+        var_end_time[:] = -9999.0
 
         var_longitude = dataset.createVariable('lon', 'f4', ('lon',))
         var_longitude.units = 'degrees_east'
