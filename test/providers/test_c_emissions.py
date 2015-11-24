@@ -6,7 +6,7 @@ from cablab import CubeConfig
 from cablab.providers.c_emissions import CEmissionsProvider
 from cablab.util import Config
 
-SOURCE_DIR = Config.instance().get_cube_source_path('Emissions')
+SOURCE_DIR = Config.instance().get_cube_source_path('Fire_C_Emissions')
 
 
 class CEmissionsProviderTest(unittest.TestCase):
@@ -15,33 +15,33 @@ class CEmissionsProviderTest(unittest.TestCase):
         provider = CEmissionsProvider(CubeConfig(), SOURCE_DIR)
         provider.prepare()
         source_time_ranges = provider.get_source_time_ranges()
-        self.assertEqual(216, len(source_time_ranges))
-        self.assertEqual((datetime(1996, 1, 1, 0, 0, 0, 33),
-                          datetime(1996, 2, 1, 0, 0, 0, 33),
-                          os.path.join(SOURCE_DIR, 'C_Emissions.1440.720.12.1996.nc.gz'),
+        self.assertEqual(120, len(source_time_ranges))
+        self.assertEqual((datetime(2001, 1, 1, 0, 0),
+                          datetime(2001, 2, 1, 0, 0),
+                          os.path.join(SOURCE_DIR, 'fire_C_Emissions.nc'),
                           0), source_time_ranges[0])
-        self.assertEqual((datetime(1996, 7, 1, 0, 0, 0, 33),
-                          datetime(1996, 8, 1, 0, 0, 0, 33),
-                          os.path.join(SOURCE_DIR, 'C_Emissions.1440.720.12.1996.nc.gz'),
-                          6), source_time_ranges[6])
-        self.assertEqual((datetime(2013, 12, 1, 0, 0, 0, 33),
-                          datetime(2014, 1, 1, 0, 0, 0, 33),
-                          os.path.join(SOURCE_DIR, 'C_Emissions.1440.720.12.2013.nc.gz'),
-                          11), source_time_ranges[215])
+        self.assertEqual((datetime(2001, 12, 1, 0, 0),
+                          datetime(2002, 1, 1, 0, 0),
+                          os.path.join(SOURCE_DIR, 'fire_C_Emissions.nc'),
+                          11), source_time_ranges[11])
+        self.assertEqual((datetime(2010, 12, 1, 0, 0),
+                          datetime(2011, 1, 1, 0, 0),
+                          os.path.join(SOURCE_DIR, 'fire_C_Emissions.nc'),
+                          119), source_time_ranges[119])
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_temporal_coverage(self):
         provider = CEmissionsProvider(CubeConfig(), SOURCE_DIR)
         provider.prepare()
-        self.assertEqual((datetime(1996, 1, 1, 0, 0, 0, 33), datetime(2014, 1, 1, 0, 0, 0, 33)),
+        self.assertEqual((datetime(2001, 1, 1, 0, 0), datetime(2011, 1, 1, 0, 0)),
                          provider.get_temporal_coverage())
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_get_images(self):
         provider = CEmissionsProvider(CubeConfig(), SOURCE_DIR)
         provider.prepare()
-        images = provider.compute_variable_images(datetime(1996, 1, 1), datetime(1996, 1, 9))
+        images = provider.compute_variable_images(datetime(2001, 1, 1), datetime(2001, 1, 9))
         self.assertIsNotNone(images)
-        self.assertTrue('C_Emissions' in images)
-        image = images['C_Emissions']
+        self.assertTrue('Emission' in images)
+        image = images['Emission']
         self.assertEqual((720, 1440), image.shape)
