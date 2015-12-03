@@ -8,7 +8,10 @@ from cablab.util import NetCDFDatasetCache, aggregate_images
 from skimage.transform import resize
 from netCDF4 import date2num, num2date
 
-VAR_NAME = 'Snow_Fraction'
+# VAR_NAME = 'Snow_Fraction'
+VAR_NAME_BRIGHT = 'BHR_VIS'
+VAR_NAME_DARK = 'DHR_VIS'
+VAR_NAME = [VAR_NAME_BRIGHT, VAR_NAME_DARK]
 
 
 class AlbedoProvider(BaseCubeSourceProvider):
@@ -19,7 +22,7 @@ class AlbedoProvider(BaseCubeSourceProvider):
             raise ValueError('illegal cube configuration, '
                              'provider does not yet implement spatial aggregation/interpolation')
         self.dir_path = dir_path
-        self.dataset_cache = NetCDFDatasetCache(VAR_NAME)
+        self.dataset_cache = NetCDFDatasetCache("albedo")
         self.source_time_ranges = None
         self.old_indices = None
 
@@ -28,11 +31,19 @@ class AlbedoProvider(BaseCubeSourceProvider):
 
     def get_variable_descriptors(self):
         return {
-            VAR_NAME: {
+            VAR_NAME_BRIGHT: {
                 'data_type': numpy.float32,
-                'fill_value': -9999.0,
-                'units': '1',
-                'long_name': 'Snow Fraction',
+                'fill_value': numpy.nan,
+                'units': '-',
+                'long_name': 'White Sky Albedo in VIS',
+                'scale_factor': 1.0,
+                'add_offset': 0.0,
+            },
+            VAR_NAME_DARK: {
+                'data_type': numpy.float32,
+                'fill_value': numpy.nan,
+                'units': '-',
+                'long_name': 'Black Sky Albedo in VIS',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
             }
@@ -54,21 +65,26 @@ class AlbedoProvider(BaseCubeSourceProvider):
             i = next(iter(new_indices))
             file, _ = self._get_file_and_time_index(i)
             dataset = self.dataset_cache.get_dataset(file)
-            snow_fraction = dataset.variables[VAR_NAME][:, :]
-            snow_fraction = resize(snow_fraction, (720, 1440), preserve_range=True, order=3)
+            albedo = {i: resize(dataset.variables[i][0, :, :], (720, 1440), preserve_range=True, order=3) for i in
+                      VAR_NAME}
         else:
-            images = [None] * len(new_indices)
+            images_bright = [None] * len(new_indices)
+            images_dark = [None] * len(new_indices)
             weights = [None] * len(new_indices)
             j = 0
             for i in new_indices:
                 file, _ = self._get_file_and_time_index(i)
                 dataset = self.dataset_cache.get_dataset(file)
-                images[j] = resize(dataset.variables[VAR_NAME][:, :], (720, 1440), preserve_range=True, order=3)
+                images_bright[j] = resize(dataset.variables[VAR_NAME_BRIGHT][0, :, :], (720, 1440), preserve_range=True,
+                                          order=3)
+                images_dark[j] = resize(dataset.variables[VAR_NAME_DARK][0, :, :], (720, 1440), preserve_range=True,
+                                        order=3)
                 weights[j] = index_to_weight[i]
                 j += 1
-            snow_fraction = aggregate_images(images, weights=weights)
+            images = {VAR_NAME_BRIGHT: images_bright, VAR_NAME_DARK: images_dark}
+            albedo = {i: aggregate_images(images[i], weights=weights) for i in VAR_NAME}
 
-        return {VAR_NAME: snow_fraction}
+        return {i: albedo[i] for i in VAR_NAME}
 
     def _get_file_and_time_index(self, i):
         return self.source_time_ranges[i][2:4]
@@ -85,27 +101,20 @@ class AlbedoProvider(BaseCubeSourceProvider):
     def _init_source_time_ranges(self):
         source_time_ranges = []
 
-        for root, sub_dirs, files in os.walk(self.dir_path):
-            for sub_dir in sub_dirs:
-                source_year = int(sub_dir)
-                if self.cube_config.start_time.year <= source_year <= self.cube_config.end_time.year:
-                    sub_dir_path = os.path.join(self.dir_path, sub_dir)
-                    file_names = os.listdir(sub_dir_path)
-                    for file_name in file_names:
-                        time_info = file_name.split('.', 2)[1]
-                        t1, t2 = self._day2date(int(time_info))
-                        if (self.cube_config.start_time <= t1 <= self.cube_config.end_time or
-                            self.cube_config.start_time <= t2 <= self.cube_config.end_time) and \
-                                file_name.endswith('.nc.gz'):
-                            file = os.path.join(sub_dir_path, file_name)
-                            self.dataset_cache.get_dataset(file)
-                            self.dataset_cache.close_dataset(file)
-                            source_time_ranges.append((t1, t2, file, 0))
+        file_names = os.listdir(self.dir_path)
+        for file_name in file_names:
+            time_info = file_name.split('.', 5)[4]
+            t1, t2 = self._day2date(int(time_info))
+            if self.cube_config.start_time <= t1 <= self.cube_config.end_time:
+                file = os.path.join(self.dir_path, file_name)
+                self.dataset_cache.get_dataset(file)
+                self.dataset_cache.close_dataset(file)
+                source_time_ranges.append((t1, t2, file, 0))
+
         self.source_time_ranges = sorted(source_time_ranges, key=lambda item: item[0])
 
     @staticmethod
     def _day2date(times):
-
         """
         Return datetime objects given numeric time values in year and day format.
         For example, 2005021 corresponds to the 21st day of year 2005.
