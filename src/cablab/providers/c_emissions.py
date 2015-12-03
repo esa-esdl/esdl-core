@@ -2,7 +2,6 @@ from datetime import timedelta, datetime
 import os
 
 import numpy
-import netCDF4
 
 from cablab import BaseCubeSourceProvider
 from cablab.util import NetCDFDatasetCache, aggregate_images
@@ -89,7 +88,7 @@ class CEmissionsProvider(BaseCubeSourceProvider):
             dataset = self.dataset_cache.get_dataset(file)
             time = dataset.variables['time']
             # dates = netCDF4.num2date(time[:], time.units, calendar=time.calendar)
-            dates=[datetime(yr,mo,1) for yr in range(2001,2011) for mo in range(1,13)]
+            dates = [datetime(yr, mo, 1) for yr in range(2001, 2011) for mo in range(1, 13)]
             self.dataset_cache.close_dataset(file)
             n = len(dates)
             for i in range(n):
