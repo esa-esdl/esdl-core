@@ -206,9 +206,9 @@ class CubeConfig:
     :param temporal_res: The temporal resolution in days.
     :param ref_time: A datetime value which defines the units in which time values are given, namely
                      'days since *ref_time*'.
-    :param start_time: The start time of the first image of any variable in the cube given as datetime value.
+    :param start_time: The inclusive start time of the first image of any variable in the cube given as datetime value.
                        ``None`` means unlimited.
-    :param end_time: The end time of the last image of any variable in the cube given as datetime value.
+    :param end_time: The exclusive end time of the last image of any variable in the cube given as datetime value.
                      ``None`` means unlimited.
     :param variables: A list of variable names to be included in the cube.
     :param file_format: The file format used. Must be one of 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_CLASSIC'
@@ -626,8 +626,13 @@ class CubeData:
         """
         Return the shape of the data cube.
         """
-        # todo (nf 20151030) - retrieve correct time size
-        return len(self._dataset_files), 0, self._cube.config.grid_height, self._cube.config.grid_width
+        year_1 = self._cube.config.start_time.year
+        year_2 = self._cube.config.end_time.year
+        years = year_2 - year_1
+        if self._cube.config.end_time > datetime(self._cube.config.end_time.year, 1, 1):
+            years += 1
+        time_size = years * self._cube.config.num_periods_per_year
+        return len(self._dataset_files), time_size, self._cube.config.grid_height, self._cube.config.grid_width
 
     @property
     def variable_names(self) -> tuple:

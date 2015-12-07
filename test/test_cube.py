@@ -76,7 +76,8 @@ class CubeTest(TestCase):
         self.assertEqual(cube.config.file_format, cube2.config.file_format)
         self.assertEqual(cube.config.compression, cube2.config.compression)
 
-        provider = CubeSourceProviderMock(cube2.config, start_time=datetime(2006, 12, 15),
+        provider = CubeSourceProviderMock(cube2.config,
+                                          start_time=datetime(2006, 12, 15),
                                           end_time=datetime(2007, 1, 15))
         cube2.update(provider)
         self.assertEqual([(datetime(2006, 12, 11, 0, 0), datetime(2006, 12, 19, 0, 0)),  # 8 days
@@ -93,7 +94,7 @@ class CubeTest(TestCase):
 
         data = cube2.data
         self.assertIsNotNone(data)
-        self.assertEqual((2, 0, 720, 1440), data.shape)
+        self.assertEqual((2, 10 * 46, 720, 1440), data.shape)
         self.assertEquals({'FAPAR': 0, 'LAI': 1}, data.variable_names)
 
         self.assertIsNotNone(data.get_variable('LAI'))
