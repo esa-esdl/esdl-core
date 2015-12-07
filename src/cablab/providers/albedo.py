@@ -17,7 +17,7 @@ VAR_NAME = [VAR_NAME_BRIGHT, VAR_NAME_DARK]
 class AlbedoProvider(BaseCubeSourceProvider):
     def __init__(self, cube_config, dir_path):
         super(AlbedoProvider, self).__init__(cube_config)
-        # todo (hp 20151030) - remove check once we have addressed spatial aggregation/interpolation
+        # todo (hp 20151030) - remove check once we have addressed spatial aggregation/interpolation, see issue #3
         if cube_config.grid_width != 1440 or cube_config.grid_height != 720:
             raise ValueError('illegal cube configuration, '
                              'provider does not yet implement spatial aggregation/interpolation')

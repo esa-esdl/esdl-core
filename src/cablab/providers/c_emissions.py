@@ -12,7 +12,7 @@ VAR_NAME = 'Emission'
 class CEmissionsProvider(BaseCubeSourceProvider):
     def __init__(self, cube_config, dir_path):
         super(CEmissionsProvider, self).__init__(cube_config)
-        # todo (nf 20151027) - remove check once we have addressed spatial aggregation/interpolation
+        # todo (nf 20151027) - remove check once we have addressed spatial aggregation/interpolation, see issue #3
         if cube_config.grid_width != 1440 or cube_config.grid_height != 720:
             raise ValueError('illegal cube configuration, '
                              'provider does not yet implement spatial aggregation/interpolation')

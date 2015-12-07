@@ -13,7 +13,7 @@ VAR_NAME = 'BurntArea'
 class BurntAreaProvider(BaseCubeSourceProvider):
     def __init__(self, cube_config, dir_path):
         super(BurntAreaProvider, self).__init__(cube_config)
-        # todo (nf 20151028) - remove check once we have addressed spatial aggregation/interpolation
+        # todo (nf 20151028) - remove check once we have addressed spatial aggregation/interpolation, see issue #3
         if cube_config.grid_width != 1440 or cube_config.grid_height != 720:
             raise ValueError('illegal cube configuration, '
                              'provider does not yet implement proper spatial aggregation/interpolation')
