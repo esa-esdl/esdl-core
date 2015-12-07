@@ -7,7 +7,7 @@ Purpose
 
 *Remark: purpose of the document*
 
-*Responsible: CB*
+*Responsible: GB*
 
 Write me!
 
@@ -16,7 +16,7 @@ Scope
 
 *Remark: what's in the document and what is not in the document*
 
-*Responsible: CB*
+*Responsible: GB*
 
 Write me!
 
