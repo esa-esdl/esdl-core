@@ -11,6 +11,29 @@ Components
 * ``cablab.cube_cli`` - Command-line interface (protected) 
 * ``cablab.util`` - Common utility functions (protected)
 
+
+---------------
+Developer Guide
+---------------
+
+Style
+-----
+
+Adhere to PEP-8!
+
+TODOs
+-----
+
+Only place TODOs in source code when you have an according issue on GitHub. Mention the issue number in the TODO text.
+When fixing a TODO, mention the issue in the commit message.
+
+Tests
+-----
+
+Test code in the ``test`` and ``test/providers`` directories should only use libraries that are anyway used by the
+production code in ``src``. If you want to check out new libraries for appropriateness please do so in the
+``test/sandbox`` directory.
+
 -------------------------------
 Extension points and extensions
 -------------------------------
