@@ -4,7 +4,7 @@ from numpy.testing import assert_array_equal
 from unittest import TestCase
 
 
-class NetCDF4Test(TestCase):
+class AggregationTest(TestCase):
     def test_block_reduce_ndarray(self):
         test_array = np.arange(16).reshape((4, 4))
         assert_array_equal(test_array[0], [0, 1, 2, 3], verbose=True)
