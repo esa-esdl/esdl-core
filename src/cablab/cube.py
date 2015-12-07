@@ -563,7 +563,9 @@ class Cube:
         # import time
         # dataset.source = 'CAB-LAB Software (module ' + __name__ + ')'
         # dataset.history = 'Created ' + time.ctime(time.time())
-        # todo (nf 20151023) - add more global attributes from CF-conventions here
+        #
+        # check (nf 20151023) - add more global attributes from CF-conventions here
+        #
         variable_descriptors = provider.get_variable_descriptors()
         variable_attributes = variable_descriptors[variable_name]
         # Mandatory attributes
@@ -702,7 +704,7 @@ class CubeData:
             print('dateline intersection! grid_x: %d-%d, %d-%d' % (grid_x11, grid_x12, grid_x21, grid_x22))
             raise ValueError('illegal longitude: %s: dateline intersection not yet implemented' % longitude)
 
-        # todo (nf 20151102) - fill in NaN, where a variable does not provide any data
+        # todo (nf 20151102) - fill in NaN, where a variable does not provide any data, see issue #17
         result = []
         # shape = time_index_2 - time_index_1 + 1, \
         #         grid_y2 - grid_y1 + 1, \
