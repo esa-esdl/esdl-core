@@ -595,7 +595,7 @@ class CubeData:
     """
     Represents the cube's read-only data.
 
-    :param cube: A **DataCube** object.
+    :param cube: A **Cube** object.
     """
 
     def __init__(self, cube):
@@ -693,7 +693,7 @@ class CubeData:
             grid_x12 = global_grid_width - 1
             grid_x21 = 0
             grid_x22 = grid_x2
-            # todo (nf 20151102) - handle this case
+            # todo (nf 20151102) - handle this case, see issue #15
             print('dateline intersection! grid_x: %d-%d, %d-%d' % (grid_x11, grid_x12, grid_x21, grid_x22))
             raise ValueError('illegal longitude: %s: dateline intersection not yet implemented' % longitude)
 
