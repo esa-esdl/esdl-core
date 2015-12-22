@@ -2,6 +2,7 @@
 Introduction
 ============
 
+.. BC
 
 Project background
 ==================
@@ -35,20 +36,22 @@ large data-sets, and a sound understanding of the Earth System.
 The focus of this document is therefore clearly on the description of the data and on the methods to access and manipulate the data.
 
 
-In the final version, it is meant to be a self-contained documentation that enables the user to independently reap the full potential of the Earth System Data Cube.
+In the final version, it is meant to be a self-contained documentation that enables the user to independently reap the full potential of the Earth System Data Cube (ESDC).
 Developers may find a visit of the `project's git-hup pages <https://github.com/CAB-LAB>`_ more enlightening.
 
 Scope
 =====
 
-The Product Handbook gives a general overview of the `data cube's structure <cube_explanation.html#What is the Data Cube?>`__
-and provide some examples to illustrate `potential uses of the system <cube_scenarios.html#What can I do with the Data Cube?>`__ .
-The main part is considered with a detailed `technical description of the data cube <cube_usage.html#How can I use the Data Cube?>`__
+The Product Handbook gives a general overview of the `ESCD's structure <cube_explanation.html#What is the Earth System Data Cube?>`__
+and provide some examples to illustrate `potential uses of the system <cube_scenarios.html#What can I do with the Earth System Data Cube?>`__ .
+The main part is considered with a detailed `technical description of the ESDC <cube_usage.html#How can I use the Earth System Data Cube?>`__
 , which is accompanied by the full `specification of the API <api_reference.html#CAB-LAB API Reference>`__.
-Finally, all data-sets included in the data cube are listed and described in the `annex of the Product Handbook <annex.html#Annexes>`__.
+Finally, all data-sets included in the ESDC are listed and described in the `annex of the Product Handbook <annex.html#Annexes>`__.
 
 References
 ==========
+
+.. todo:: GB add more references here
 
 1.  CAB-LAB's webpage: http://www.earthsystemdatacube.net
 
@@ -57,6 +60,7 @@ References
 Terms and Abbreviations
 =======================
 
+.. todo:: GB keep this section up-to-date
 
 =======================  =============================================================================================
 Term                     Description

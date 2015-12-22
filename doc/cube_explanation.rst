@@ -1,6 +1,8 @@
-======================
-What is the Data Cube?
-======================
+===================================
+What is the Earth System Data Cube?
+===================================
+
+.. BC
 
 Overview
 ========
@@ -11,17 +13,17 @@ X = {x(u,v,t)} ∈ R is defined. The challenge is, however, to take advantage of
 EO streams and to explore them simultaneously.
 Hence, the idea is to concatenate data streams such that we obtain a 4-dimensional data cube of the form x(u,v,t,k)
 where k ∈ {1, …, N} denotes the index of the data stream. The focus of this project is therefore on learning how
-to efficiently and reliably create, curate, and explore a 4-dimensional Earth system cube.
+to efficiently and reliably create, curate, and explore a 4-dimensional Earth System Data Cube (ESDC).
 
 If feasible, the included data-sets contain uncertainty information. Limitations associated with the transformation
-from source format into the Data Cube format are explained in the `description of the data sets <annex.html#Annexes>`__.
+from source format into the ESDC format are explained in the `description of the data sets <annex.html#Annexes>`__.
 
-The Data Cube does not exhibit spatial or temporal gaps, since gaps in the source data are filled during ingestion into
-the Data Cube. While all observational values are conserved, gaps are filled with synthetic data, i.e. with data that is created by an
+The ESDC does not exhibit spatial or temporal gaps, since gaps in the source data are filled during ingestion into
+the ESDC. While all observational values are conserved, gaps are filled with synthetic data, i.e. with data that is created by an
 adequate gap-filling algorithm. Proper data flags ensure an unambiguous distinction between observational and
 synthetic data values.
 
-Data Cube Macro Structure
+ESDC Macro Structure
 =========================
 
 The data is organised in the described 4-dimensional form x(u,v,t,k), but additionally each data stream k is assigned to one
@@ -34,8 +36,8 @@ of the subsystems of interest:
 Spatial and Temporal Coverage
 =============================
 
-The fine grid of the Data Cube has a spatial resolution of 0.083° (5”), which is properly nested within a coarse grid of
-0.25° (15”). Hence, the data cube is available in two versions
+The fine grid of the ESDC has a spatial resolution of 0.083° (5”), which is properly nested within a coarse grid of
+0.25° (15”). Hence, the ESDC is available in two versions
 
 * **High resolution version**: 0.083° (5”) spatial resolution,
 * **Low resolution version**:  0.25° (15”) spatial resolution.
@@ -47,7 +49,7 @@ These data are dispersed to the coarse grid by means of a national state mask, w
 
 The **temporal resolution** is 8 days.
 
-The **time span** currently covered is 2001-2011. We are dedicated to expand this period on both ends, but to preserve the Data Cube characteristics, a reasonable coverage of data streams is required.
+The **time span** currently covered is 2001-2011. We are dedicated to expand this period on both ends, but to preserve the ESDC's characteristics, a reasonable coverage of data streams is required.
 
 
 
