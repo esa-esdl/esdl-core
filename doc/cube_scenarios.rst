@@ -35,16 +35,5 @@ Geophysical research Letters:
     Quantifying changes in climate variability and extremes: Pitfalls and their overcoming,
     Geophys. Res. Lett., 42, 9990–9998. doi:10.1002/2015GL066307.
 
-Legal Constraints
-=================
 
-.. todo:: GB proceed here.
-
-
-
-.. note::
-
-    Please cite the Earth System Data Cube as:
-
-    The CAB-LAB developer team (2015). The Earth System Data Cube (Version 0.1), available at: https://github.com/CAB-LAB.
 

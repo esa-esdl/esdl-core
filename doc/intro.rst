@@ -29,7 +29,7 @@ develop the software for CAB-LAB, to collect and analyze the EO data, and to dis
 Purpose
 =======
 
-This Product Handbook is a living document that is under active development just a as the CAB-LAB project itself.
+This Product Handbook is a living document that is under active development just as the CAB-LAB project itself.
 Its purpose is to facilitate the usage of the BAVL and primarily targets scientists from various disciplines with a good
 command of one of the supported high-level programming languages (Python, Julia, and R), a solid background in the analysis of
 large data-sets, and a sound understanding of the Earth System.
@@ -37,7 +37,7 @@ The focus of this document is therefore clearly on the description of the data a
 
 
 In the final version, it is meant to be a self-contained documentation that enables the user to independently reap the full potential of the Earth System Data Cube (ESDC).
-Developers may find a visit of the `project's git-hup pages <https://github.com/CAB-LAB>`_ more enlightening.
+Developers may find a visit of the `project's git-hub pages <https://github.com/CAB-LAB>`_ worthwile.
 
 Scope
 =====
@@ -80,3 +80,42 @@ Grid                     The Data Cube's layout given by its spatial and tempora
 Image                    An 2D data cube subset with dimension (lat, lon)
 =======================  =============================================================================================
 
+Legal information
+=================
+
+The Earth System Data Cube consists of a variety of source data sets from different providers, the Data Cube software, which
+transforms all data to the common Data Cube format and allows for convenient data access, and the Data Analytics Toolkit, which
+provides methods for scientific analysis.
+
+The Data Cube software and the Data Analytics Toolkit are free software:
+you can redistribute it and/or modify it under the terms of the GNU General
+Public License as published by the Free Software Foundation, either version 3
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Copyright (C) 2016  The CAB-LAB developer team.
+
+Data Policy
+===========
+
+The CAB-LAB team processes and distributes the data in the ESDC in good faith, but makes no warranty, expressed or implied,
+nor assumes any legal liability or responsibility for any purpose for which the data are used.
+In particular, the CAB-LAB team does not claim ownership of the data distributed through the ESDC nor does it alter the data
+policy of the data owner. Therefore, the user is referred to the data owner for specific questions of data use.
+References and more details of the data sets are listed in the `annex of the Product Handbook <annex.html#Annexes>`_.
+
+The CAB-LAB team is thankful to have received permissions for re-distribution of all data contained in the ESDC from
+the respective data owners.
+
+.. note::
+
+    Please cite the Earth System Data Cube as:
+
+    The CAB-LAB developer team (2015). The Earth System Data Cube (Version 1.0), available at: https://github.com/CAB-LAB.
