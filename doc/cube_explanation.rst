@@ -7,7 +7,7 @@ What is the Earth System Data Cube?
 Overview
 ========
 
-Earth observations are usually produced and treated as 3- dimensional singular data cubes, i.e. for each
+Earth observations (EOs) are usually produced and treated as 3- dimensional singular data cubes, i.e. for each
 longitude u ∈ {1, ..., Lon}, each latitude v ∈ {1, …, Lat}, and each time step t ∈ {1,...,T} an observation
 X = {x(u,v,t)} ∈ R is defined. The challenge is, however, to take advantage of the numerous
 EO streams and to explore them simultaneously.

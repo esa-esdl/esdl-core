@@ -31,7 +31,8 @@ Purpose
 
 This Product Handbook is a living document that is under active development just as the CAB-LAB project itself.
 Its purpose is to facilitate the usage of the BAVL and primarily targets scientists from various disciplines with a good
-command of one of the supported high-level programming languages (Python, Julia, and R), a solid background in the analysis of
+command of one of the supported high-level programming languages (`Python <http://www.python.org>`_, `Julia <http://julialang.org/>`_,
+ and `R <http://www.>`_), a solid background in the analysis of
 large data-sets, and a sound understanding of the Earth System.
 The focus of this document is therefore clearly on the description of the data and on the methods to access and manipulate the data.
 
@@ -55,7 +56,7 @@ References
 
 1.  CAB-LAB's webpage: http://www.earthsystemdatacube.net
 
-2.  CAB-LAB's git-hib page: https://github.com/CAB-LAB
+2.  CAB-LAB's github repository: https://github.com/CAB-LAB
 
 Terms and Abbreviations
 =======================
@@ -70,6 +71,10 @@ BAST                     Biosphere-Atmosphere System Trajectory
 BAVL                     Biosphere Atmosphere Virtual Laboratory
 -----------------------  ---------------------------------------------------------------------------------------------
 CAB-LAB                  Coupled Atmosphere Biosphere virtual LABoratory
+-----------------------  ---------------------------------------------------------------------------------------------
+DAT                      Data Analytics Toolkit
+-----------------------  ---------------------------------------------------------------------------------------------
+EDSC                     Earth System Data Cube
 -----------------------  ---------------------------------------------------------------------------------------------
 EO                       Earth Observations
 -----------------------  ---------------------------------------------------------------------------------------------
@@ -98,7 +103,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+along with this program. If not, see http://www.gnu.org/licenses/.
 
 Copyright (C) 2016  The CAB-LAB developer team.
 
@@ -118,4 +123,4 @@ the respective data owners.
 
     Please cite the Earth System Data Cube as:
 
-    The CAB-LAB developer team (2015). The Earth System Data Cube (Version 1.0), available at: https://github.com/CAB-LAB.
+    The CAB-LAB developer team (2015). The Earth System Data Cube (Version 0.1), available at: https://github.com/CAB-LAB.
