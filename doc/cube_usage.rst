@@ -141,7 +141,7 @@ all weighted values in time not masked by a fill value. By doing so, some tempor
 Spatial Resampling
 ##################
 
-Spatial resampling occurrs after temporal resampling if the ESDC's spatial
+Spatial re-sampling occurs after temporal re-sampling if the ESDC's spatial
 resolution differs from the data source resolution.
 
 If the ESDC's spatial resolution is higher than the data source spatial resolution, source images are **upsampled
