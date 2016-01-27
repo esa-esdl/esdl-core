@@ -55,7 +55,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'CAB-LAB'
-copyright = '2015, Brockmann Consult GmbH'
+copyright = '2016, Brockmann Consult GmbH'
 author = 'Brockmann Consult GmbH'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -116,7 +116,7 @@ todo_include_todos = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'alabaster'
+html_theme = 'sphinxdoc'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -128,7 +128,7 @@ html_theme = 'alabaster'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-#html_title = None
+html_title = "Cab-Lab Product Handbook"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
