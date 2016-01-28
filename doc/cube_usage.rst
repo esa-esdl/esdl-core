@@ -17,20 +17,25 @@ underlying HDF-5 format accessed by a netCDF 4 API.
 The netCDF file's content and structure follows the `CF-conventions <http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html>`_.
 That is, there are are always at least three dimensions defined
 
+
 1. ``lon`` - Always the inner and therefore fastest varying dimension. Defines the **raster width** of spatial images.
 2. ``lat`` - Always the second dimension. Defines the **raster height** of spatial images.
 3. ``time`` - Time dimension.
 
+.. image:: pix/CABLAB_structure.png
+    :width: 400px
+    :align: center
+    :alt: The spatio-temporal structure of the Earth System Data Cube.
+
+
 There are 1D-variables related to each dimension providing its actual values:
 
 * ``lon(lon)`` and ``lat(lon)`` - longitudes and latitudes in *decimal degrees* defined in a WGS-84 geographical
-  coordinate reference system. The spatial grid is homogeneous with the distance between two grid points referred to as
-  the Data Cube's **spatial resolution**.
-* ``start_time(time)`` and ``end_time(time)`` - Period start and end times given in *days since 2001-01-01 00:00*.
-  The increments between two vlaues in time are identical and referred to as the Data Cube's **temporal resolution**.
-
-.. todo:: Norman, you never refer to start_time or end_time after this, just to time. Confusing without any further information. What exactly are start and stop times?
-    Also, i guess one wold rather name it start and end as stop implies some action.
+    coordinate reference system. The spatial grid is homogeneous with the distance between two grid points referred to as
+    the Data Cube's **spatial resolution**.
+* ``start_time(time)`` and ``end_time(time)`` - Period start and end times of a datum given in
+    *days since 2001-01-01 00:00*. The increments between two values in time are identical and referred to as the
+    Data Cube's **temporal resolution**.
 
 There is usually only a single geophysical variable with *shape*\ (``time``, ``lat``, ``lon``) represented by each
 netCDF file. So each netCDF file is composed of *length*\ (``time``) spatial images of that variable, where each image
@@ -60,8 +65,6 @@ as follows::
 The names of the geophysical variable in a netCDF file must match the name of its corresponding sub-directory and the
 names of the their contained files.
 
-.. todo:: Norman, CF conventions (and COARDS) are rather strict with respect to naming of variables. Check: http://cfconventions.org/Data/cf-standard-names/30/build/cf-standard-name-table.html
-
 The text file ``cube.config`` contains a Data Cube's static configuration such as its temporal and spatial resolution.
 Also the spatial coverage is constant, that is, all spatial images are of the same size. Where actual data is missing,
 fill values are inserted to expand a data set to the dimensions of the Data Cube.
@@ -89,6 +92,7 @@ Parameter             Default Value                   Description
 ``compression``       ``False``                       Whether or not the target binary files should be compressed.
 ``model_version``     ``'0.1'``                       The version of the Data Cube model and configuration.
 ====================  ==============================  ==========================================================
+
 
 General Processing Methods Description
 --------------------------------------
@@ -134,9 +138,6 @@ resulting ESDC target period. If there is more than one contribution in time, th
 according to the temporal overlap with the target period. Finally, target pixel values are computed by averaging
 all weighted values in time not masked by a fill value. By doing so, some temporal gaps are filled implicitly.
 
-.. todo:: Norman: put graphic here showing how weights are determined.*
-
-.. todo:: Norman: put equation here including weights and also respect fill values.*
 
 Spatial Resampling
 ##################
@@ -151,6 +152,35 @@ If the ESDC's spatial resolution is lower than the data source spatial resolutio
 by aggregation hereby performing a weighted spatial averaging taking into account missing values**. If there is not an
 integer factor between the source and Cube resolution, weights will be found according to the spatial overlap of source
 and target cells.
+
+
+.. |im1| image:: pix/CABLAB_samp1.png
+    :width: 400px
+    :align: middle
+    :alt: Contiguous Oversampling
+
+.. |im2| image:: pix/CABLAB_samp2.png
+    :width: 400px
+    :align: middle
+    :alt: Discontiguous Overrsampling
+
+.. |im3| image:: pix/CABLAB_samp3.png
+    :width: 400px
+    :align: middle
+    :alt: Contiguous Undersampling
+
+.. |im4| image:: pix/CABLAB_samp4.png
+    :width: 400px
+    :align: middle
+    :alt: Discontiguous Undersampling
+
+
++-----+-----+
+||im1|||im3||
++-----+-----+
+||im2|||im4||
++-----+-----+
+
 
 Land-Water Masking
 ##################
@@ -182,25 +212,98 @@ informed user to evaluate the validity and consistency of the processed data and
 Dataset Usage
 =============
 
-The standard way of accessing the Data Cube is through the Data Access API. Alternatively, the netcdf files that comprise
- the Data Cube can also be directly read by any other adequate method, e.g. by an implementation of the netcdf library in
- any programming language or suitable viewer software.
+There are several ways to interact with the ESDC and depending your expertise, resources and, requirements the preferred
+method will vary. The CABLAB team is eager to learn more about user needs to continuously improve the capabilities of the
+ESDC.
 
 Dataset Access Service
 ----------------------
 
-.. Responsible: BC*
+The ESDC physically consists of a set of netcdf files on disk, which can be accessed in four different ways:
 
-.. todo:: Responsible BC. GB: it is unclear to me what is the difference between this one and the Data access API. Norman, enlighten me!
+    * Download from CABLAB's ftp server `<ftp:ftp.brockmann-consult.de>`_. Please contact us to get a valid username.
+    * Convenient access via a THREDDS Server at `<http://www.brockmann-consult.de/cablab-thredds/catalog.html>`_.
+      The Server allows for subsetting of variables and visual exploration of the data, which can be ownloaded as netcdf of
+      plain text.
+    * Accessing a remotely stored ESDC using the OpenDAP protocol via the Data Access API, which is described in detail below.
+      Similar to the options described above, the data will be downloaded to your computer upon request, but depending
+      on the variables, and the region and time period of interest, the transferred data volume might be much lower than a
+      complete download of the ESDC.
+    * Accessing the E-laboratory on a remote Jupyter server. In this case, the data remains in the remote server and also the user's
+      computations are executed remotely. This is the most resource efficient and convenient way of exploring the ESDC.
+      The address to the server will be published here once the system is up and running.
 
-Data Access API
+In addition a cube.config file containing essential metadata of the ESDC is requires to use to Data Access API. It is automatically
+ generated during the generation of the ESDC and available on the ftp server and the CABLAB homepage.
+
+Getting started
 ---------------
 
-.. Responsible: BC
+While in principle the netcdf files comprising the ESDC can be used with any tool of choice, we developed specifically tailored Data Access APIs
+for Python 3.X and Julia. In the future, Matlab and Java will join the two to cover the most common programming languages in natural sciences.
+Furthermore, a set of high-level routines for data analysis in Earth System Sciences, the Data Analytics Toolkit, greatly facilitates
+standard operations on the large amount of data in the ESDC. While in the E-laboratory, the Data Access API and the DAT are already pre-installed,
+the user has to download and install the cube library when working on a local computer.
+
+To get started, clone the cablab-core repository from `<https://github.com/CAB-LAB>`_:
+
+.. code-block:: tcsh
+
+    git clone https://github.com/CAB-LAB/cablab-core
+
+It will create a new folder cablab-core, which contains a file named setup.py. Before actually installing, the system dependencies should be checked.
+Currently, the cablab-core library requires the following python packages:
+
+    * netCDF4 >= 1.2
+    * numpy >= 1.9
+    * scikit_image >= 0.11
+    * scipy >= 0.16
+    * matplotlib >= 1.4
+
+If your python installation lacks one or all of the above packages, we recommend to visit `<http://www.lfd.uci.edu/~gohlke/pythonlibs/>`_ to obtain pre-compiled Python binaries for different
+architectures, which can be then installed using pip:
+
+.. code-block:: tcsh
+
+    pip install <wheel-file>
+
+Kudos to Christoph Gohlke for the continuous efforts!
+Then the cablab-core library can be installed from terminal (Linux/Unix/MacOs) or shell (Windows):
+
+.. code-block:: tcsh
+
+    python setup.py install
+
+After download of a ESDC including the corresponding cube.config file and successful installation of the ESDC,
+you are ready to explore the data in the ESDC!
+
+Data Access with the API
+------------------------
+
+In the following the Data Access via a Python notebook in Jupyter is described. All commands do, however, also work in any
+interactive Python environment or in a Python script. `Jupyter <www.http://jupyter.org/>`_ is already included in several Python
+distributions, but can also be installed by a simple
+
+.. code-block:: tcsh
+
+    pip install jupyter
+
+and started from the command line by typing:
+
+.. code-block:: tcsh
+
+    jupyter notebook
+
+This will open an interactive jupyter session in your browser.
+Data access is very similar in Julia and illustrated in `below <cube_usage.html#data-analytics-toolkit>`_.
+
+
+.. different types of usage: raw cube (netcdf, metadata, configuration information), python library, aka get(),Jupyter notebooks,
+how to install
+how to use with example
 
 .. todo:: Responsible BC.
 
-.. _DAT:
 
 Data Analytics Toolkit
 ----------------------

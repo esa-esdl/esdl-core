@@ -14,10 +14,8 @@ EO streams and to explore them simultaneously.
 Hence, the idea is to concatenate data streams such that we obtain a 4-dimensional data cube of the form x(u,v,t,k)
 where k ∈ {1, …, N} denotes the index of the data stream. The focus of this project is therefore on learning how
 to efficiently and reliably create, curate, and explore a 4-dimensional Earth System Data Cube (ESDC).
-
 If feasible, the included data-sets contain uncertainty information. Limitations associated with the transformation
 from source format into the ESDC format are explained in the `description of the data sets <annex.html#Annexes>`__.
-
 The ESDC does not exhibit spatial or temporal gaps, since gaps in the source data are filled during ingestion into
 the ESDC. While all observational values are conserved, gaps are filled with synthetic data, i.e. with data that is created by an
 adequate gap-filling algorithm. Proper data flags ensure an unambiguous distinction between observational and
