@@ -155,22 +155,22 @@ and target cells.
 
 
 .. |im1| image:: pix/CABLAB_samp1.png
-    :width: 400px
+    :width: 100%
     :align: middle
     :alt: Contiguous Oversampling
 
 .. |im2| image:: pix/CABLAB_samp2.png
-    :width: 400px
+    :width: 100%
     :align: middle
     :alt: Discontiguous Overrsampling
 
 .. |im3| image:: pix/CABLAB_samp3.png
-    :width: 400px
+    :width: 100%
     :align: middle
     :alt: Contiguous Undersampling
 
 .. |im4| image:: pix/CABLAB_samp4.png
-    :width: 400px
+    :width: 100%
     :align: middle
     :alt: Discontiguous Undersampling
 
@@ -233,8 +233,8 @@ The ESDC physically consists of a set of netcdf files on disk, which can be acce
       computations are executed remotely. This is the most resource efficient and convenient way of exploring the ESDC.
       The address to the server will be published here once the system is up and running.
 
-In addition a cube.config file containing essential metadata of the ESDC is requires to use to Data Access API. It is automatically
- generated during the generation of the ESDC and available on the ftp server and the CABLAB homepage.
+In addition, a cube.config file containing essential metadata of the ESDC is requires to use to Data Access API. It is automatically
+generated during the generation of the ESDC and available on the ftp server and the CABLAB homepage.
 
 Getting started
 ---------------
@@ -251,7 +251,7 @@ To get started, clone the cablab-core repository from `<https://github.com/CAB-L
 
     git clone https://github.com/CAB-LAB/cablab-core
 
-It will create a new folder cablab-core, which contains a file named setup.py. Before actually installing, the system dependencies should be checked.
+It will create a new folder cablab-core, which contains a file named setup.py. Before installation, the system dependencies should be checked.
 Currently, the cablab-core library requires the following python packages:
 
     * netCDF4 >= 1.2
@@ -268,7 +268,7 @@ architectures, which can be then installed using pip:
     pip install <wheel-file>
 
 Kudos to Christoph Gohlke for the continuous efforts!
-Then the cablab-core library can be installed from terminal (Linux/Unix/MacOs) or shell (Windows):
+The cablab-core library can be installed from terminal (Linux/Unix/MacOs) or shell (Windows):
 
 .. code-block:: tcsh
 
@@ -280,7 +280,7 @@ you are ready to explore the data in the ESDC!
 Data Access with the API
 ------------------------
 
-In the following the Data Access via a Python notebook in Jupyter is described. All commands do, however, also work in any
+In the following, the Data Access via a Python notebook in Jupyter is described. All commands do, however, also work in any
 interactive Python environment or in a Python script. `Jupyter <www.http://jupyter.org/>`_ is already included in several Python
 distributions, but can also be installed by a simple
 
@@ -294,15 +294,31 @@ and started from the command line by typing:
 
     jupyter notebook
 
-This will open an interactive jupyter session in your browser.
-Data access is very similar in Julia and illustrated in `below <cube_usage.html#data-analytics-toolkit>`_.
+This will open an interactive jupyter session in your browser. In the example below, it
+is demonstrated how the user can access a locally stored ESDC, query the content, and get chunks of different sizes for further
+analysis. Some more elaborate demonstrations are also included in the
+`cablab-shared repository on git-hub <https://github.com/CAB-LAB/cablab-shared/tree/master/notebooks>`_ and the `API reference <api_reference.html>`_
+is located in the Annex of this Product Handbook.
 
 
-.. different types of usage: raw cube (netcdf, metadata, configuration information), python library, aka get(),Jupyter notebooks,
-how to install
-how to use with example
+.. image:: pix/CABLAB_DataAcc_1.png
+    :width: 100%
+    :align: center
+    :alt: Data Access API example
 
-.. todo:: Responsible BC.
+A valid configuration file, typically named cube.config, has to be located in the root folder of the ESDC, i.e. in the folder
+you pass to Cube.open(). It contains essential metadata about the ESDC to be loaded and is automatically built during the generation of the ESDC.
+After successful opening the ESDC, chunks of data or the entire data set can be accessed via the get() function. Below we demonstrate basic approaches
+to retrieve different kind of subsets of the ESDC using the Data Access API in Python. The corresponding API for Julia is
+very similar and illustrated in the `Data Analytics Toolkit <cube_usage.html#data-analytics-toolkit>`_ section.
+
+.. image:: pix/CABLAB_DataAcc_2.png
+    :width: 100%
+    :align: center
+    :alt: Data Access API example
+
+Note that the available memory limits the maximum size of the data chunk that can be simultaneously loaded, e.g. a simple cube_reader.get()
+will load the entire ESDC into memory and thus likely fail on most personal computers.
 
 
 Data Analytics Toolkit
