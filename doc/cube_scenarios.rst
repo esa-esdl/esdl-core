@@ -5,7 +5,8 @@ What can I do with the Earth System Data Cube?
 .. BC
 
 Depending on the specific question, the user can extract different types of data subsets from the Earth System Data Cube (ESDC)
-for further processing and analysis with specialized methods from the :ref:`DAT`. For example,
+for further processing and analysis with specialized methods from the
+`Data Analytics Toolkit <cube_usage.html#data-analytics-toolkit>`__. For example,
 
 * investigating the data cube **at a single geographic location**, the user obtains multivariate time series for each
   longitude-latitude pair. These time series can be investigated using established methods of multivariate time series
@@ -29,7 +30,7 @@ The user stories will be implemented in the course of the project to ensure the 
 In addition, project members and their colleagues adopt a data cube approach in their research to
 better understand the complex interrelations in the Earth System.
 Supported by the CAB-LAB project, the work of Sebastian Sippel and colleagues on climate variability and extremes was recently published in
-Geophysical research Letters:
+Geophysical Research Letters:
 
     Sippel, S., Zscheischler, J., Heimann, M., Otto, F. E. L., Peters, J. and Mahecha, M. D. (2015),
     Quantifying changes in climate variability and extremes: Pitfalls and their overcoming,
