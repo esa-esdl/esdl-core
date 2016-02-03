@@ -481,6 +481,7 @@ First we define the atomic function that operates on single time series, which a
 Use Cases and Examples
 ----------------------
 
+.. include:: story1.rst
 
 
 .. todo:: Responsible MPI!
