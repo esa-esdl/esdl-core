@@ -296,30 +296,126 @@ and started from the command line by typing:
 
 This will open an interactive jupyter session in your browser. In the example below, it
 is demonstrated how the user can access a locally stored ESDC, query the content, and get chunks of different sizes for further
-analysis. Some more elaborate demonstrations are also included in the
+analysis. A valid configuration file, typically named cube.config, has to be located in the root folder of the ESDC, i.e. in the folder
+you pass to Cube.open(). It contains essential metadata about the ESDC to be loaded and is automatically built during the generation of the ESDC. Some more elaborate demonstrations are also included in the
 `cablab-shared repository on git-hub <https://github.com/CAB-LAB/cablab-shared/tree/master/notebooks>`_ and the `API reference <api_reference.html>`_
 is located in the Annex of this Product Handbook.
 
+Data Access example
+-------------------
 
-.. image:: pix/CABLAB_DataAcc_1.png
-    :width: 100%
-    :align: center
-    :alt: Data Access API example
+In this notebook, data access using CABLAB's Python API is demonstrated.
 
-A valid configuration file, typically named cube.config, has to be located in the root folder of the ESDC, i.e. in the folder
-you pass to Cube.open(). It contains essential metadata about the ESDC to be loaded and is automatically built during the generation of the ESDC.
+.. code:: python
+
+    from cablab import Cube
+    from cablab import CubeData
+    from datetime import datetime
+    import numpy as np
+
+.. code:: python
+
+    cube = Cube.open("C:\\Users\\gunnar\\src\\CABLAB\\testcube")
+    cube_reader = CubeData(cube)
+
+.. code:: python
+
+    cube_reader.variable_names
+
+
+
+
+.. parsed-literal::
+
+    {'BurntArea': 0,
+     'Emission': 1,
+     'Ozone': 2,
+     'Precip': 3,
+     'SoilMoisture': 4,
+     'tcwv_res': 5}
+
+
 After successful opening the ESDC, chunks of data or the entire data set can be accessed via the get() function. Below we demonstrate basic approaches
 to retrieve different kind of subsets of the ESDC using the Data Access API in Python. The corresponding API for Julia is
 very similar and illustrated in the `Data Analytics Toolkit <cube_usage.html#data-analytics-toolkit>`_ section.
 
-.. image:: pix/CABLAB_DataAcc_2.png
-    :width: 100%
-    :align: center
-    :alt: Data Access API example
+**Get the cube's data**
+
+
+get(variable=None, time=None, latitude=None, longitude=None)
+
+**variable** an variable index or name or an iterable returning multiple
+of these (var1, var2, ...
+
+**time:** a single datetime.datetime object or a 2-element iterable
+(time\_start, time\_end)
+
+**latitude:** a single latitude value or a 2-element iterable
+(latitude\_start, latitude\_end)
+
+**longitude:** a single longitude value or a 2-element iterable
+(longitude\_start, longitude\_end)
+
+**return:** a dictionary mapping variable names --> data arrays of
+dimension (time, latitude, longitude)
+
+**Getting a chunk of 1 variable, all available time steps, and 40 x 40 spatial grid points:**
+
+.. code:: python
+
+    precip_chunk = cube_reader.get('Precip',None,(0,10),(0,10))
+    np.array(precip_chunk).shape
+
+
+
+
+.. parsed-literal::
+
+    (1, 457, 40, 40)
+
+
+
+**Getting time-series at a single point of all variables for the entire period:**
+
+.. code:: python
+
+    time_series = cube_reader.get(None,None,51.34,8.23)
+    [var.shape for var in time_series]
+
+
+
+
+.. parsed-literal::
+
+    [(457,), (457,), (457,), (457,), (457,), (368,)]
+
+
+
+**Getting a complete global image of a variable at a specific time**
+
+
+.. code:: python
+
+    Emission_single_image = cube_reader.get('Emission', datetime(2002,1,1))
+    np.array(Emission_single_image).shape
+
+
+
+
+.. parsed-literal::
+
+    (1, 720, 1440)
+
+
+
+.. code:: python
+
+    cube.close()
+
+
 
 Note that the available memory limits the maximum size of the data chunk that can be simultaneously loaded, e.g. a simple cube_reader.get()
 will load the entire ESDC into memory and thus likely fail on most personal computers.
-
 
 Data Analytics Toolkit
 ----------------------
@@ -332,7 +428,7 @@ Use Cases and Examples
 .. Responsible: MPI
 
 .. todo:: Responsible MPI!
-    *Remark: code snippets and specific example of how-to*
+   *Remark: code snippets and specific example of how-to*
 
 Constraints and Limitations
 ---------------------------
