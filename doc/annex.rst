@@ -9,10 +9,10 @@ In the current version, it briefly summarizes the datasets that have been ingest
 you to respect the usage policy of the owners of the original data. Read also our remarks on
 `Data Policy <intro.html#data-policy>`_.!
 
-==================================================  ===========================================
-Parameter Name                                          Product name
-==================================================  ===========================================
-Albedo 	                                                GlobAlbedo
+==================================================  =========================================== ============
+Parameter Name                                          Product Name                            Availability
+==================================================  =========================================== ============
+Albedo 	                                                GlobAlbedo                                  V1
 BRDF 	                                                GlobAlbedo
 Burned area 	                                        Global Fire Emissions Database (GFED4)
 Carbon and dry matter emission 	                        Global Fire Emissions Database (GFED4)
@@ -49,6 +49,6 @@ Land cover maps 	                                    CCI Land Cover
 Aerosol data 	                                        CCI Aerosol
 Floods 	                                                Global inundation map
 Soil moisture 	                                        WACMOS soil moisture map
-==================================================  ===========================================
+==================================================  =========================================== ============
 
 .. todo:: BC implement automatic generation of the list by extracting meta data from the provider source at ingestion.

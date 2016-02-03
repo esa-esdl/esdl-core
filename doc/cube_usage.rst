@@ -339,25 +339,31 @@ After successful opening the ESDC, chunks of data or the entire data set can be 
 to retrieve different kind of subsets of the ESDC using the Data Access API in Python. The corresponding API for Julia is
 very similar and illustrated in the `Data Analytics Toolkit <cube_usage.html#data-analytics-toolkit>`_ section.
 
+
 **Get the cube's data**
 
+The get() method expects up to four arguments:
 
-get(variable=None, time=None, latitude=None, longitude=None)
+.. parsed-literal::
+    get(variable=None, time=None, latitude=None, longitude=None)
 
-**variable** an variable index or name or an iterable returning multiple
+with
+
+*variable:* a variable index or name or an iterable returning multiple
 of these (var1, var2, ...
 
-**time:** a single datetime.datetime object or a 2-element iterable
+*time:* a single datetime.datetime object or a 2-element iterable
 (time\_start, time\_end)
 
-**latitude:** a single latitude value or a 2-element iterable
+*latitude:* a single latitude value or a 2-element iterable
 (latitude\_start, latitude\_end)
 
-**longitude:** a single longitude value or a 2-element iterable
+*longitude:* a single longitude value or a 2-element iterable
 (longitude\_start, longitude\_end)
 
-**return:** a dictionary mapping variable names --> data arrays of
+*return:* a dictionary mapping variable names --> data arrays of
 dimension (time, latitude, longitude)
+
 
 **Getting a chunk of 1 variable, all available time steps, and 40 x 40 spatial grid points:**
 
@@ -421,22 +427,25 @@ Data Analytics Toolkit
 ----------------------
 
 In addition to the Data Access API which enables the user to conveniently read data from the file, we provide a Data Analytics Toolkit (DAT) to facilitate analysis and
-visualization of the Data Cube. The DAT is hosted on Github and is developed in close interaction with the scientific community. The CABLAB-consortium is leading and directly
-involved in the development of a toolkit for Python and the Julia programming language (https://github.com/CAB-LAB/CABLAB.jl).
+visualization of the ESDC. The DAT is hosted in `CABLAB's github repositiry <https://github.com/CAB-LAB/CABLAB.jl>`_ and is developed in close interaction with the scientific community.
+The CABLAB team is leading the development of the DAT for Python and Julia.
 
 
 Julia implementation of the DAT
 -------------------------------
 
-The current implementation of the Julia Data Anaytics toolkit consists mainly of 3 parts:
+The current implementation of the Julia Data Analytics toolkit consists of 3 parts:
 
-  1. A collection of time series and spatial analysis functions, that are easily applicable to data imported from the Data Cube.
-  2. Functions for visualizing time series and spatial maps of Cube Data.
-  3. A macro that lets a user add custom functions to the Toolkit
+  1. A collection of time-series and spatial analysis functions
+  2. Functions for visualizing time-series and spatial maps
+  3. A macro to conveniently add custom functions to the DAT
 
-1. Collection of analysis functions
+**1. Collection of analysis functions**
 
-We provide a list of methods to perform basic statistical analysis on the DataCube in a most user-friendly way. This means that the user will not have to write source code for applying these basic functions but can simply call a function that accepts a DataCube representation as its first argument. Splitting of the data along the appropriate axex, handling of missing data and formatting the rsults are done automatically  by these Toolkit functions. Here we provide a list of analysis methods that are currently implemented in the DAT. Details about their usage can be found in the DAT documentation:
+We provide several methods to perform basic statistical analyses on the ESDC.
+These methods expect Data Cube representations as first argument.
+Splitting of the data along the appropriate axes, handling of missing data, and formatting of the results
+are automatically dealt with. Currently, the following analytical methods are implemented:
 
   - **removeMSC** subtracts the mean annual cycle of each time series in the Cube
   - **gapFillMSC** uses the mean annual cycle to fill missinf values per time series in the cube
@@ -444,14 +453,20 @@ We provide a list of methods to perform basic statistical analysis on the DataCu
   - **timeVariance** calculates the Variance per time series
   - **timeMean** returns the time mean for each time series in the cube
 
-2. Visualisation of the DataCube
+**2. Visualisation of the DataCube**
 
-For a convenient and interactive visual inspection of the DataCube there are currently two plotting function available: plotTS for plotting time series and plotMAP for plotting maps of the cube data. The resulting plots are interactive. For example when plotting time series of a 4D dataset, there are sliders that let the user move through longitudes and latitudes as well as buttons where one can switch on and off the different variables. The same holds for plotting maps, where one can move through time steps and switch between variables.
+For a convenient and interactive visual inspection of the ESDC two plotting functions are available:
+plotTS for plotting time-series and plotMAP for plotting maps of sptial data.
+The resulting plots are interactive. For example, when plotting time-series of a 4D dataset
+sliders let users move along longitudes and latitudes. Moreover, the selection of variables is realized through buttons.
+The same holds for maps, which users can move through time and switch between variables.
 
-3. Ingesting user-functions into the DAT
+**3. Ingesting user-functions into the DAT**
 
-It is possible for the user to add, for each individual session custom functions to the DAT. Before we explain how to do this we describe how the DAT handles a Cube's dimensions.
-Each cube object has an **axes** property, which is a vector of the cube's axes. Currently the following Axes types are defined:
+User can add custom functions to the DAT for each individual session.
+Before we explain how to do this we describe how the DAT handles a Cube's dimensions.
+Each Cube object has an **axes** property, which is a vector of the Cube's axes.
+Currently the following axes types are defined:
 
   - **LonAxis** represents the cube's longitude dimension
   - **LatAxis** represents the cube's latitude dimension
@@ -459,12 +474,21 @@ Each cube object has an **axes** property, which is a vector of the cube's axes.
   - **VariableAxis** defines the cube's variables
   - **CountryAxis** can be used for by-country variables
 
-As data is read from the DataCube it has the structure of a 4-dimensional array, having the axes Variable, Time, Latitude and Longitude, so its axes will contain the 4 corresponding axes types.
-When one applies a DAT method on a datacube, the resulting datacube might have different dimensions than than the input datacube. For example, if one applies a time average over the cube, the result will be a 3-dimensional cube, the time dimension being eliminated.
+Cube Data has the structure of a 4-dimensional array with the axes Variable, Time, Latitude and Longitude.
+DAT methods may change the dimensionality of the input. For example, if a time average is applied to a 4-dimensional Cube object,
+the result will have only 3 dimensions, since the time dimension has been eliminated.
 
-A function is added to the DAT using the **@registerDATFunction** macro. Its first argument is a function that is supposed to be applied on slices of the datacube. Its signature must have at least 4 input variables: *xin*, *xout*, which are the input and output data arrays and *maskin* and *maskout* which are the input and output mask. The second argument is a tuple containing the axes the function is going to work on. The third argument is a tuple containing the return axes of the operation. After that additional arguments can be passed that are passed to the underlying function.
+A custom function is added to the DAT using the **@registerDATFunction** macro.
+Its first argument is a function that is supposed to be applied on slices of the Cube object.
+Its signature must have at least 4 input variables: **xin**, **xout**, which are the input and output data arrays
+and **maskin** and **maskout** which are the input and output mask.
+The second argument is a tuple containing the axes the function is applied to.
+The third argument is a tuple containing the return axes of the operation.
+Any additional arguments are passed to the underlying function.
 
-To give an example, here is how the Mean seasonal cycle gapfilling function is defined::
+To give an example, here is how the Mean seasonal cycle gap-filling function is defined:
+
+.. code:: Julia
 
     function gapFillMSC(xin::AbstractVector,xout::AbstractVector,maskin::AbstractVector{UInt8},maskout::AbstractVector{UInt8},NpY::Integer)
 
@@ -475,7 +499,15 @@ To give an example, here is how the Mean seasonal cycle gapfilling function is d
 
     @registerDATFunction gapFillMSC (TimeAxis,) (TimeAxis,) NpY::Integer
 
-First we define the atomic function that operates on single time series, which accepts an input and an output vector and mask as its arguments as well as an additional argument which is the number of time steps per year. Then the macro **@registerDATFunction** is called, the input dimension is a TimeAxis as well as the output dimension. Internally this generates a new method of the gapFillMSC function which operates on a Memory representation of a cube object (as returned from a call to getCubeData). It will automatically take care of slicing the data correctly, permute dimensions if necessary and apply the the function and collect the results into an output data structure which is again a memeory representation of a DataCube with the appropriate axes.
+
+First we define an atomic function that operates on single time-series.
+It accepts an input and an output vector and a mask as its arguments as well as an additional argument, which
+is the number of time steps per year. Then the macro **@registerDATFunction** is called, the input dimension
+is a TimeAxis as well as the output dimension. Internally this generates a new method of the gapFillMSC function,
+which operates on a memory representation of a Cube object (as returned from a call to getCubeData).
+It will automatically take care of slicing the data correctly, permute dimensions if necessary, apply
+the function, and collect the results into an output data structure, which is again a memory representation of a Cube object
+with the appropriate axes.
 
 
 Use Cases and Examples
@@ -484,7 +516,7 @@ Use Cases and Examples
 .. include:: story1.rst
 
 
-.. todo:: Responsible MPI!
+.. todo:: Add a second user story!  Responsible MPI!
 
 
 Constraints and Limitations

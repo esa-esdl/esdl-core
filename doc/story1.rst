@@ -1,16 +1,16 @@
 
-Calculating recurrence scores in time series
-============================================
+Calculating recurrence scores in time-series
+--------------------------------------------
 
-.. code:: python
+.. code:: julia
 
     using CABLAB
     using ImageMagick #Necessary for inline Map plots
 
-We define the path to the datacube, choose some variables and read a
+To start, we define the path to the ESDC, choose some variables, and read a
 geographical region into memory.
 
-.. code:: python
+.. code:: Julia
 
     c             = Cube("/Volumes/BGI/scratch/DataCube/v1/brockmann-consult.de/datacube")
     vars          = ["BHR_VIS","BurntArea","DHR_VIS","Emission","SoilMoisture","t2m"];
@@ -18,13 +18,13 @@ geographical region into memory.
     cdata         = joinVars(cdata);
 
 Here starts the actual processing step. Note that each function call has
-the result of the previous call as its argument. The following
+the result of the previous call as its input argument. The following
 processing steps are applied:
 
--  gap Filling with the mean seasonal cycle
+-  gap-filling with information from the mean seasonal cycle
 -  calculating anomalies, i.e. subtract the mean seasonal cycle
 -  normalize the different variables to unit variance
--  caculate recurrence scores to detect outliers
+-  calculate recurrence scores to detect outliers
 
 .. code:: julia
 
@@ -33,9 +33,8 @@ processing steps are applied:
     cube_normalized = normalize(cube_anomalies);
     scores          = recurrences!(cube_normalized,500.0,5,zeros(Float32,506,506));
 
-Here follow some interactive time series plots of the different
-variables, anomalies, and the resulting scores. 3 Extreme events would
-be detected here.
+The results can be visualized by interactive time-series plots of the different
+variables, anomalies, and recurrence scores. In this example, three extreme events are detected.
 
 .. code:: julia
 
