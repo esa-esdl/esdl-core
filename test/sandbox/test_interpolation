@@ -1,0 +1,108 @@
+from unittest import TestCase
+import numpy as np
+from numpy.testing import assert_array_equal
+from skimage.transform import resize
+
+
+class InterpolationTest(TestCase):
+    def test_interpolation_with_kron(self):
+        test_array = np.arange(16).reshape((4, 4))
+        assert_array_equal(test_array[0], [0, 1, 2, 3], verbose=True)
+        assert_array_equal(test_array[1], [4, 5, 6, 7], verbose=True)
+        assert_array_equal(test_array[2], [8, 9, 10, 11], verbose=True)
+        assert_array_equal(test_array[3], [12, 13, 14, 15], verbose=True)
+
+        interpolated_array = np.kron(test_array, np.ones((2, 2)))
+        self.assertEqual(interpolated_array.shape, (8, 8))
+        assert_array_equal(interpolated_array[0], [0, 0, 1, 1, 2, 2, 3, 3], verbose=True)
+        assert_array_equal(interpolated_array[1], [0, 0, 1, 1, 2, 2, 3, 3], verbose=True)
+        assert_array_equal(interpolated_array[2], [4, 4, 5, 5, 6, 6, 7, 7], verbose=True)
+        assert_array_equal(interpolated_array[3], [4, 4, 5, 5, 6, 6, 7, 7], verbose=True)
+        assert_array_equal(interpolated_array[4], [8, 8, 9, 9, 10, 10, 11, 11], verbose=True)
+        assert_array_equal(interpolated_array[5], [8, 8, 9, 9, 10, 10, 11, 11], verbose=True)
+        assert_array_equal(interpolated_array[6], [12, 12, 13, 13, 14, 14, 15, 15], verbose=True)
+        assert_array_equal(interpolated_array[7], [12, 12, 13, 13, 14, 14, 15, 15], verbose=True)
+
+    def test_ma_interpolation_with_kron(self):
+        test_array = np.arange(16).reshape((4, 4))
+        assert_array_equal(test_array[0], [0, 1, 2, 3], verbose=True)
+        assert_array_equal(test_array[1], [4, 5, 6, 7], verbose=True)
+        assert_array_equal(test_array[2], [8, 9, 10, 11], verbose=True)
+        assert_array_equal(test_array[3], [12, 13, 14, 15], verbose=True)
+
+        mask_array = np.full((4, 4), False, dtype=np.bool)
+        mask_array[1:3, 1:3] = True
+        assert_array_equal(mask_array[0], [False, False, False, False], verbose=True)
+        assert_array_equal(mask_array[1], [False, True, True, False], verbose=True)
+        assert_array_equal(mask_array[2], [False, True, True, False], verbose=True)
+        assert_array_equal(mask_array[3], [False, False, False, False], verbose=True)
+
+        masked_array = np.ma.array(test_array, mask=mask_array)
+        self.assertTrue(np.ma.is_masked(masked_array))
+        assert_array_equal(masked_array[0], [0, 1, 2, 3], verbose=True)
+        assert_array_equal(masked_array[1], [4, np.nan, np.nan, 7], verbose=True)
+        assert_array_equal(masked_array[2], [8, np.nan, np.nan, 11], verbose=True)
+        assert_array_equal(masked_array[3], [12, 13, 14, 15], verbose=True)
+
+        interpolated_array = np.kron(masked_array, np.ones((2, 2)))
+        self.assertEqual(interpolated_array.shape, (8, 8))
+        assert_array_equal(interpolated_array[0], [0, 0, 1, 1, 2, 2, 3, 3], verbose=True)
+        assert_array_equal(interpolated_array[1], [0, 0, 1, 1, 2, 2, 3, 3], verbose=True)
+        assert_array_equal(interpolated_array[2], [4, 4, 5, 5, 6, 6, 7, 7], verbose=True)
+        assert_array_equal(interpolated_array[3], [4, 4, 5, 5, 6, 6, 7, 7], verbose=True)
+        assert_array_equal(interpolated_array[4], [8, 8, 9, 9, 10, 10, 11, 11], verbose=True)
+        assert_array_equal(interpolated_array[5], [8, 8, 9, 9, 10, 10, 11, 11], verbose=True)
+        assert_array_equal(interpolated_array[6], [12, 12, 13, 13, 14, 14, 15, 15], verbose=True)
+        assert_array_equal(interpolated_array[7], [12, 12, 13, 13, 14, 14, 15, 15], verbose=True)
+
+    def test_interpolation_with_resize(self):
+        test_array = np.arange(16).reshape((4, 4))
+        test_array[1:3, 1:3] = np.nan
+        assert_array_equal(test_array[0], [0, 1, 2, 3], verbose=True)
+        assert_array_equal(test_array[1], [4, -2147483648, -2147483648, 7], verbose=True)
+        assert_array_equal(test_array[2], [8, -2147483648, -2147483648, 11], verbose=True)
+        assert_array_equal(test_array[3], [12, 13, 14, 15], verbose=True)
+
+        interpolated_array = resize(test_array, (8, 8), preserve_range=True, order=0)
+        self.assertEqual(interpolated_array.shape, (8, 8))
+        assert_array_equal(interpolated_array[0], [0, 0, 1, 1, 2, 2, 3, 3], verbose=True)
+        assert_array_equal(interpolated_array[1], [0, 0, 1, 1, 2, 2, 3, 3], verbose=True)
+        assert_array_equal(interpolated_array[2], [4, 4, 5, 5, 6, 6, 7, 7], verbose=True)
+        assert_array_equal(interpolated_array[3], [4, 4, 5, 5, 6, 6, 7, 7], verbose=True)
+        assert_array_equal(interpolated_array[4], [8, 8, 9, 9, 10, 10, 11, 11], verbose=True)
+        assert_array_equal(interpolated_array[5], [8, 8, 9, 9, 10, 10, 11, 11], verbose=True)
+        assert_array_equal(interpolated_array[6], [12, 12, 13, 13, 14, 14, 15, 15], verbose=True)
+        assert_array_equal(interpolated_array[7], [12, 12, 13, 13, 14, 14, 15, 15], verbose=True)
+
+    def test_ma_interpolation_with_resize(self):
+        test_array = np.arange(16).reshape((4, 4))
+        assert_array_equal(test_array[0], [0, 1, 2, 3], verbose=True)
+        assert_array_equal(test_array[1], [4, 5, 6, 7], verbose=True)
+        assert_array_equal(test_array[2], [8, 9, 10, 11], verbose=True)
+        assert_array_equal(test_array[3], [12, 13, 14, 15], verbose=True)
+
+        mask_array = np.full((4, 4), False, dtype=np.bool)
+        mask_array[1:3, 1:3] = True
+        assert_array_equal(mask_array[0], [False, False, False, False], verbose=True)
+        assert_array_equal(mask_array[1], [False, True, True, False], verbose=True)
+        assert_array_equal(mask_array[2], [False, True, True, False], verbose=True)
+        assert_array_equal(mask_array[3], [False, False, False, False], verbose=True)
+
+        masked_array = np.ma.array(test_array, mask=mask_array)
+        self.assertTrue(np.ma.is_masked(masked_array))
+        assert_array_equal(masked_array[0], [0, 1, 2, 3], verbose=True)
+        assert_array_equal(masked_array[1], [4, np.nan, np.nan, 7], verbose=True)
+        assert_array_equal(masked_array[2], [8, np.nan, np.nan, 11], verbose=True)
+        assert_array_equal(masked_array[3], [12, 13, 14, 15], verbose=True)
+
+        interpolated_array = resize(masked_array, (8, 8), preserve_range=True, order=0)
+        self.assertEqual(interpolated_array.shape, (8, 8))
+        self.assertFalse(np.ma.is_masked(interpolated_array))
+        assert_array_equal(interpolated_array[0], [0, 0, 1, 1, 2, 2, 3, 3], verbose=True)
+        assert_array_equal(interpolated_array[1], [0, 0, 1, 1, 2, 2, 3, 3], verbose=True)
+        assert_array_equal(interpolated_array[2], [4, 4, 5, 5, 6, 6, 7, 7], verbose=True)
+        assert_array_equal(interpolated_array[3], [4, 4, 5, 5, 6, 6, 7, 7], verbose=True)
+        assert_array_equal(interpolated_array[4], [8, 8, 9, 9, 10, 10, 11, 11], verbose=True)
+        assert_array_equal(interpolated_array[5], [8, 8, 9, 9, 10, 10, 11, 11], verbose=True)
+        assert_array_equal(interpolated_array[6], [12, 12, 13, 13, 14, 14, 15, 15], verbose=True)
+        assert_array_equal(interpolated_array[7], [12, 12, 13, 13, 14, 14, 15, 15], verbose=True)
