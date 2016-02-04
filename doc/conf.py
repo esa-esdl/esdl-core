@@ -34,7 +34,7 @@ if on_rtd:
         def __getitem__(cls, name):
             return Mock()
 
-    MOCK_MODULES = ['netCDF4', 'numpy']
+    MOCK_MODULES = ['netCDF4', 'numpy', 'h5py's]
     for mod_name in MOCK_MODULES:
         sys.modules.update({mod_name: Mock()})
 
