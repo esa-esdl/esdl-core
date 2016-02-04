@@ -16,6 +16,26 @@
 import sys
 import os
 import shlex
+from unittest.mock import MagicMock
+
+# to determine if the environment is RTD server
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+
+# ReadTheDocs configuration
+# Mock the dependencies so it does not produce any errors during the RTD build
+
+if on_rtd:
+    class Mock(MagicMock):
+        @classmethod
+        def __getattr__(cls, name):
+                return Mock()
+
+        @classmethod
+        def __getitem__(cls, name):
+            return Mock()
+
+    MOCK_MODULES = ['netCDF4', 'numpy', 'h5py', 'Cython']
+    sys.modules.update({mod_name: Mock()} for mod_name in MOCK_MODULES)
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -360,16 +380,3 @@ epub_exclude_files = ['search.html']
 
 # If false, no index is generated.
 #epub_use_index = True
-
-# ReadTheDocs configuration
-# Mock the dependencies so it does not produce any errors during the RTD build
-import sys
-from unittest.mock import MagicMock
-
-class Mock(MagicMock):
-    @classmethod
-    def __getattr__(cls, name):
-            return Mock()
-
-MOCK_MODULES = ['netCDF4', 'numpy', 'h5py', 'Cython']
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
