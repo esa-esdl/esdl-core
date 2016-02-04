@@ -38,5 +38,5 @@ setup(
         ],
     },
     # *Minimum* requirements
-    install_requires=['h5py', 'numpy', 'netCDF4']
+    install_requires=['numpy', 'netCDF4']
 )

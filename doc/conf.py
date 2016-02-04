@@ -371,5 +371,5 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
             return Mock()
 
-MOCK_MODULES = ['netCDF4', 'numpy', 'h5py']
+MOCK_MODULES = ['netCDF4', 'numpy', 'h5py', 'Cython']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
