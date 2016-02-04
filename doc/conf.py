@@ -360,3 +360,16 @@ epub_exclude_files = ['search.html']
 
 # If false, no index is generated.
 #epub_use_index = True
+
+# ReadTheDocs configuration
+# Mock the dependencies so it does not produce any errors during the RTD build
+import sys
+from unittest.mock import MagicMock
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+            return Mock()
+
+MOCK_MODULES = ['netCDF4', 'numpy', 'h5py', 'Cython']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
