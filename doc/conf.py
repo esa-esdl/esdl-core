@@ -35,7 +35,8 @@ if on_rtd:
             return Mock()
 
     MOCK_MODULES = ['netCDF4', 'numpy', 'h5py', 'Cython']
-    sys.modules.update({mod_name: Mock()} for mod_name in MOCK_MODULES)
+    for mod_name in MOCK_MODULES:
+        sys.modules.update({mod_name: Mock()})
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
