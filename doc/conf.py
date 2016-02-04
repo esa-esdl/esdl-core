@@ -25,6 +25,7 @@ on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 # Mock the dependencies so it does not produce any errors during the RTD build
 
 if on_rtd:
+    sys.path.insert(0, os.path.abspath('../'))
     class Mock(MagicMock):
         @classmethod
         def __getattr__(cls, name):
