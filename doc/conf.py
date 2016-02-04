@@ -26,6 +26,8 @@ on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 if on_rtd:
     sys.path.insert(0, os.path.abspath('../'))
+    sys.path.insert(1, os.path.abspath('../src'))
+
     class Mock(MagicMock):
         @classmethod
         def __getattr__(cls, name):
