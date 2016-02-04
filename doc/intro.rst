@@ -32,7 +32,7 @@ Purpose
 This Product Handbook is a living document that is under active development just as the CAB-LAB project itself.
 Its purpose is to facilitate the usage of the BAVL and primarily targets scientists from various disciplines with a good
 command of one of the supported high-level programming languages (`Python <http://www.python.org>`_, `Julia <http://julialang.org/>`_,
- and `R <http://www.>`_), a solid background in the analysis of
+and `R <http://www.>`_), a solid background in the analysis of
 large data-sets, and a sound understanding of the Earth System.
 The focus of this document is therefore clearly on the description of the data and on the methods to access and manipulate the data.
 
