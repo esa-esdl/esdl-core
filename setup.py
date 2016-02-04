@@ -38,5 +38,5 @@ setup(
         ],
     },
     # *Minimum* requirements
-    install_requires=['numpy']
+    install_requires=['numpy', 'netCDF4']
 )

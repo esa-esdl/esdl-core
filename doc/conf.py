@@ -16,29 +16,6 @@
 import sys
 import os
 import shlex
-from unittest.mock import MagicMock
-
-# to determine if the environment is RTD server
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-
-# ReadTheDocs configuration
-# Mock the dependencies so it does not produce any errors during the RTD build
-
-sys.path.insert(0, os.path.abspath('../'))
-sys.path.insert(1, os.path.abspath('../src'))
-
-class Mock(MagicMock):
-    @classmethod
-    def __getattr__(cls, name):
-            return Mock()
-
-    @classmethod
-    def __getitem__(cls, name):
-        return Mock()
-
-MOCK_MODULES = ['netCDF4', 'numpy', 'h5py']
-for mod_name in MOCK_MODULES:
-    sys.modules.update({mod_name: Mock()})
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
