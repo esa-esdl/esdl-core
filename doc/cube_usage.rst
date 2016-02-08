@@ -516,10 +516,15 @@ Use Cases and Examples
 .. include:: story1.rst
 
 
-.. todo:: Add a second user story!  Responsible MPI!
+.. include:: story2.rst
+
 
 
 Constraints and Limitations
 ---------------------------
 
-.. todo:: Responsible MPI!
+The current imoplementation still has several limitations which will be mitigated in future releases of the DAT. FIrst of all, currently the DAT methods work only on
+data already loaded into memory. So the user has to explicitly load a part of the data cube and then can run analysis on it. This can, on small machines easily lead
+to memory problems. In the future we will extend the DAT so that the functions work also on Cube objects that have not been read into memory yet. This means that methods
+will be provided that read parts of the cube slice by slice and process them, writing the results to a temporary cube on disk.
+The same applies to plotting functions that will be modified to work on Cube objects and will access read only the data necessary for the current plot.
