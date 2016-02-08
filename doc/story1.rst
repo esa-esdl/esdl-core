@@ -1,6 +1,6 @@
 
-Calculating recurrence scores in time-series
---------------------------------------------
+User Story 1: Calculating recurrence scores in time-series
+----------------------------------------------------------
 
 .. code:: julia
 
@@ -42,7 +42,9 @@ variables, anomalies, and recurrence scores. In this example, three extreme even
 
 
 .. image:: story1_files/story1_7_6.png
-
+    :width: 40%
+    :align: center
+    :alt:
 
 
 
@@ -60,7 +62,9 @@ variables, anomalies, and recurrence scores. In this example, three extreme even
 
 
 .. image:: story1_files/story1_8_6.svg
-
+    :width: 40%
+    :align: center
+    :alt:
 
 
 
@@ -84,8 +88,9 @@ variables, anomalies, and recurrence scores. In this example, three extreme even
 
 
 .. image:: story1_files/story1_9_6.svg
-
-
+    :width: 40%
+    :align: center
+    :alt:
 
 
 
@@ -105,6 +110,9 @@ variables, anomalies, and recurrence scores. In this example, three extreme even
 
 
 .. image:: story1_files/story1_10_0.svg
+    :width: 40%
+    :align: center
+    :alt:
 
 .. raw:: html
 

@@ -23,7 +23,7 @@ That is, there are are always at least three dimensions defined
 3. ``time`` - Time dimension.
 
 .. image:: pix/CABLAB_structure.png
-    :width: 400px
+    :width: 40%
     :align: center
     :alt: The spatio-temporal structure of the Earth System Data Cube.
 
@@ -523,8 +523,13 @@ Use Cases and Examples
 Constraints and Limitations
 ---------------------------
 
-The current imoplementation still has several limitations which will be mitigated in future releases of the DAT. FIrst of all, currently the DAT methods work only on
-data already loaded into memory. So the user has to explicitly load a part of the data cube and then can run analysis on it. This can, on small machines easily lead
-to memory problems. In the future we will extend the DAT so that the functions work also on Cube objects that have not been read into memory yet. This means that methods
-will be provided that read parts of the cube slice by slice and process them, writing the results to a temporary cube on disk.
-The same applies to plotting functions that will be modified to work on Cube objects and will access read only the data necessary for the current plot.
+The current implementation of the DAT is subject to several limitations, some of which will be mitigated in future releases of the software.
+Most importantly, the DAT methods currently only work on data loaded into memory. Hence, the user has to explicitly load a part of the ESDC into memory prior
+to run any analysis on it. Obviously, this way the available memory severely constraints the analytical strategy and may even
+render analyses impossible if the ratio between available memory and size of the data chunk of interest is unfavourable.
+In the future, it is anticipated to overcome this limitation by enabling DAT functions to work also on Cube objects that
+are not yet available in memory. In particular, methods will be provided to automatically load and process Cube data
+incrementally, i.e. bit by bit. This will most likely involve writing the interim results to a temporary Cube on disk.
+The same applies to plot functions for Cube objects that will be adjusted to access only the data required for the current
+plot and that will automatically reduce the data resolution if adequate, which in typical cases means that there is more
+data than can be diplayed given the resolution of the plot.

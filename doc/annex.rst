@@ -8,7 +8,7 @@ to the ESDC and provide a more detailed reference to the original data, its offi
 In the current version, it briefly summarizes the datasets that have been ingested to the ECDS so far (yes) or that are
 planned to be available in later versions (V1 or V2). For some data sets, marked with tbc here, we are in the process of
 clarifying technical or legal issues. We kindly remind you to respect the usage policy of the owners of the original data.
- Read also our remarks on `Data Policy <intro.html#data-policy>`_.!
+Read also our remarks on `Data Policy <intro.html#data-policy>`_.!
 
 ==================================================  =========================================== ============
 Parameter Name                                          Product Name                            Availability
