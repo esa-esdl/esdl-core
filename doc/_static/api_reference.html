@@ -1,0 +1,547 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>CAB-LAB API Reference &mdash; Cab-Lab Product Handbook</title>
+    
+    <link rel="stylesheet" href="sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="underscore.js"></script>
+    <script type="text/javascript" src="doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Cab-Lab Product Handbook" href="../index.html" />
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../index.html">Cab-Lab Product Handbook</a> &raquo;</li> 
+      </ul>
+    </div>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-cablab">
+<span id="cab-lab-api-reference"></span><h1>CAB-LAB API Reference<a class="headerlink" href="#module-cablab" title="Permalink to this headline">¶</a></h1>
+<p>Data Cube read-only access:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">cablab</span> <span class="kn">import</span> <span class="n">Cube</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="n">cube</span> <span class="o">=</span> <span class="n">Cube</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;./cablab-cube-v05&#39;</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">([</span><span class="s1">&#39;LAI&#39;</span><span class="p">,</span> <span class="s1">&#39;Precip&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2001</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)],</span> <span class="mf">53.2</span><span class="p">,</span> <span class="mf">12.8</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Data Cube creation/update:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">cablab</span> <span class="kn">import</span> <span class="n">Cube</span><span class="p">,</span> <span class="n">CubeConfig</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="n">cube</span> <span class="o">=</span> <span class="n">Cube</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s1">&#39;./my-cablab-cube&#39;</span><span class="p">,</span> <span class="n">CubeConfig</span><span class="p">(</span><span class="n">spatial_res</span><span class="o">=</span><span class="mf">0.05</span><span class="p">))</span>
+<span class="n">cube</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">MyVar1SourceProvider</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="s1">&#39;./my-cube-sources/var1&#39;</span><span class="p">))</span>
+<span class="n">cube</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">MyVar2SourceProvider</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="s1">&#39;./my-cube-sources/var2&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<dl class="class">
+<dt id="cablab.BaseCubeSourceProvider">
+<em class="property">class </em><code class="descclassname">cablab.</code><code class="descname">BaseCubeSourceProvider</code><span class="sig-paren">(</span><em>cube_config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#BaseCubeSourceProvider"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.BaseCubeSourceProvider" title="Permalink to this definition">¶</a></dt>
+<dd><p>A partial implementation of the <strong>CubeSourceProvider</strong> interface that computes its output image data
+using weighted averages. The weights are computed according to the overlap of source time ranges and a
+requested target time range.</p>
+<dl class="method">
+<dt id="cablab.BaseCubeSourceProvider.compute_variable_images">
+<code class="descname">compute_variable_images</code><span class="sig-paren">(</span><em>period_start</em>, <em>period_end</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#BaseCubeSourceProvider.compute_variable_images"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.BaseCubeSourceProvider.compute_variable_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each source time range that has an overlap with the given target time range compute a weight
+according to the overlapping range. Pass these weights as source index to weight mapping
+to <strong>compute_variable_images_from_sources(index_to_weight)</strong> and return the result.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A dictionary variable name &#8211;&gt; image. Each image must be numpy array-like object of shape
+(grid_height, grid_width) as given by the <strong>CubeConfig</strong>.
+Return <code class="docutils literal"><span class="pre">None</span></code> if no such variables exists for the given target time range.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cablab.BaseCubeSourceProvider.compute_variable_images_from_sources">
+<code class="descname">compute_variable_images_from_sources</code><span class="sig-paren">(</span><em>index_to_weight</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#BaseCubeSourceProvider.compute_variable_images_from_sources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.BaseCubeSourceProvider.compute_variable_images_from_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the target images for all variables from the sources with the given time indices to weights mapping.</p>
+<p>The time indices in <em>index_to_weight</em> are guaranteed to point into the time ranges list returned by
+<strong>get_source_time_ranges()</strong>.</p>
+<p>The weight values in <em>index_to_weight</em> are float values computed from the overlap of source time ranges with
+a requested target time range.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>index_to_weight</strong> &#8211; A dictionary mapping time indexes &#8211;&gt; weight values.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A dictionary variable name &#8211;&gt; image. Each image must be numpy array-like object of shape
+(grid_height, grid_width) as specified by the cube&#8217;s layout configuration <strong>CubeConfig</strong>.
+Return <code class="docutils literal"><span class="pre">None</span></code> if no such variables exists for the given target time range.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cablab.BaseCubeSourceProvider.get_source_time_ranges">
+<code class="descname">get_source_time_ranges</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; list<a class="reference internal" href="_modules/cablab/cube.html#BaseCubeSourceProvider.get_source_time_ranges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.BaseCubeSourceProvider.get_source_time_ranges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a sorted list of all time ranges of every source file.
+Items in this list must be 2-element tuples of datetime instances.
+The list should be pre-computed in the <strong>prepare()</strong> method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cablab.BaseCubeSourceProvider.get_temporal_coverage">
+<code class="descname">get_temporal_coverage</code><span class="sig-paren">(</span><em>) -&gt; (&lt;class 'datetime.datetime'&gt;</em>, <em>&lt;class 'datetime.datetime'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#BaseCubeSourceProvider.get_temporal_coverage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.BaseCubeSourceProvider.get_temporal_coverage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the temporal coverage derived from the value returned by <strong>get_source_time_ranges()</strong>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cablab.BaseCubeSourceProvider.log">
+<code class="descname">log</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#BaseCubeSourceProvider.log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.BaseCubeSourceProvider.log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log a <em>message</em>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> &#8211; The message to be logged.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cablab.Cube">
+<em class="property">class </em><code class="descclassname">cablab.</code><code class="descname">Cube</code><span class="sig-paren">(</span><em>base_dir</em>, <em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#Cube"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.Cube" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a data cube. Use the static <strong>open()</strong> or <strong>create()</strong> methods to obtain data cube objects.</p>
+<dl class="attribute">
+<dt id="cablab.Cube.base_dir">
+<code class="descname">base_dir</code><a class="headerlink" href="#cablab.Cube.base_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>The cube&#8217;s base directory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cablab.Cube.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#Cube.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.Cube.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes the data cube.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cablab.Cube.closed">
+<code class="descname">closed</code><a class="headerlink" href="#cablab.Cube.closed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the cube has been closed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cablab.Cube.config">
+<code class="descname">config</code><a class="headerlink" href="#cablab.Cube.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>The cube&#8217;s configuration. See CubeConfig class.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="cablab.Cube.create">
+<em class="property">static </em><code class="descname">create</code><span class="sig-paren">(</span><em>base_dir</em>, <em>config=CubeConfig(spatial_res=0.250000</em>, <em>grid_x0=0</em>, <em>grid_y0=0</em>, <em>grid_width=1440</em>, <em>grid_height=720</em>, <em>temporal_res=8</em>, <em>ref_time=datetime.datetime(2001</em>, <em>1</em>, <em>1</em>, <em>0</em>, <em>0))</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#Cube.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.Cube.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new data cube. Use the <strong>Cube.update(provider)</strong> method to add data to the cube
+via a source data provider.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>base_dir</strong> &#8211; The data cube&#8217;s base directory. Must not exists.</li>
+<li><strong>config</strong> &#8211; The data cube&#8217;s static information.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A cube instance.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cablab.Cube.data">
+<code class="descname">data</code><a class="headerlink" href="#cablab.Cube.data" title="Permalink to this definition">¶</a></dt>
+<dd><p>The cube&#8217;s data. See <strong>CubeData</strong> class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cablab.Cube.info">
+<code class="descname">info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#Cube.info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.Cube.info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a human-readable information string about this data cube (markdown formatted).</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="cablab.Cube.open">
+<em class="property">static </em><code class="descname">open</code><span class="sig-paren">(</span><em>base_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#Cube.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.Cube.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open an existing data cube. Use the <strong>Cube.update(provider)</strong> method to add data to the cube
+via a source data provider.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>base_dir</strong> &#8211; The data cube&#8217;s base directory which must be empty or non-existent.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A cube instance.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cablab.Cube.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>provider</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#Cube.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.Cube.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the data cube with source data from the given image provider.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>provider</strong> &#8211; An instance of the abstract ImageProvider class</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cablab.CubeConfig">
+<em class="property">class </em><code class="descclassname">cablab.</code><code class="descname">CubeConfig</code><span class="sig-paren">(</span><em>spatial_res=0.25</em>, <em>grid_x0=0</em>, <em>grid_y0=0</em>, <em>grid_width=1440</em>, <em>grid_height=720</em>, <em>temporal_res=8</em>, <em>calendar='gregorian'</em>, <em>ref_time=datetime.datetime(2001</em>, <em>1</em>, <em>1</em>, <em>0</em>, <em>0)</em>, <em>start_time=datetime.datetime(2001</em>, <em>1</em>, <em>1</em>, <em>0</em>, <em>0)</em>, <em>end_time=datetime.datetime(2011</em>, <em>1</em>, <em>1</em>, <em>0</em>, <em>0)</em>, <em>variables=None</em>, <em>file_format='NETCDF4_CLASSIC'</em>, <em>compression=False</em>, <em>model_version='0.1'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#CubeConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.CubeConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>A data cube&#8217;s static configuration information.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>spatial_res</strong> &#8211; The spatial image resolution in degree.</li>
+<li><strong>grid_x0</strong> &#8211; The fixed grid X offset (longitude direction).</li>
+<li><strong>grid_y0</strong> &#8211; The fixed grid Y offset (latitude direction).</li>
+<li><strong>grid_width</strong> &#8211; The fixed grid width in pixels (longitude direction).</li>
+<li><strong>grid_height</strong> &#8211; The fixed grid height in pixels (latitude direction).</li>
+<li><strong>temporal_res</strong> &#8211; The temporal resolution in days.</li>
+<li><strong>ref_time</strong> &#8211; A datetime value which defines the units in which time values are given, namely
+&#8216;days since <em>ref_time</em>&#8216;.</li>
+<li><strong>start_time</strong> &#8211; The inclusive start time of the first image of any variable in the cube given as datetime value.
+<code class="docutils literal"><span class="pre">None</span></code> means unlimited.</li>
+<li><strong>end_time</strong> &#8211; The exclusive end time of the last image of any variable in the cube given as datetime value.
+<code class="docutils literal"><span class="pre">None</span></code> means unlimited.</li>
+<li><strong>variables</strong> &#8211; A list of variable names to be included in the cube.</li>
+<li><strong>file_format</strong> &#8211; The file format used. Must be one of &#8216;NETCDF4&#8217;, &#8216;NETCDF4_CLASSIC&#8217;, &#8216;NETCDF3_CLASSIC&#8217;
+or &#8216;NETCDF3_64BIT&#8217;.</li>
+<li><strong>compression</strong> &#8211; Whether the data should be compressed.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cablab.CubeConfig.date2num">
+<code class="descname">date2num</code><span class="sig-paren">(</span><em>date</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#CubeConfig.date2num"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.CubeConfig.date2num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of days for the given <em>date</em> as a number in the time units
+given by the <code class="docutils literal"><span class="pre">time_units</span></code> property.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>date</strong> &#8211; The date as a datetime.datetime value</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cablab.CubeConfig.easting">
+<code class="descname">easting</code><a class="headerlink" href="#cablab.CubeConfig.easting" title="Permalink to this definition">¶</a></dt>
+<dd><p>The latitude position of the upper-left-most corner of the upper-left-most grid cell
+given by (grid_x0, grid_y0).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cablab.CubeConfig.geo_bounds">
+<code class="descname">geo_bounds</code><a class="headerlink" href="#cablab.CubeConfig.geo_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>The geographical boundary given as ((LL-lon, LL-lat), (UR-lon, UR-lat)).</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="cablab.CubeConfig.load">
+<em class="property">static </em><code class="descname">load</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#CubeConfig.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.CubeConfig.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a CubeConfig from a text file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> &#8211; The file&#8217;s path name.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A new CubeConfig instance</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cablab.CubeConfig.northing">
+<code class="descname">northing</code><a class="headerlink" href="#cablab.CubeConfig.northing" title="Permalink to this definition">¶</a></dt>
+<dd><p>The longitude position of the upper-left-most corner of the upper-left-most grid cell
+given by (grid_x0, grid_y0).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cablab.CubeConfig.num_periods_per_year">
+<code class="descname">num_periods_per_year</code><a class="headerlink" href="#cablab.CubeConfig.num_periods_per_year" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of target periods per year.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cablab.CubeConfig.store">
+<code class="descname">store</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#CubeConfig.store"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.CubeConfig.store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store a CubeConfig in a text file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> &#8211; The file&#8217;s path name.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cablab.CubeConfig.time_units">
+<code class="descname">time_units</code><a class="headerlink" href="#cablab.CubeConfig.time_units" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the time units used by the data cube as string using the format &#8216;days since <em>ref_time</em>&#8216;.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cablab.CubeData">
+<em class="property">class </em><code class="descclassname">cablab.</code><code class="descname">CubeData</code><span class="sig-paren">(</span><em>cube</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#CubeData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.CubeData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents the cube&#8217;s read-only data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cube</strong> &#8211; A <strong>Cube</strong> object.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cablab.CubeData.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#CubeData.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.CubeData.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes this <strong>CubeData</strong> by closing all open datasets.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cablab.CubeData.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>variable=None</em>, <em>time=None</em>, <em>latitude=None</em>, <em>longitude=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#CubeData.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.CubeData.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the cube&#8217;s data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>variable</strong> &#8211; an variable index or name or an iterable returning multiple of these (var1, var2, ...)</li>
+<li><strong>time</strong> &#8211; a single datetime.datetime object or a 2-element iterable (time_start, time_end)</li>
+<li><strong>latitude</strong> &#8211; a single latitude value or a 2-element iterable (latitude_start, latitude_end)</li>
+<li><strong>longitude</strong> &#8211; a single longitude value or a 2-element iterable (longitude_start, longitude_end)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a dictionary mapping variable names &#8211;&gt; data arrays of dimension (time, latitude, longitude)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cablab.CubeData.get_variable">
+<code class="descname">get_variable</code><span class="sig-paren">(</span><em>var_index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#CubeData.get_variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.CubeData.get_variable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a cube variable. Same as, e.g. <code class="docutils literal"><span class="pre">cube.data['Ozone']</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>var_index</strong> &#8211; The variable name or index according to the list returned by the variables property.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a data-access object representing the variable with the dimensions (time, latitude, longitude).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cablab.CubeData.shape">
+<code class="descname">shape</code><a class="headerlink" href="#cablab.CubeData.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the shape of the data cube.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cablab.CubeData.variable_names">
+<code class="descname">variable_names</code><a class="headerlink" href="#cablab.CubeData.variable_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dictionary of variable names to indices.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cablab.CubeSourceProvider">
+<em class="property">class </em><code class="descclassname">cablab.</code><code class="descname">CubeSourceProvider</code><span class="sig-paren">(</span><em>cube_config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#CubeSourceProvider"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.CubeSourceProvider" title="Permalink to this definition">¶</a></dt>
+<dd><p>An abstract interface for objects representing data source providers for the data cube.
+Cube source providers are passed to the <strong>Cube.update()</strong> method.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cube_config</strong> &#8211; Specifies the fixed layout and conventions used for the cube.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cablab.CubeSourceProvider.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#CubeSourceProvider.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.CubeSourceProvider.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called by the cube&#8217;s <strong>update()</strong> method after all images have been retrieved and the provider is no
+longer used.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cablab.CubeSourceProvider.compute_variable_images">
+<code class="descname">compute_variable_images</code><span class="sig-paren">(</span><em>period_start</em>, <em>period_end</em><span class="sig-paren">)</span> &rarr; dict<a class="reference internal" href="_modules/cablab/cube.html#CubeSourceProvider.compute_variable_images"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.CubeSourceProvider.compute_variable_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return variable name to variable image mapping of all provided variables.
+Each image is a numpy array with the shape (height, width) derived from the <strong>get_spatial_coverage()</strong> method.</p>
+<p>The images must be computed (by aggregation or interpolation or copy) from the source data in the given
+time period <em>period_start</em> &lt;= source_data_time &lt; <em>period_end</em> and taking into account other data cube
+configuration settings.</p>
+<p>The method is called by a Cube instance&#8217;s <strong>update()</strong> method for all possible time periods in the time
+range given by the <strong>get_temporal_coverage()</strong> method. The times given are adjusted w.r.t. the cube&#8217;s
+reference time and temporal resolution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>period_start</strong> &#8211; The period start time as a datetime.datetime instance</li>
+<li><strong>period_end</strong> &#8211; The period end time as a datetime.datetime instance</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A dictionary variable name &#8211;&gt; image. Each image must be numpy array-like object of shape
+(grid_height, grid_width) as given by the <strong>CubeConfig</strong>.
+Return <code class="docutils literal"><span class="pre">None</span></code> if no such variables exists for the given target time range.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cablab.CubeSourceProvider.cube_config">
+<code class="descname">cube_config</code><a class="headerlink" href="#cablab.CubeSourceProvider.cube_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>The data cube&#8217;s configuration.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cablab.CubeSourceProvider.get_spatial_coverage">
+<code class="descname">get_spatial_coverage</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; tuple<a class="reference internal" href="_modules/cablab/cube.html#CubeSourceProvider.get_spatial_coverage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.CubeSourceProvider.get_spatial_coverage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the spatial coverage as a rectangle represented by a tuple of integers (x, y, width, height) in the
+cube&#8217;s image coordinates.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A tuple of integers (x, y, width, height) in the cube&#8217;s image coordinates.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cablab.CubeSourceProvider.get_temporal_coverage">
+<code class="descname">get_temporal_coverage</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; tuple<a class="reference internal" href="_modules/cablab/cube.html#CubeSourceProvider.get_temporal_coverage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.CubeSourceProvider.get_temporal_coverage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the start and end time of the available source data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A tuple of datetime.datetime instances (start_time, end_time).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cablab.CubeSourceProvider.get_variable_descriptors">
+<code class="descname">get_variable_descriptors</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; dict<a class="reference internal" href="_modules/cablab/cube.html#CubeSourceProvider.get_variable_descriptors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.CubeSourceProvider.get_variable_descriptors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a variable name to variable descriptor mapping of all provided variables.
+Each descriptor is a dictionary of variable attribute names to their values.
+The attributes <code class="docutils literal"><span class="pre">data_type</span></code> (a numpy data type) and <code class="docutils literal"><span class="pre">fill_value</span></code> are mandatory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">dictionary of variable names to attribute dictionaries</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cablab.CubeSourceProvider.name">
+<code class="descname">name</code><a class="headerlink" href="#cablab.CubeSourceProvider.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The provider&#8217;s name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cablab.CubeSourceProvider.prepare">
+<code class="descname">prepare</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cablab/cube.html#CubeSourceProvider.prepare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cablab.CubeSourceProvider.prepare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called by a Cube instance&#8217;s <strong>update()</strong> method before any other provider methods are called.
+Provider instances should prepare themselves w.r.t. the given cube configuration <em>cube_config</em>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="../index.html">Cab-Lab Product Handbook</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Brockmann Consult GmbH.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+    </div>
+  </body>
+</html>
