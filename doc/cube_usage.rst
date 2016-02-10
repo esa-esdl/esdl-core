@@ -112,6 +112,8 @@ The general approach is as follows: For each variable and a given Cube time peri
 
 The following sections describe each method used in more detail.
 
+.. index:: Gap-filling
+
 Gap-Filling Approach
 ####################
 
@@ -129,6 +131,8 @@ filled with zeros.
 .. todo:: Whoever wrote the above should at least reveal the full name of LAI and give a simple explanation why such a gap-filling may make sense at all.
     Moreover, filling gaps with zeros is in fact gap-filling.
 
+.. index:: Temporal Resampling
+
 Temporal Resampling
 ###################
 
@@ -138,6 +142,8 @@ resulting ESDC target period. If there is more than one contribution in time, th
 according to the temporal overlap with the target period. Finally, target pixel values are computed by averaging
 all weighted values in time not masked by a fill value. By doing so, some temporal gaps are filled implicitly.
 
+
+.. index:: Spatial Resampling
 
 Spatial Resampling
 ##################
@@ -182,6 +188,8 @@ and target cells.
 +-----+-----+
 
 
+.. index:: Land-Water Masking
+
 Land-Water Masking
 ##################
 
@@ -190,6 +198,7 @@ a variable is defined for water surfaces only, land surfaces only, or both. A co
 variables for a given spatial Cube resolution. Masked values are indicated by fill values.
 
 
+.. index:: Constraints and Limitations
 
 Constraints and Limitations
 ---------------------------
@@ -209,12 +218,16 @@ informed user to evaluate the validity and consistency of the processed data and
 
 .. todo:: Elaborate further! Or at least revise if you feel like it.
 
+.. index:: Dataset Usage
+
 Dataset Usage
 =============
 
 There are several ways to interact with the ESDC and depending your expertise, resources and, requirements the preferred
 method will vary. The CABLAB team is eager to learn more about user needs to continuously improve the capabilities of the
 ESDC.
+
+.. index:: Dataset Access Service
 
 Dataset Access Service
 ----------------------
@@ -277,6 +290,9 @@ The cablab-core library can be installed from terminal (Linux/Unix/MacOs) or she
 After download of a ESDC including the corresponding cube.config file and successful installation of the ESDC,
 you are ready to explore the data in the ESDC!
 
+
+.. index:: Data Access with the API
+
 Data Access with the API
 ------------------------
 
@@ -300,6 +316,9 @@ analysis. A valid configuration file, typically named cube.config, has to be loc
 you pass to Cube.open(). It contains essential metadata about the ESDC to be loaded and is automatically built during the generation of the ESDC. Some more elaborate demonstrations are also included in the
 `cablab-shared repository on git-hub <https://github.com/CAB-LAB/cablab-shared/tree/master/notebooks>`_ and the `API reference <api_reference.html>`_
 is located in the Annex of this Product Handbook.
+
+
+.. index:: Data Access example
 
 Data Access example
 -------------------
@@ -422,6 +441,9 @@ dimension (time, latitude, longitude)
 
 Note that the available memory limits the maximum size of the data chunk that can be simultaneously loaded, e.g. a simple cube_reader.get()
 will load the entire ESDC into memory and thus likely fail on most personal computers.
+
+
+.. index:: Data Analytics Toolkit, DAT
 
 Data Analytics Toolkit
 ----------------------
