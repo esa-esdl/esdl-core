@@ -6,6 +6,7 @@ Contents:
 
 .. toctree::
    :maxdepth: 3
+   :numbered:
 
    intro
    cube_explanation
