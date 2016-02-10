@@ -234,7 +234,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   (master_doc, 'CAB-LAB.tex', 'CAB-LAB Documentation',
-   [author1, author2, author3], 'manual'),
+   r'Brockmann Consult GmbH \and MPI Biogeochemistry Jena \and Stockholm Resilience Centre', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
