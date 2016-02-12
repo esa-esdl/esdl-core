@@ -12,7 +12,7 @@ geographical region into memory.
 
 .. code:: Julia
 
-    c             = Cube("/Volumes/BGI/scratch/DataCube/v1/brockmann-consult.de/datacube")
+    c             = Cube("/path/to/datacube/")
     vars          = ["BHR_VIS","BurntArea","DHR_VIS","Emission","SoilMoisture","t2m"];
     cdata         = getCubeData(c,latitude=(35,45), longitude=(-10,0),variable=vars);
     cdata         = joinVars(cdata);
@@ -41,7 +41,7 @@ variables, anomalies, and recurrence scores. In this example, three extreme even
     plotTS(cube_filled)
 
 
-.. image:: story1_files/story1_7_6.png
+.. image:: story1_files/story1_7_6.svg
     :width: 40%
     :align: center
     :alt:

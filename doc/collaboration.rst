@@ -26,6 +26,6 @@ Important updates on the project's progress are frequently published on the CAB-
 Moreover, in the `forum of the webpage <http://earthsystemdatacube.net/cab-lab/forum/cab-lab/>`_ you can easily interact with project members and users!
 Or simply write an email to info@earthsystemdatacube.net to get in contact with the project members.
 
-Result Publishing
-=================
+.. Result Publishing
+.. =================
 .. todo:: GB no idea what this  refers to. ask someone.

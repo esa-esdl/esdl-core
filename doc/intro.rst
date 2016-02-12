@@ -123,4 +123,4 @@ the respective data owners.
 
     Please cite the Earth System Data Cube as:
 
-    The CAB-LAB developer team (2015). The Earth System Data Cube (Version 0.1), available at: https://github.com/CAB-LAB.
+    The CAB-LAB developer team (2016). The Earth System Data Cube (Version 0.1), available at: https://github.com/CAB-LAB.

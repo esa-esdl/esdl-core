@@ -11,14 +11,14 @@ A Cube object is defined by its path. Data can be read into memory using the get
 
 .. code:: julia
 
-    c             = Cube("/Volumes/BGI/scratch/DataCube/v1/brockmann-consult.de/datacube/")
+    c             = Cube("/path/to/datacube/")
     cdata         = getCubeData(c,variable="SoilMoisture",latitude=(35,65), longitude=(-15,40));
 
 Here we demonstrate how to add a user-defined function that capitalizes on the DAT's
 capabilities. First, a function with the signature *xin*
 (input data), *xout* (output data), *maskin* (input mask), *maskout*
-(output mask) is defined. In this simple case the sample function *varianceTime* calculates the variance of a time
-series. Then @registerDATFunction macro is called , which creates a
+(output mask) is defined. In this simple case, the sample function *varianceTime* calculates the variance of a time
+series. Then @registerDATFunction macro is called, which creates a
 wrapper around the function and makes it applicable to a Cube object.
 
 .. code:: julia
@@ -47,7 +47,7 @@ wrapper around the function and makes it applicable to a Cube object.
     @registerDATFunction varianceTime (TimeAxis,) ();
 
 The function can be called with the three-dimensional Cube object as its argument and returns the time variance
-for each of the grid points defined by the two spatial dimensions of the Cube.
+for each of the grid points defined by the two spatial dimensions of the ESDC.
 
 .. code:: julia
 
@@ -55,7 +55,7 @@ for each of the grid points defined by the two spatial dimensions of the Cube.
     cube_anomalies = removeMSC!(cdata,46);
     v2             = varianceTime(cube_anomalies);
 
-Then, the spatial mean of the time variances canbe determined using the DAT function *spatialMean*.
+Then, the spatial mean of the time variances can be determined using the DAT function *spatialMean*.
 
 .. code:: julia
 
@@ -83,7 +83,7 @@ Spatial data can also be visualised as maps, in this case the original soil mois
     :align: center
     :alt:
 
-Accordingly, variance maps look like:
+Accordingly, the respective variance maps look like:
 
 .. code:: julia
 

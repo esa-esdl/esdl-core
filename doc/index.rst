@@ -11,6 +11,7 @@ Contents:
    cube_explanation
    cube_scenarios
    cube_usage
+   dat_usage
    collaboration
    api_reference
    annex

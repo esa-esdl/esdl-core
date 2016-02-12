@@ -6,7 +6,7 @@ What can I do with the Earth System Data Cube?
 
 Depending on the specific question, the user can extract different types of data subsets from the Earth System Data Cube (ESDC)
 for further processing and analysis with specialized methods from the
-`Data Analytics Toolkit <cube_usage.html#data-analytics-toolkit>`__. For example,
+`Data Analytics Toolkit <dat_usage.html#the-data-analytics-toolkit>`__. For example,
 
 * investigating the data cube **at a single geographic location**, the user obtains multivariate time series for each
   longitude-latitude pair. These time series can be investigated using established methods of multivariate time series
