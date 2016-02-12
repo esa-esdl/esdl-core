@@ -85,6 +85,8 @@ Grid                     The Data Cube's layout given by its spatial and tempora
 Image                    An 2D data cube subset with dimension (lat, lon)
 =======================  =============================================================================================
 
+.. index:: Legal information
+
 Legal information
 =================
 
@@ -106,6 +108,8 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see http://www.gnu.org/licenses/.
 
 Copyright (C) 2016  The CAB-LAB developer team.
+
+.. index:: Data Policy
 
 Data Policy
 ===========

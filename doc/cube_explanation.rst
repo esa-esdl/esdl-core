@@ -1,3 +1,5 @@
+.. index:: Earth System Data Cube
+
 ===================================
 What is the Earth System Data Cube?
 ===================================
@@ -21,6 +23,8 @@ the ESDC. While all observational values are conserved, gaps are filled with syn
 adequate gap-filling algorithm. Proper data flags ensure an unambiguous distinction between observational and
 synthetic data values.
 
+.. index:: ESDC Macro Structure
+
 ESDC Macro Structure
 =========================
 
@@ -30,6 +34,8 @@ of the subsystems of interest:
 * Land surface
 * Atmospheric forcing
 * Socio-economic data
+
+.. index:: Cube Spatial and Temporal Coverage
 
 Spatial and Temporal Coverage
 =============================

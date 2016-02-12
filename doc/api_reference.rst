@@ -2,5 +2,6 @@
 CAB-LAB API Reference
 =====================
 
-.. automodule:: cablab
-   :members:
+.. index:: API
+
+Cab-Lab API Reference is available `here <_static/api_reference.html>`_.
