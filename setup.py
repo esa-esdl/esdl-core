@@ -33,7 +33,8 @@ setup(
             'snow_area_extent = cablab.providers.snow_area_extent:SnowAreaExtentProvider',
             'aerosols = cablab.providers.aerosols:AerosolsProvider',
             'globvapour = cablab.providers.globvapour:GlobVapourProvider',
-            'air_temperature = cablab.providers.air_temperature:AirTemperatureProvider'
+            'air_temperature = cablab.providers.air_temperature:AirTemperatureProvider',
+            'snow_water_equivalent = cablab.providers.snow_water_equivalent:SnowWaterEquivalentProvider'
 
         ],
     },
