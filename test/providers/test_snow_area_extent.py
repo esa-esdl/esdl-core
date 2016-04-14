@@ -46,7 +46,7 @@ class SnowAreaExtentProviderTest(unittest.TestCase):
     def test_get_images(self):
         provider = SnowAreaExtentProvider(CubeConfig(), SOURCE_DIR)
         provider.prepare()
-        images = provider.compute_variable_images(datetime(2005, 1, 1), datetime(2005, 1, 9))
+        images = provider.compute_variable_images(datetime(2003, 1, 1), datetime(2003, 2, 11))
         self.assertIsNotNone(images)
         self.assertTrue('MFSC' in images)
         image = images['MFSC']
@@ -57,7 +57,7 @@ class SnowAreaExtentProviderTest(unittest.TestCase):
     def test_get_images_from_single_time_period(self):
         provider = SnowAreaExtentProvider(CubeConfig(), SOURCE_DIR)
         provider.prepare()
-        images = provider.compute_variable_images(datetime(2003, 1, 1), datetime(2003, 1, 9))
+        images = provider.compute_variable_images(datetime(2003, 1, 1), datetime(2003, 1, 31))
         self.assertIsNotNone(images)
         self.assertTrue('MFSC' in images)
         image = images['MFSC']

@@ -4,7 +4,7 @@ import numpy
 import netCDF4
 from cablab import BaseCubeSourceProvider
 from cablab.util import NetCDFDatasetCache, aggregate_images
-from skimage.transform import resize
+import cablab.resize as resize
 
 VAR_NAME = 'tcwv_res'
 
@@ -51,8 +51,9 @@ class GlobVapourProvider(BaseCubeSourceProvider):
             i = next(iter(new_indices))
             file, time_index = self._get_file_and_time_index(i)
             dataset = self.dataset_cache.get_dataset(file)
-            globvapour = resize(dataset.variables[VAR_NAME][time_index, :, :], (720, 1440), preserve_range=True,
-                                order=3)
+            globvapour = dataset.variables[VAR_NAME]
+            _, lat_size, lon_size = globvapour.shape
+            globvapour = resize.resize(lon_size, lat_size, globvapour[time_index, :, :], 1440, 720, order=3)
         else:
             images = [None] * len(new_indices)
             weights = [None] * len(new_indices)
@@ -60,8 +61,9 @@ class GlobVapourProvider(BaseCubeSourceProvider):
             for i in new_indices:
                 file, time_index = self._get_file_and_time_index(i)
                 dataset = self.dataset_cache.get_dataset(file)
-                variable = resize(dataset.variables[VAR_NAME][time_index, :, :], (720, 1440), preserve_range=True,
-                                  order=3)
+                variable = dataset.variables[VAR_NAME]
+                _, lat_size, lon_size = variable.shape
+                variable = resize.resize(lon_size, lat_size, variable[time_index, :, :], 1440, 720, order=3)
                 images[j] = variable
                 weights[j] = index_to_weight[i]
                 j += 1
@@ -86,9 +88,9 @@ class GlobVapourProvider(BaseCubeSourceProvider):
         dir_names = os.listdir(self.dir_path)
 
         for dir_name in dir_names:
-            file_names = os.listdir(os.path.join(self.dir_path,dir_name))
+            file_names = os.listdir(os.path.join(self.dir_path, dir_name))
             for file_name in file_names:
-                file = os.path.join(self.dir_path,dir_name,file_name)
+                file = os.path.join(self.dir_path, dir_name, file_name)
                 dataset = self.dataset_cache.get_dataset(file)
                 time = dataset.variables['time']
                 dates1 = netCDF4.num2date(time[:], 'days since 1970-01-01 00:00:00', calendar='gregorian')

@@ -7,6 +7,7 @@ import netCDF4
 from cablab import BaseCubeSourceProvider
 from cablab.util import NetCDFDatasetCache
 from skimage.measure import block_reduce
+import cablab.resize as resize
 
 VAR_NAME = 'MFSC'
 
@@ -56,7 +57,7 @@ class SnowAreaExtentProvider(BaseCubeSourceProvider):
             snow_area_extent.filled(numpy.nan)
         else:
             weight_sum = 0.0
-            snow_area_extent_sum = numpy.zeros((18000, 36000), dtype=numpy.float32)
+            snow_area_extent_sum = numpy.zeros((18000, 36000), dtype=numpy.float64)
             for i in new_indices:
                 weight = index_to_weight[i]
                 file, time_index = self._get_file_and_time_index(i)
@@ -75,12 +76,8 @@ class SnowAreaExtentProvider(BaseCubeSourceProvider):
             raise ValueError('illegal downscale factor, '
                              'the downscale factor has to be an integer value.')
 
-        print(snow_area_extent[snow_area_extent == numpy.nan])
-
-        snow_area_extent = block_reduce(snow_area_extent, (latitude_downscale_factor, longitude_downscale_factor),
-                                        func=numpy.ma.mean)
-
-        print(snow_area_extent[snow_area_extent == numpy.nan])
+        snow_area_extent = resize.resize(lon_size, lat_size, snow_area_extent, self.cube_config.grid_width,
+                                         self.cube_config.grid_height)
 
         return {VAR_NAME: snow_area_extent}
 
