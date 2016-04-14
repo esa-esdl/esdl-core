@@ -519,11 +519,15 @@ class Cube:
                 self._init_variable_dataset(provider, dataset, var_name)
             datasets[filename] = dataset
 
-        var_start_time = dataset.variables['start_time']
-        var_start_time[time_index] = self._config.date2num(target_start_time)
+        t1 = self._config.date2num(target_start_time)
+        t2 = self._config.date2num(target_end_time)
 
-        var_end_time = dataset.variables['end_time']
-        var_end_time[time_index] = self._config.date2num(target_end_time)
+        var_time = dataset.variables['time']
+        var_time[time_index] = t1 + 0.5 * (t2 - t1)
+
+        var_time_bnds = dataset.variables['time_bnds']
+        var_time_bnds[time_index, 0] = t1
+        var_time_bnds[time_index, 1] = t2
 
         var_variable = dataset.variables[var_name]
         var_variable[time_index, :, :] = image
@@ -532,19 +536,21 @@ class Cube:
 
         image_x0, image_y0, image_width, image_height = provider.get_spatial_coverage()
 
+        dataset.createDimension('bnds', 2)
         dataset.createDimension('time', self._config.num_periods_per_year)
         dataset.createDimension('lat', image_height)
         dataset.createDimension('lon', image_width)
 
-        var_start_time = dataset.createVariable('start_time', 'f8', ('time',), fill_value=-9999.0)
-        var_start_time.units = self._config.time_units
-        var_start_time.calendar = self._config.calendar
-        var_start_time[:] = -9999.0
+        var_time = dataset.createVariable('time', 'f8', ('time',), fill_value=-9999.0)
+        var_time.units = self._config.time_units
+        var_time.calendar = self._config.calendar
+        var_time.bounds = 'time_bnds'
+        var_time[:] = -9999.0
 
-        var_end_time = dataset.createVariable('end_time', 'f8', ('time',), fill_value=-9999.0)
-        var_end_time.units = self._config.time_units
-        var_end_time.calendar = self._config.calendar
-        var_end_time[:] = -9999.0
+        var_time_bnds = dataset.createVariable('time_bnds', 'f8', ('time', 'bnds'), fill_value=-9999.0)
+        var_time_bnds.units = self._config.time_units
+        var_time_bnds.calendar = self._config.calendar
+        var_time_bnds[:] = -9999.0
 
         var_longitude = dataset.createVariable('lon', 'f4', ('lon',))
         var_longitude.units = 'degrees_east'
@@ -564,7 +570,8 @@ class Cube:
         # dataset.source = 'CAB-LAB Software (module ' + __name__ + ')'
         # dataset.history = 'Created ' + time.ctime(time.time())
         #
-        # check (nf 20151023) - add more global attributes from CF-conventions here
+        # check (nf 20151023) - add more global attributes from CF-conventions here,
+        #                       especially those that reference original sources and originators
         #
         variable_descriptors = provider.get_variable_descriptors()
         variable_attributes = variable_descriptors[variable_name]
@@ -647,18 +654,29 @@ class CubeData:
         """
         Get a cube variable. Same as, e.g. ``cube.data['Ozone']``.
 
-        :param var_index: The variable name or index according to the list returned by the variables property.
+        :param var_index: The variable name or index according to the list returned by the ``variable_names`` property.
         :return: a data-access object representing the variable with the dimensions (time, latitude, longitude).
         """
         if isinstance(var_index, str):
             var_index = self._var_name_to_var_index[var_index]
         return self._get_or_open_variable(var_index)
 
+    def get_dataset(self, var_index):
+        """
+        Get the dataset associated with a cube variable.
+
+        :param var_index: The variable name or index according to the list returned by the ``variable_names`` property.
+        :return: a data-access object representing the variable with the dimensions (time, latitude, longitude).
+        """
+        if isinstance(var_index, str):
+            var_index = self._var_name_to_var_index[var_index]
+        return self._datasets[var_index] if var_index >= 0 and var_index < len(self._datasets) else None
+
     def __getitem__(self, index):
         """
         Get a cube variable. Same as, e.g. ``cube.data.get_variable('Ozone')``.
 
-        :param index: The variable name or index according to the list returned by the variables property.
+        :param index: The variable name or index according to the list returned by the ``variable_names`` property.
         :return: a data-access object representing the variable with the dimensions (time, latitude, longitude).
         """
         return self.get_variable(index)
