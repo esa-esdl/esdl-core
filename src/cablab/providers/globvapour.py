@@ -4,7 +4,7 @@ import numpy
 import netCDF4
 from cablab import BaseCubeSourceProvider
 from cablab.util import NetCDFDatasetCache, aggregate_images
-import cablab.resize as resize
+import gridtools.resampling as gtr
 
 VAR_NAME = 'tcwv_res'
 
@@ -53,7 +53,8 @@ class GlobVapourProvider(BaseCubeSourceProvider):
             dataset = self.dataset_cache.get_dataset(file)
             globvapour = dataset.variables[VAR_NAME]
             _, lat_size, lon_size = globvapour.shape
-            globvapour = resize.resize(lon_size, lat_size, globvapour[time_index, :, :], 1440, 720, order=3)
+            globvapour = gtr.resample2d(globvapour[time_index, :, :], 1440, 720,
+                                        us_method=gtr.US_NEAREST, fill_value=-999.0)
         else:
             images = [None] * len(new_indices)
             weights = [None] * len(new_indices)
@@ -63,7 +64,8 @@ class GlobVapourProvider(BaseCubeSourceProvider):
                 dataset = self.dataset_cache.get_dataset(file)
                 variable = dataset.variables[VAR_NAME]
                 _, lat_size, lon_size = variable.shape
-                variable = resize.resize(lon_size, lat_size, variable[time_index, :, :], 1440, 720, order=3)
+                variable = gtr.resample2d(variable[time_index, :, :], 1440, 720,
+                                          us_method=gtr.US_NEAREST, fill_value=-999.0)
                 images[j] = variable
                 weights[j] = index_to_weight[i]
                 j += 1

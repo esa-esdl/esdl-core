@@ -1,5 +1,6 @@
 import os
 import unittest
+import numpy as np
 from datetime import datetime
 
 from cablab import CubeConfig
@@ -51,3 +52,4 @@ class SnowWaterEquivalentProviderTest(unittest.TestCase):
         self.assertTrue('SWE' in images)
         image = images['SWE']
         self.assertEqual((720, 1440), image.shape)
+        self.assertEqual(0, np.isnan(image).sum())

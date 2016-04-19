@@ -6,8 +6,7 @@ import netCDF4
 
 from cablab import BaseCubeSourceProvider
 from cablab.util import NetCDFDatasetCache
-from skimage.measure import block_reduce
-import cablab.resize as resize
+import gridtools.resampling as gtr
 
 VAR_NAME = 'MFSC'
 
@@ -52,8 +51,7 @@ class SnowAreaExtentProvider(BaseCubeSourceProvider):
         if len(new_indices) == 1:
             i = next(iter(new_indices))
             file, time_index = self._get_file_and_time_index(i)
-            dataset = self.dataset_cache.get_dataset(file)
-            snow_area_extent = 1.0 * dataset.variables[VAR_NAME][time_index, :, :]
+            snow_area_extent = 1.0 * self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
             snow_area_extent.filled(numpy.nan)
         else:
             weight_sum = 0.0
@@ -61,8 +59,7 @@ class SnowAreaExtentProvider(BaseCubeSourceProvider):
             for i in new_indices:
                 weight = index_to_weight[i]
                 file, time_index = self._get_file_and_time_index(i)
-                dataset = self.dataset_cache.get_dataset(file)
-                snow_area_extent = dataset.variables[VAR_NAME]
+                snow_area_extent = self.dataset_cache.get_dataset(file).variables[VAR_NAME]
                 snow_area_extent_sum += weight * snow_area_extent[time_index, :, :]
                 weight_sum += weight
             snow_area_extent = snow_area_extent_sum / weight_sum
@@ -76,8 +73,7 @@ class SnowAreaExtentProvider(BaseCubeSourceProvider):
             raise ValueError('illegal downscale factor, '
                              'the downscale factor has to be an integer value.')
 
-        snow_area_extent = resize.resize(lon_size, lat_size, snow_area_extent, self.cube_config.grid_width,
-                                         self.cube_config.grid_height)
+        snow_area_extent = gtr.resample2d(snow_area_extent, self.cube_config.grid_width, self.cube_config.grid_height)
 
         return {VAR_NAME: snow_area_extent}
 

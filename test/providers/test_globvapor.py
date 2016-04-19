@@ -11,7 +11,6 @@ SOURCE_DIR = Config.instance().get_cube_source_path('globvapour\\GOME_SCIA_GOME2
 
 class GlobVapourProviderTest(unittest.TestCase):
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
-
     def test_source_time_ranges(self):
         provider = GlobVapourProvider(CubeConfig(), SOURCE_DIR)
         provider.prepare()
@@ -19,7 +18,7 @@ class GlobVapourProviderTest(unittest.TestCase):
         self.assertEqual(156, len(source_time_ranges))
         self.assertEqual((datetime(1996, 1, 1, 0, 0),
                           datetime(1996, 2, 1, 0, 0),
-                          os.path.join(SOURCE_DIR,'1996\\GV_GOMExxxxxxx_MM_19960101_E_3.nc'),
+                          os.path.join(SOURCE_DIR, '1996\\GV_GOMExxxxxxx_MM_19960101_E_3.nc'),
                           0), source_time_ranges[0])
 
         self.assertEqual((datetime(2006, 6, 1, 0, 0),
@@ -32,15 +31,14 @@ class GlobVapourProviderTest(unittest.TestCase):
                           os.path.join(SOURCE_DIR, '2008\\GV_GOME2xxxxxx_MM_20081201_E_3.nc'),
                           0), source_time_ranges[155])
 
-
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_temporal_coverage(self):
-         provider = GlobVapourProvider(CubeConfig(), SOURCE_DIR)
-         provider.prepare()
-         temporal_coverage = provider.get_temporal_coverage()
-         self.assertEqual((datetime(1996, 1, 1, 0, 0),
-                           datetime(2009, 1, 1, 0, 0)),
-                           temporal_coverage)
+        provider = GlobVapourProvider(CubeConfig(), SOURCE_DIR)
+        provider.prepare()
+        temporal_coverage = provider.get_temporal_coverage()
+        self.assertEqual((datetime(1996, 1, 1, 0, 0),
+                          datetime(2009, 1, 1, 0, 0)),
+                         temporal_coverage)
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_get_images(self):

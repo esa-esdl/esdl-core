@@ -1,15 +1,15 @@
 import unittest
 
 import numpy as np
-
-from cablab.resize import resize
+import gridtools.resampling as gtr
 
 F = np.nan
 
 
 def test_resize(sw, sh, source, dw, dh, dest_desired):
-    actual = resize(sw, sh, np.array(source), dw, dh)
-    np.testing.assert_almost_equal(actual, np.array(dest_desired), err_msg='Cython resizer impl.')
+    actual = gtr.resample2d(np.array(source), dw, dh)
+    np.testing.assert_almost_equal(actual, np.array(dest_desired),
+                                   err_msg='gridtools resampler does not return expected result')
 
 
 class ResizerTest(unittest.TestCase):

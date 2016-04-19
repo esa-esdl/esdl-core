@@ -6,8 +6,6 @@ except ImportError:
     ez_setup.use_setuptools()
 
 from setuptools import setup, find_packages
-from Cython.Build import cythonize
-import numpy
 
 setup(
     name="cablab-core",
@@ -41,7 +39,5 @@ setup(
         ],
     },
     # *Minimum* requirements
-    install_requires=['numpy', 'netCDF4'],
-    ext_modules=cythonize(["src/cablab/*.pyx"]),
-    include_dirs=[numpy.get_include()]
+    install_requires=['numpy', 'netCDF4', 'gridtools'],
 )
