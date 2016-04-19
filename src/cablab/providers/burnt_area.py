@@ -3,20 +3,18 @@ import os
 
 import numpy
 import netCDF4
+import gridtools.resampling as gtr
 
 from cablab import BaseCubeSourceProvider
 from cablab.util import NetCDFDatasetCache, aggregate_images
 
 VAR_NAME = 'BurntArea'
+FILL_VALUE = -9999.0
 
 
 class BurntAreaProvider(BaseCubeSourceProvider):
     def __init__(self, cube_config, dir_path):
         super(BurntAreaProvider, self).__init__(cube_config)
-        # todo (nf 20151028) - remove check once we have addressed spatial aggregation/interpolation, see issue #3
-        if cube_config.grid_width != 1440 or cube_config.grid_height != 720:
-            raise ValueError('illegal cube configuration, '
-                             'provider does not yet implement proper spatial aggregation/interpolation')
         self.dir_path = dir_path
         self.source_time_ranges = None
         self.dataset_cache = NetCDFDatasetCache(VAR_NAME)
@@ -29,7 +27,7 @@ class BurntAreaProvider(BaseCubeSourceProvider):
         return {
             VAR_NAME: {
                 'data_type': numpy.float32,
-                'fill_value': -9999.0,
+                'fill_value': FILL_VALUE,
                 'units': 'hectares',
                 'long_name': 'Monthly Burnt Area',
                 'scale_factor': 1.0,
@@ -67,6 +65,8 @@ class BurntAreaProvider(BaseCubeSourceProvider):
                 j += 1
             burnt_area = aggregate_images(images, weights=weights)
 
+        burnt_area = gtr.resample2d(burnt_area, self.cube_config.grid_width, self.cube_config.grid_height,
+                                    us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
         return {VAR_NAME: burnt_area}
 
     def _get_file_and_time_index(self, i):
@@ -76,7 +76,7 @@ class BurntAreaProvider(BaseCubeSourceProvider):
         return self.source_time_ranges
 
     def get_spatial_coverage(self):
-        return 0, 0, 1440, 720
+        return 0, 0, self.cube_config.grid_width, self.cube_config.grid_height
 
     def close(self):
         self.dataset_cache.close_all_datasets()
