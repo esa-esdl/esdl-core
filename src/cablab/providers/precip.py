@@ -51,8 +51,7 @@ class PrecipProvider(BaseCubeSourceProvider):
         if len(new_indices) == 1:
             i = next(iter(new_indices))
             file, time_index = self._get_file_and_time_index(i)
-            dataset = self.dataset_cache.get_dataset(file)
-            precip = numpy.kron(dataset.variables[VAR_NAME][time_index, :, :], numpy.ones((2, 2)))
+            precip = self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
         else:
             images = [None] * len(new_indices)
             weights = [None] * len(new_indices)
@@ -60,8 +59,7 @@ class PrecipProvider(BaseCubeSourceProvider):
             for i in new_indices:
                 file, time_index = self._get_file_and_time_index(i)
                 dataset = self.dataset_cache.get_dataset(file)
-                variable = dataset.variables[VAR_NAME]
-                images[j] = numpy.kron(variable[time_index, :, :], numpy.ones((2, 2)))
+                images[j] = dataset.variables[VAR_NAME][time_index, :, :]
                 weights[j] = index_to_weight[i]
                 j += 1
             precip = aggregate_images(images, weights=weights)
