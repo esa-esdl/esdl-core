@@ -50,17 +50,14 @@ class BurntAreaProvider(BaseCubeSourceProvider):
         if len(new_indices) == 1:
             i = next(iter(new_indices))
             file, time_index = self._get_file_and_time_index(i)
-            dataset = self.dataset_cache.get_dataset(file)
-            burnt_area = dataset.variables[VAR_NAME][time_index, :, :]
+            burnt_area = self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
         else:
             images = [None] * len(new_indices)
             weights = [None] * len(new_indices)
             j = 0
             for i in new_indices:
                 file, time_index = self._get_file_and_time_index(i)
-                dataset = self.dataset_cache.get_dataset(file)
-                variable = dataset.variables[VAR_NAME]
-                images[j] = variable[time_index, :, :]
+                images[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
                 weights[j] = index_to_weight[i]
                 j += 1
             burnt_area = aggregate_images(images, weights=weights)
