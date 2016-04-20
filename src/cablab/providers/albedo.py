@@ -2,25 +2,21 @@ import os
 
 import numpy
 import datetime
+import gridtools.resampling as gtr
 
 from cablab import BaseCubeSourceProvider
 from cablab.util import NetCDFDatasetCache, aggregate_images
-from skimage.transform import resize
 from netCDF4 import date2num, num2date
 
-# VAR_NAME = 'Snow_Fraction'
 VAR_NAME_BRIGHT = 'BHR_VIS'
 VAR_NAME_DARK = 'DHR_VIS'
 VAR_NAME = [VAR_NAME_BRIGHT, VAR_NAME_DARK]
+FILL_VALUE = numpy.nan
 
 
 class AlbedoProvider(BaseCubeSourceProvider):
     def __init__(self, cube_config, dir_path):
         super(AlbedoProvider, self).__init__(cube_config)
-        # todo (hp 20151030) - remove check once we have addressed spatial aggregation/interpolation, see issue #3
-        if cube_config.grid_width != 1440 or cube_config.grid_height != 720:
-            raise ValueError('illegal cube configuration, '
-                             'provider does not yet implement spatial aggregation/interpolation')
         self.dir_path = dir_path
         self.dataset_cache = NetCDFDatasetCache("albedo")
         self.source_time_ranges = None
@@ -33,7 +29,7 @@ class AlbedoProvider(BaseCubeSourceProvider):
         return {
             VAR_NAME_BRIGHT: {
                 'data_type': numpy.float32,
-                'fill_value': numpy.nan,
+                'fill_value': FILL_VALUE,
                 'units': '-',
                 'long_name': 'White Sky Albedo in VIS',
                 'scale_factor': 1.0,
@@ -41,7 +37,7 @@ class AlbedoProvider(BaseCubeSourceProvider):
             },
             VAR_NAME_DARK: {
                 'data_type': numpy.float32,
-                'fill_value': numpy.nan,
+                'fill_value': FILL_VALUE,
                 'units': '-',
                 'long_name': 'Black Sky Albedo in VIS',
                 'scale_factor': 1.0,
@@ -64,9 +60,7 @@ class AlbedoProvider(BaseCubeSourceProvider):
         if len(new_indices) == 1:
             i = next(iter(new_indices))
             file, _ = self._get_file_and_time_index(i)
-            dataset = self.dataset_cache.get_dataset(file)
-            albedo = {i: resize(dataset.variables[i][0, :, :], (720, 1440), preserve_range=True, order=3) for i in
-                      VAR_NAME}
+            albedo = {i: self.dataset_cache.get_dataset(file).variables[i][0, :, :] for i in VAR_NAME}
         else:
             images_bright = [None] * len(new_indices)
             images_dark = [None] * len(new_indices)
@@ -74,16 +68,16 @@ class AlbedoProvider(BaseCubeSourceProvider):
             j = 0
             for i in new_indices:
                 file, _ = self._get_file_and_time_index(i)
-                dataset = self.dataset_cache.get_dataset(file)
-                images_bright[j] = resize(dataset.variables[VAR_NAME_BRIGHT][0, :, :], (720, 1440), preserve_range=True,
-                                          order=3)
-                images_dark[j] = resize(dataset.variables[VAR_NAME_DARK][0, :, :], (720, 1440), preserve_range=True,
-                                        order=3)
+                images_bright[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME_BRIGHT][0, :, :]
+                images_dark[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME_DARK][0, :, :]
                 weights[j] = index_to_weight[i]
                 j += 1
             images = {VAR_NAME_BRIGHT: images_bright, VAR_NAME_DARK: images_dark}
             albedo = {i: aggregate_images(images[i], weights=weights) for i in VAR_NAME}
 
+        albedo = {i: gtr.resample2d(albedo[i][:, :], self.cube_config.grid_width,
+                                    self.cube_config.grid_height, us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
+                  for i in VAR_NAME}
         return {i: albedo[i] for i in VAR_NAME}
 
     def _get_file_and_time_index(self, i):
@@ -93,7 +87,7 @@ class AlbedoProvider(BaseCubeSourceProvider):
         return self.source_time_ranges
 
     def get_spatial_coverage(self):
-        return 0, 0, 1440, 720
+        return 0, 0, self.cube_config.grid_width, self.cube_config.grid_height
 
     def close(self):
         self.dataset_cache.close_all_datasets()
