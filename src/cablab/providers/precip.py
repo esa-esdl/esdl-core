@@ -58,8 +58,7 @@ class PrecipProvider(BaseCubeSourceProvider):
             j = 0
             for i in new_indices:
                 file, time_index = self._get_file_and_time_index(i)
-                dataset = self.dataset_cache.get_dataset(file)
-                images[j] = dataset.variables[VAR_NAME][time_index, :, :]
+                images[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
                 weights[j] = index_to_weight[i]
                 j += 1
             precip = aggregate_images(images, weights=weights)
