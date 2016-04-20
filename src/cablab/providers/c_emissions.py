@@ -2,20 +2,18 @@ from datetime import timedelta, datetime
 import os
 
 import numpy
+import gridtools.resampling as gtr
 
 from cablab import BaseCubeSourceProvider
 from cablab.util import NetCDFDatasetCache, aggregate_images
 
 VAR_NAME = 'Emission'
+FILL_VALUE = -9999.0
 
 
 class CEmissionsProvider(BaseCubeSourceProvider):
     def __init__(self, cube_config, dir_path):
         super(CEmissionsProvider, self).__init__(cube_config)
-        # todo (nf 20151027) - remove check once we have addressed spatial aggregation/interpolation, see issue #3
-        if cube_config.grid_width != 1440 or cube_config.grid_height != 720:
-            raise ValueError('illegal cube configuration, '
-                             'provider does not yet implement spatial aggregation/interpolation')
         self.dir_path = dir_path
         self.dataset_cache = NetCDFDatasetCache(VAR_NAME)
         self.source_time_ranges = None
@@ -28,7 +26,7 @@ class CEmissionsProvider(BaseCubeSourceProvider):
         return {
             VAR_NAME: {
                 'data_type': numpy.float32,
-                'fill_value': -9999.0,
+                'fill_value': FILL_VALUE,
                 'units': 'g C m-2 month-1',
                 'long_name': 'CASA-GFED4 BB',
                 'scale_factor': 1.0,
@@ -51,21 +49,20 @@ class CEmissionsProvider(BaseCubeSourceProvider):
         if len(new_indices) == 1:
             i = next(iter(new_indices))
             file, time_index = self._get_file_and_time_index(i)
-            dataset = self.dataset_cache.get_dataset(file)
-            emissions = dataset.variables[VAR_NAME][time_index, :, :]
+            emissions = self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
         else:
             images = [None] * len(new_indices)
             weights = [None] * len(new_indices)
             j = 0
             for i in new_indices:
                 file, time_index = self._get_file_and_time_index(i)
-                dataset = self.dataset_cache.get_dataset(file)
-                variable = dataset.variables[VAR_NAME]
-                images[j] = variable[time_index, :, :]
+                images[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
                 weights[j] = index_to_weight[i]
                 j += 1
             emissions = aggregate_images(images, weights=weights)
 
+        emissions = gtr.resample2d(emissions, self.cube_config.grid_width, self.cube_config.grid_height,
+                                   us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
         return {VAR_NAME: emissions}
 
     def _get_file_and_time_index(self, i):
@@ -75,7 +72,7 @@ class CEmissionsProvider(BaseCubeSourceProvider):
         return self.source_time_ranges
 
     def get_spatial_coverage(self):
-        return 0, 0, 1440, 720
+        return 0, 0, self.cube_config.grid_width, self.cube_config.grid_height
 
     def close(self):
         self.dataset_cache.close_all_datasets()
