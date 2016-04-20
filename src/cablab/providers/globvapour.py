@@ -7,15 +7,12 @@ from cablab.util import NetCDFDatasetCache, aggregate_images
 import gridtools.resampling as gtr
 
 VAR_NAME = 'tcwv_res'
+FILL_VALUE = -999.0
 
 
 class GlobVapourProvider(BaseCubeSourceProvider):
     def __init__(self, cube_config, dir_path):
         super(GlobVapourProvider, self).__init__(cube_config)
-        # todo (nf 20151028) - remove check once we have addressed spatial aggregation/interpolation, see issue #3
-        if cube_config.grid_width != 1440 or cube_config.grid_height != 720:
-            raise ValueError('illegal cube configuration, '
-                             'provider does not yet implement proper spatial aggregation/interpolation')
         self.dir_path = dir_path
         self.source_time_ranges = None
         self.dataset_cache = NetCDFDatasetCache(VAR_NAME)
@@ -28,7 +25,7 @@ class GlobVapourProvider(BaseCubeSourceProvider):
         return {
             VAR_NAME: {
                 'data_type': numpy.float32,
-                'fill_value': -999.0,
+                'fill_value': FILL_VALUE,
                 'units': 'kg m-2',
                 'long_name': 'Total Column Water Vapour',
                 'scale_factor': 1.0,
@@ -50,27 +47,20 @@ class GlobVapourProvider(BaseCubeSourceProvider):
         if len(new_indices) == 1:
             i = next(iter(new_indices))
             file, time_index = self._get_file_and_time_index(i)
-            dataset = self.dataset_cache.get_dataset(file)
-            globvapour = dataset.variables[VAR_NAME]
-            _, lat_size, lon_size = globvapour.shape
-            globvapour = gtr.resample2d(globvapour[time_index, :, :], 1440, 720,
-                                        us_method=gtr.US_NEAREST, fill_value=-999.0)
+            globvapour = self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
         else:
             images = [None] * len(new_indices)
             weights = [None] * len(new_indices)
             j = 0
             for i in new_indices:
                 file, time_index = self._get_file_and_time_index(i)
-                dataset = self.dataset_cache.get_dataset(file)
-                variable = dataset.variables[VAR_NAME]
-                _, lat_size, lon_size = variable.shape
-                variable = gtr.resample2d(variable[time_index, :, :], 1440, 720,
-                                          us_method=gtr.US_NEAREST, fill_value=-999.0)
-                images[j] = variable
+                images[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
                 weights[j] = index_to_weight[i]
                 j += 1
             globvapour = aggregate_images(images, weights=weights)
 
+        globvapour = gtr.resample2d(globvapour, self.cube_config.grid_width, self.cube_config.grid_height,
+                                    us_method=gtr.US_NEAREST, fill_value=-999.0)
         return {VAR_NAME: globvapour}
 
     def _get_file_and_time_index(self, i):
@@ -80,7 +70,7 @@ class GlobVapourProvider(BaseCubeSourceProvider):
         return self.source_time_ranges
 
     def get_spatial_coverage(self):
-        return 0, 0, 1440, 720
+        return 0, 0, self.cube_config.grid_width, self.cube_config.grid_height
 
     def close(self):
         self.dataset_cache.close_all_datasets()

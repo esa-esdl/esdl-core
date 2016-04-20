@@ -49,3 +49,13 @@ class GlobVapourProviderTest(unittest.TestCase):
         self.assertTrue('tcwv_res' in images)
         image = images['tcwv_res']
         self.assertEqual((720, 1440), image.shape)
+
+    @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
+    def test_get_high_res_images(self):
+        provider = GlobVapourProvider(CubeConfig(grid_width=4320, grid_height=2160, spatial_res=1/12), SOURCE_DIR)
+        provider.prepare()
+        images = provider.compute_variable_images(datetime(2007, 1, 1), datetime(2007, 1, 9))
+        self.assertIsNotNone(images)
+        self.assertTrue('tcwv_res' in images)
+        image = images['tcwv_res']
+        self.assertEqual((2160, 4320), image.shape)
