@@ -53,3 +53,15 @@ class SnowWaterEquivalentProviderTest(unittest.TestCase):
         image = images['SWE']
         self.assertEqual((720, 1440), image.shape)
         self.assertEqual(0, np.isnan(image).sum())
+
+    @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
+    def test_get_high_res_images(self):
+        provider = SnowWaterEquivalentProvider(CubeConfig(grid_width=4320, grid_height=2160, spatial_res=1 / 12),
+                                               SOURCE_DIR)
+        provider.prepare()
+        images = provider.compute_variable_images(datetime(2010, 1, 1), datetime(2010, 12, 31))
+        self.assertIsNotNone(images)
+        self.assertTrue('SWE' in images)
+        image = images['SWE']
+        self.assertEqual((2160, 4320), image.shape)
+        self.assertEqual(0, np.isnan(image).sum())

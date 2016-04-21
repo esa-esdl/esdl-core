@@ -3,20 +3,18 @@ import os
 
 import numpy
 import netCDF4
+import gridtools.resampling as gtr
 
 from cablab import BaseCubeSourceProvider
 from cablab.util import NetCDFDatasetCache, aggregate_images
 
 VAR_NAME = 'SWE'
+FILL_VALUE = -9999.0
 
 
 class SnowWaterEquivalentProvider(BaseCubeSourceProvider):
     def __init__(self, cube_config, dir_path):
         super(SnowWaterEquivalentProvider, self).__init__(cube_config)
-        # todo (nf 20151028) - remove check once we have addressed spatial aggregation/interpolation, see issue #3
-        if cube_config.grid_width != 1440 or cube_config.grid_height != 720:
-            raise ValueError('illegal cube configuration, '
-                             'provider does not yet implement proper spatial aggregation/interpolation')
         self.dir_path = dir_path
         self.source_time_ranges = None
         self.dataset_cache = NetCDFDatasetCache(VAR_NAME)
@@ -29,7 +27,7 @@ class SnowWaterEquivalentProvider(BaseCubeSourceProvider):
         return {
             VAR_NAME: {
                 'data_type': numpy.float32,
-                'fill_value': -9999.0,
+                'fill_value': FILL_VALUE,
                 'units': 'mm',
                 'long_name': 'Daily Snow Water Equivalent',
                 'scale_factor': 1.0,
@@ -54,21 +52,20 @@ class SnowWaterEquivalentProvider(BaseCubeSourceProvider):
         if len(new_indices) == 1:
             i = next(iter(new_indices))
             file, time_index = self._get_file_and_time_index(i)
-            dataset = self.dataset_cache.get_dataset(file)
-            swe = dataset.variables[VAR_NAME][time_index, :, :]
+            swe = self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
         else:
             images = [None] * len(new_indices)
             weights = [None] * len(new_indices)
             j = 0
             for i in new_indices:
                 file, time_index = self._get_file_and_time_index(i)
-                dataset = self.dataset_cache.get_dataset(file)
-                variable = dataset.variables[VAR_NAME]
-                images[j] = variable[time_index, :, :]
+                images[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
                 weights[j] = index_to_weight[i]
                 j += 1
             swe = aggregate_images(images, weights=weights)
 
+        swe = gtr.resample2d(swe, self.cube_config.grid_width, self.cube_config.grid_height,
+                             us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
         return {VAR_NAME: swe}
 
     def _get_file_and_time_index(self, i):
@@ -78,7 +75,7 @@ class SnowWaterEquivalentProvider(BaseCubeSourceProvider):
         return self.source_time_ranges
 
     def get_spatial_coverage(self):
-        return 0, 0, 1440, 720
+        return 0, 0, self.cube_config.grid_width, self.cube_config.grid_height
 
     def close(self):
         self.dataset_cache.close_all_datasets()
