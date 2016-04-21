@@ -60,7 +60,7 @@ class GlobVapourProvider(BaseCubeSourceProvider):
             globvapour = aggregate_images(images, weights=weights)
 
         globvapour = gtr.resample2d(globvapour, self.cube_config.grid_width, self.cube_config.grid_height,
-                                    us_method=gtr.US_NEAREST, fill_value=-999.0)
+                                    us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
         return {VAR_NAME: globvapour}
 
     def _get_file_and_time_index(self, i):
