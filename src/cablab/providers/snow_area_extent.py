@@ -9,15 +9,12 @@ from cablab.util import NetCDFDatasetCache
 import gridtools.resampling as gtr
 
 VAR_NAME = 'MFSC'
+FILL_VALUE = -9999
 
 
 class SnowAreaExtentProvider(BaseCubeSourceProvider):
     def __init__(self, cube_config, dir_path):
         super(SnowAreaExtentProvider, self).__init__(cube_config)
-        # todo (hp 20151030) - remove check once we have addressed spatial aggregation/interpolation, see issue #3
-        if cube_config.grid_width != 1440 or cube_config.grid_height != 720:
-            raise ValueError('illegal cube configuration, '
-                             'provider does not yet implement spatial aggregation/interpolation')
         self.dir_path = dir_path
         self.dataset_cache = NetCDFDatasetCache(VAR_NAME)
         self.source_time_ranges = None
@@ -30,7 +27,7 @@ class SnowAreaExtentProvider(BaseCubeSourceProvider):
         return {
             VAR_NAME: {
                 'data_type': numpy.float32,
-                'fill_value': -9999.0,
+                'fill_value': FILL_VALUE,
                 'units': 'percent',
                 'long_name': 'Level 3B Fractional Snow Cover (%)  Aggregated Monthly',
             }
@@ -52,7 +49,6 @@ class SnowAreaExtentProvider(BaseCubeSourceProvider):
             i = next(iter(new_indices))
             file, time_index = self._get_file_and_time_index(i)
             snow_area_extent = 1.0 * self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
-            snow_area_extent.filled(numpy.nan)
         else:
             weight_sum = 0.0
             snow_area_extent_sum = numpy.zeros((18000, 36000), dtype=numpy.float64)
@@ -62,19 +58,11 @@ class SnowAreaExtentProvider(BaseCubeSourceProvider):
                 snow_area_extent = self.dataset_cache.get_dataset(file).variables[VAR_NAME]
                 snow_area_extent_sum += weight * snow_area_extent[time_index, :, :]
                 weight_sum += weight
+            # produces memory error when using aggregate_image function
             snow_area_extent = snow_area_extent_sum / weight_sum
 
-        lat_size, lon_size = snow_area_extent.shape
-
-        latitude_downscale_factor = lat_size / self.cube_config.grid_height
-        longitude_downscale_factor = lon_size / self.cube_config.grid_width
-
-        if latitude_downscale_factor != longitude_downscale_factor or latitude_downscale_factor % 1 > 0:
-            raise ValueError('illegal downscale factor, '
-                             'the downscale factor has to be an integer value.')
-
-        snow_area_extent = gtr.resample2d(snow_area_extent, self.cube_config.grid_width, self.cube_config.grid_height)
-
+        snow_area_extent = gtr.resample2d(snow_area_extent, self.cube_config.grid_width, self.cube_config.grid_height,
+                                          us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
         return {VAR_NAME: snow_area_extent}
 
     def _get_file_and_time_index(self, i):
@@ -84,7 +72,7 @@ class SnowAreaExtentProvider(BaseCubeSourceProvider):
         return self.source_time_ranges
 
     def get_spatial_coverage(self):
-        return 0, 0, 1440, 720
+        return 0, 0, self.cube_config.grid_width, self.cube_config.grid_height
 
     def close(self):
         self.dataset_cache.close_all_datasets()
