@@ -66,3 +66,32 @@ class AerosolsProviderTest(unittest.TestCase):
         self.assertTrue('AOD865_mean' in images)
         image = images['AOD865_mean']
         self.assertEqual((720, 1440), image.shape)
+
+    @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
+    def test_get_high_res_images(self):
+        provider = AerosolsProvider(CubeConfig(grid_width=4320, grid_height=2160, spatial_res=1 / 12,
+                                               end_time=datetime(2003, 1, 1)), SOURCE_DIR)
+        provider.prepare()
+        images = provider.compute_variable_images(datetime(2002, 7, 27), datetime(2002, 8, 4))
+
+        self.assertIsNotNone(images)
+
+        self.assertTrue('AOD1610_mean' in images)
+        image = images['AOD1610_mean']
+        self.assertEqual((2160, 4320), image.shape)
+
+        self.assertTrue('AOD550_mean' in images)
+        image = images['AOD550_mean']
+        self.assertEqual((2160, 4320), image.shape)
+
+        self.assertTrue('AOD555_mean' in images)
+        image = images['AOD555_mean']
+        self.assertEqual((2160, 4320), image.shape)
+
+        self.assertTrue('AOD659_mean' in images)
+        image = images['AOD659_mean']
+        self.assertEqual((2160, 4320), image.shape)
+
+        self.assertTrue('AOD865_mean' in images)
+        image = images['AOD865_mean']
+        self.assertEqual((2160, 4320), image.shape)

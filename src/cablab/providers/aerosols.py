@@ -2,10 +2,10 @@ import os
 
 import numpy
 import datetime
+import gridtools.resampling as gtr
 
 from cablab import BaseCubeSourceProvider
 from cablab.util import NetCDFDatasetCache, aggregate_images
-from skimage.transform import resize
 from datetime import timedelta
 
 VAR_NAME_1610 = 'AOD1610_mean'
@@ -14,15 +14,12 @@ VAR_NAME_555 = 'AOD555_mean'
 VAR_NAME_659 = 'AOD659_mean'
 VAR_NAME_865 = 'AOD865_mean'
 VAR_NAME = [VAR_NAME_550, VAR_NAME_555, VAR_NAME_659, VAR_NAME_865, VAR_NAME_1610]
+FILL_VALUE = -999.0
 
 
 class AerosolsProvider(BaseCubeSourceProvider):
     def __init__(self, cube_config, dir_path):
         super(AerosolsProvider, self).__init__(cube_config)
-        # todo (hp 20151030) - remove check once we have addressed spatial aggregation/interpolation, see issue #3
-        if cube_config.grid_width != 1440 or cube_config.grid_height != 720:
-            raise ValueError('illegal cube configuration, '
-                             'provider does not yet implement spatial aggregation/interpolation')
         self.dir_path = dir_path
         self.dataset_cache = NetCDFDatasetCache(VAR_NAME_1610)
         self.source_time_ranges = None
@@ -35,7 +32,7 @@ class AerosolsProvider(BaseCubeSourceProvider):
         return {
             VAR_NAME_1610: {
                 'data_type': numpy.float32,
-                'fill_value': -999.0,
+                'fill_value': FILL_VALUE,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 1610 nm',
                 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
@@ -44,7 +41,7 @@ class AerosolsProvider(BaseCubeSourceProvider):
             },
             VAR_NAME_550: {
                 'data_type': numpy.float32,
-                'fill_value': -999.0,
+                'fill_value': FILL_VALUE,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 550 nm',
                 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
@@ -53,7 +50,7 @@ class AerosolsProvider(BaseCubeSourceProvider):
             },
             VAR_NAME_555: {
                 'data_type': numpy.float32,
-                'fill_value': -999.0,
+                'fill_value': FILL_VALUE,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 555 nm',
                 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
@@ -62,7 +59,7 @@ class AerosolsProvider(BaseCubeSourceProvider):
             },
             VAR_NAME_659: {
                 'data_type': numpy.float32,
-                'fill_value': -999.0,
+                'fill_value': FILL_VALUE,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 659 nm',
                 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
@@ -71,7 +68,7 @@ class AerosolsProvider(BaseCubeSourceProvider):
             },
             VAR_NAME_865: {
                 'data_type': numpy.float32,
-                'fill_value': -999.0,
+                'fill_value': FILL_VALUE,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 865 nm',
                 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
@@ -95,8 +92,7 @@ class AerosolsProvider(BaseCubeSourceProvider):
         if len(new_indices) == 1:
             i = next(iter(new_indices))
             file, _ = self._get_file_and_time_index(i)
-            dataset = self.dataset_cache.get_dataset(file)
-            aerosols = {i: self._get_interpolated_image(dataset, i) for i in VAR_NAME}
+            aerosols = {i: self.dataset_cache.get_dataset(file).variables[i][0, :, :] for i in VAR_NAME}
         else:
             images_1660 = [None] * len(new_indices)
             images_550 = [None] * len(new_indices)
@@ -107,24 +103,21 @@ class AerosolsProvider(BaseCubeSourceProvider):
             j = 0
             for i in new_indices:
                 file, _ = self._get_file_and_time_index(i)
-                dataset = self.dataset_cache.get_dataset(file)
-                images_1660[j] = self._get_interpolated_image(dataset, VAR_NAME_1610)
-                images_550[j] = self._get_interpolated_image(dataset, VAR_NAME_550)
-                images_555[j] = self._get_interpolated_image(dataset, VAR_NAME_555)
-                images_659[j] = self._get_interpolated_image(dataset, VAR_NAME_659)
-                images_865[j] = self._get_interpolated_image(dataset, VAR_NAME_865)
+                images_1660[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME_1610][0, :, :]
+                images_550[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME_550][0, :, :]
+                images_555[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME_555][0, :, :]
+                images_659[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME_659][0, :, :]
+                images_865[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME_865][0, :, :]
                 weights[j] = index_to_weight[i]
                 j += 1
             images = {VAR_NAME_550: images_550, VAR_NAME_555: images_555, VAR_NAME_659: images_659,
                       VAR_NAME_865: images_865, VAR_NAME_1610: images_1660}
             aerosols = {i: aggregate_images(images[i], weights=weights) for i in VAR_NAME}
 
+        aerosols = {i: gtr.resample2d(aerosols[i][:, :], self.cube_config.grid_width, self.cube_config.grid_height,
+                                      us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
+                    for i in VAR_NAME}
         return {i: aerosols[i] for i in VAR_NAME}
-
-    def _get_interpolated_image(self, dataset, var_name):
-        aerosols_1610 = dataset.variables[var_name][0, :, :]
-        aerosols_1610 = resize(aerosols_1610, (720, 1440), preserve_range=True, order=3)
-        return aerosols_1610
 
     def _get_file_and_time_index(self, i):
         return self.source_time_ranges[i][2:4]
@@ -133,7 +126,7 @@ class AerosolsProvider(BaseCubeSourceProvider):
         return self.source_time_ranges
 
     def get_spatial_coverage(self):
-        return 0, 0, 1440, 720
+        return 0, 0, self.cube_config.grid_width, self.cube_config.grid_height
 
     def close(self):
         self.dataset_cache.close_all_datasets()
