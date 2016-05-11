@@ -34,7 +34,7 @@ Random notes
 
 Other refactorings
 ------------------
-(1) rename Provider.get_spatial_coverage -> get_provided_image_size
+(1) rename Provider.get_spatial_coverage() -> get_provided_image_size()
 
 (2) A common access pattern is:
 
@@ -47,3 +47,7 @@ Other refactorings
     * Time is any:  i=(time_index, slice(None), slice(None))
 
         self.dataset_cache.get_dataset(file).variables[VAR_NAME][i]
+
+(3) a) move aggregation code from cablab.util to gridtools
+    b) rename temporal_weight() -> range_overlap_ratio()
+    c) rename aggregate_images() -> aggregate_arrays()
