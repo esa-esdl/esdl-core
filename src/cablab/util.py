@@ -14,6 +14,16 @@ def temporal_weight(a1, a2, b1, b2):
     """
     Compute a weight (0.0 to 1.0) from the overlap of time range *a1*...*a2* with time range *b1*...*b2*.
     If there is no overlap at all, return 0.
+
+    The parameters **a1**, **a2**, **b1**, **b2** are scalar values and must all be of the same numeric type or one
+    of the same time types defined in standard datetime module.
+
+    :param a1: start of first range
+    :param a2: end of first range
+    :param b1: start of second range
+    :param b2: end of second range
+
+    :return: a weight between 0.0 to 1.0 (inclusively) representing the overlap of range a with range b.
     """
     a1_in_b_range = b1 <= a1 <= b2
     a2_in_b_range = b1 <= a2 <= b2
@@ -32,9 +42,9 @@ def temporal_weight(a1, a2, b1, b2):
 
 def aggregate_images(images, weights=None):
     """
-    Aggregates the list of masked *images* by averaging them using the optional *weights*.
+    Aggregates the list of optionally masked *images* by averaging them using the optional *weights*.
 
-    :param images: 2D images (numpy array-like objects)
+    :param images: sequence of 2-D images (numpy array-like objects)
     :param weights: a weight 0..1 for each image
     :return: A combined, masked image.
     """
