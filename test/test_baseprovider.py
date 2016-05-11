@@ -62,19 +62,13 @@ class BaseImageProviderTest(TestCase):
 class MyImageProvider(BaseCubeSourceProvider):
     def __init__(self, cube_config, source_time_ranges):
         super(MyImageProvider, self).__init__(cube_config)
-        self.source_time_ranges = source_time_ranges
+        self.my_source_time_ranges = source_time_ranges
         self.trace = []
         self.lai_value = 0.1
         self.fapar_value = 0.6
 
-    def prepare(self):
-        pass
-
     def get_source_time_ranges(self):
-        return self.source_time_ranges
-
-    def get_spatial_coverage(self):
-        return 0, 0, self.cube_config.grid_width, self.cube_config.grid_height
+        return self.my_source_time_ranges
 
     def get_variable_descriptors(self):
         return {

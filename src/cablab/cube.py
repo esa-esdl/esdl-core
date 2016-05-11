@@ -116,13 +116,34 @@ class BaseCubeSourceProvider(CubeSourceProvider):
 
     def __init__(self, cube_config):
         super(BaseCubeSourceProvider, self).__init__(cube_config)
+        self._source_time_ranges = None
+
+    def prepare(self):
+        """
+        Calls **get_source_time_ranges** and assigns the return value to the field **source_time_ranges**.
+        """
+        self._source_time_ranges = self.get_source_time_ranges()
+
+    def get_spatial_coverage(self):
+        """
+        Return the spatial grid coverage given in the Cube's configuration (default).
+
+        :return: A tuple of integers (x, y, width, height) in the cube's image coordinates.
+        """
+        return 0, 0, self.cube_config.grid_width, self.cube_config.grid_height
+
+    @property
+    def source_time_ranges(self):
+        return self._source_time_ranges
 
     @abstractmethod
     def get_source_time_ranges(self) -> list:
         """
         Return a sorted list of all time ranges of every source file.
-        Items in this list must be 2-element tuples of datetime instances.
-        The list should be pre-computed in the **prepare()** method.
+        Items in this list must be 4-element tuples of the form
+        (time_start: datetime, time_stop: datetime, file: str, time_index: int).
+        The method is called from the **prepare()** method in order to pre-compute all available time ranges.
+        This method must be implemented by derived classes.
         """
         return None
 
@@ -130,8 +151,7 @@ class BaseCubeSourceProvider(CubeSourceProvider):
         """
         Return the temporal coverage derived from the value returned by **get_source_time_ranges()**.
         """
-        source_time_ranges = self.get_source_time_ranges()
-        return source_time_ranges[0][0], source_time_ranges[-1][1]
+        return self._source_time_ranges[0][0], self._source_time_ranges[-1][1]
 
     def compute_variable_images(self, period_start, period_end):
         """
@@ -146,7 +166,7 @@ class BaseCubeSourceProvider(CubeSourceProvider):
 
         t1 = time.time()
 
-        source_time_ranges = self.get_source_time_ranges()
+        source_time_ranges = self._source_time_ranges
         if len(source_time_ranges) == 0:
             return None
         index_to_weight = dict()
@@ -192,6 +212,15 @@ class BaseCubeSourceProvider(CubeSourceProvider):
         :param message: The message to be logged.
         """
         print('%s: %s' % (self.name, message))
+
+    def _get_file_and_time_index(self, var_index):
+        """
+        Return the file path and time dimension index as tuple.
+        To be used by derived classes only.
+        """
+        return self._source_time_ranges[var_index][2:4]
+
+
 
 
 class CubeConfig:

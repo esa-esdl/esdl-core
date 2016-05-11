@@ -94,6 +94,24 @@ class NetCDFDatasetCache:
         return real_file
 
 
+# todo - use as mixin class in each provider
+class NetCDFDatasetCacheSupport:
+    """
+    Mixin class whose intended use to add NetCDFDatasetCache support to a CubeSourceProvider implementation.
+    """
+    def __init__(self, name, cache_base_dir=None):
+        self._dataset_cache = NetCDFDatasetCache(name, cache_base_dir=cache_base_dir)
+        self._old_indices = None
+
+    @property
+    def dataset_cache(self):
+        return self._dataset_cache
+
+    def close(self):
+        self._dataset_cache.close_all_datasets()
+        self._old_indices = None
+
+
 class Config:
     """
     Global CAB-LAB configuration.

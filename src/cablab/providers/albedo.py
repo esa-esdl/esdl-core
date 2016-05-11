@@ -19,11 +19,7 @@ class AlbedoProvider(BaseCubeSourceProvider):
         super(AlbedoProvider, self).__init__(cube_config)
         self.dir_path = dir_path
         self.dataset_cache = NetCDFDatasetCache("albedo")
-        self.source_time_ranges = None
         self.old_indices = None
-
-    def prepare(self):
-        self._init_source_time_ranges()
 
     def get_variable_descriptors(self):
         return {
@@ -79,19 +75,10 @@ class AlbedoProvider(BaseCubeSourceProvider):
                       for i in VAR_NAMES}
         return {i: var_images[i] for i in VAR_NAMES}
 
-    def _get_file_and_time_index(self, i):
-        return self.source_time_ranges[i][2:4]
-
-    def get_source_time_ranges(self):
-        return self.source_time_ranges
-
-    def get_spatial_coverage(self):
-        return 0, 0, self.cube_config.grid_width, self.cube_config.grid_height
-
     def close(self):
         self.dataset_cache.close_all_datasets()
 
-    def _init_source_time_ranges(self):
+    def get_source_time_ranges(self):
         source_time_ranges = []
 
         file_names = os.listdir(self.dir_path)
@@ -104,7 +91,7 @@ class AlbedoProvider(BaseCubeSourceProvider):
                 self.dataset_cache.close_dataset(file)
                 source_time_ranges.append((t1, t2, file, 0))
 
-        self.source_time_ranges = sorted(source_time_ranges, key=lambda item: item[0])
+        return sorted(source_time_ranges, key=lambda item: item[0])
 
     @staticmethod
     def _day2date(times):

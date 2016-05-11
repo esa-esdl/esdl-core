@@ -65,19 +65,10 @@ class AirTemperatureProvider(BaseCubeSourceProvider):
                                     us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
         return {VAR_NAME: var_image}
 
-    def _get_file_and_time_index(self, i):
-        return self.source_time_ranges[i][2:4]
-
-    def get_source_time_ranges(self):
-        return self.source_time_ranges
-
-    def get_spatial_coverage(self):
-        return 0, 0, self.cube_config.grid_width, self.cube_config.grid_height
-
     def close(self):
         self.dataset_cache.close_all_datasets()
 
-    def _init_source_time_ranges(self):
+    def get_source_time_ranges(self):
         source_time_ranges = []
         file_names = os.listdir(self.dir_path)
         for file_name in file_names:
@@ -89,4 +80,4 @@ class AirTemperatureProvider(BaseCubeSourceProvider):
                 dates = netCDF4.num2date(times[:], 'hours since 1900-01-01 00:00:0.0', calendar='gregorian')
                 self.dataset_cache.close_dataset(file)
                 source_time_ranges += [(dates[i], dates[i] + timedelta(hours=6), file, i) for i in range(len(dates))]
-        self.source_time_ranges = sorted(source_time_ranges, key=lambda item: item[0])
+        return sorted(source_time_ranges, key=lambda item: item[0])
