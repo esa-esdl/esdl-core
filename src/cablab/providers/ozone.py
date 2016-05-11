@@ -43,20 +43,20 @@ class OzoneProvider(BaseCubeSourceProvider):
         if self.old_indices:
             unused_indices = self.old_indices - new_indices
             for i in unused_indices:
-                file = self._get_file(i)
+                file, _ = self._get_file_and_time_index(i)
                 self.dataset_cache.close_dataset(file)
         self.old_indices = new_indices
 
         if len(new_indices) == 1:
             i = next(iter(new_indices))
-            file = self._get_file(i)
+            file, _ = self._get_file_and_time_index(i)
             var_image = self.dataset_cache.get_dataset(file).variables['atmosphere_mole_content_of_ozone'][:, :]
         else:
             images = [None] * len(new_indices)
             weights = [None] * len(new_indices)
             j = 0
             for i in new_indices:
-                file = self._get_file(i)
+                file, _ = self._get_file_and_time_index(i)
                 images[j] = self.dataset_cache.get_dataset(file).variables['atmosphere_mole_content_of_ozone'][:, :]
                 weights[j] = index_to_weight[i]
                 j += 1
@@ -66,8 +66,8 @@ class OzoneProvider(BaseCubeSourceProvider):
                                     us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
         return {VAR_NAME: var_image}
 
-    def _get_file(self, i):
-        return self.source_time_ranges[i][2]
+    def _get_file_and_time_index(self, i):
+        return self.source_time_ranges[i][2:4]
 
     def get_source_time_ranges(self):
         return self.source_time_ranges
