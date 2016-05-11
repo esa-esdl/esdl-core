@@ -1,10 +1,12 @@
-from datetime import datetime, timedelta
 import os
-import numpy
+from datetime import datetime, timedelta
+
+import gridtools.resampling as gtr
 import netCDF4
+import numpy
+
 from cablab import BaseCubeSourceProvider
 from cablab.util import NetCDFDatasetCache, aggregate_images
-import gridtools.resampling as gtr
 
 VAR_NAME = 'tcwv_res'
 FILL_VALUE = -999.0
@@ -40,14 +42,14 @@ class GlobVapourProvider(BaseCubeSourceProvider):
         if self.old_indices:
             unused_indices = self.old_indices - new_indices
             for i in unused_indices:
-                file, time_index = self._get_file_and_time_index(i)
+                file, _ = self._get_file_and_time_index(i)
                 self.dataset_cache.close_dataset(file)
-
         self.old_indices = new_indices
+
         if len(new_indices) == 1:
             i = next(iter(new_indices))
             file, time_index = self._get_file_and_time_index(i)
-            globvapour = self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
+            var_image = self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
         else:
             images = [None] * len(new_indices)
             weights = [None] * len(new_indices)
@@ -57,11 +59,11 @@ class GlobVapourProvider(BaseCubeSourceProvider):
                 images[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
                 weights[j] = index_to_weight[i]
                 j += 1
-            globvapour = aggregate_images(images, weights=weights)
+            var_image = aggregate_images(images, weights=weights)
 
-        globvapour = gtr.resample2d(globvapour, self.cube_config.grid_width, self.cube_config.grid_height,
+        var_image = gtr.resample_2d(var_image, self.cube_config.grid_width, self.cube_config.grid_height,
                                     us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
-        return {VAR_NAME: globvapour}
+        return {VAR_NAME: var_image}
 
     def _get_file_and_time_index(self, i):
         return self.source_time_ranges[i][2:4]

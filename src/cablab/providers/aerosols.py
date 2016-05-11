@@ -1,12 +1,12 @@
-import os
-
-import numpy
 import datetime
+import os
+from datetime import timedelta
+
 import gridtools.resampling as gtr
+import numpy
 
 from cablab import BaseCubeSourceProvider
 from cablab.util import NetCDFDatasetCache, aggregate_images
-from datetime import timedelta
 
 VAR_NAME_1610 = 'AOD1610_mean'
 VAR_NAME_550 = 'AOD550_mean'
@@ -86,7 +86,6 @@ class AerosolsProvider(BaseCubeSourceProvider):
             for i in unused_indices:
                 file, _ = self._get_file_and_time_index(i)
                 self.dataset_cache.close_dataset(file)
-
         self.old_indices = new_indices
 
         if len(new_indices) == 1:
@@ -114,8 +113,8 @@ class AerosolsProvider(BaseCubeSourceProvider):
                       VAR_NAME_865: images_865, VAR_NAME_1610: images_1660}
             aerosols = {i: aggregate_images(images[i], weights=weights) for i in VAR_NAME}
 
-        aerosols = {i: gtr.resample2d(aerosols[i][:, :], self.cube_config.grid_width, self.cube_config.grid_height,
-                                      us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
+        aerosols = {i: gtr.resample_2d(aerosols[i][:, :], self.cube_config.grid_width, self.cube_config.grid_height,
+                                       us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
                     for i in VAR_NAME}
         return {i: aerosols[i] for i in VAR_NAME}
 

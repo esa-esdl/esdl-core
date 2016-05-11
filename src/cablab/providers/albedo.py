@@ -1,16 +1,16 @@
+import datetime
 import os
 
-import numpy
-import datetime
 import gridtools.resampling as gtr
+import numpy
+from netCDF4 import date2num, num2date
 
 from cablab import BaseCubeSourceProvider
 from cablab.util import NetCDFDatasetCache, aggregate_images
-from netCDF4 import date2num, num2date
 
 VAR_NAME_BRIGHT = 'BHR_VIS'
 VAR_NAME_DARK = 'DHR_VIS'
-VAR_NAME = [VAR_NAME_BRIGHT, VAR_NAME_DARK]
+VAR_NAMES = [VAR_NAME_BRIGHT, VAR_NAME_DARK]
 FILL_VALUE = numpy.nan
 
 
@@ -54,13 +54,12 @@ class AlbedoProvider(BaseCubeSourceProvider):
             for i in unused_indices:
                 file, _ = self._get_file_and_time_index(i)
                 self.dataset_cache.close_dataset(file)
-
         self.old_indices = new_indices
 
         if len(new_indices) == 1:
             i = next(iter(new_indices))
             file, _ = self._get_file_and_time_index(i)
-            albedo = {i: self.dataset_cache.get_dataset(file).variables[i][0, :, :] for i in VAR_NAME}
+            var_images = {i: self.dataset_cache.get_dataset(file).variables[i][0, :, :] for i in VAR_NAMES}
         else:
             images_bright = [None] * len(new_indices)
             images_dark = [None] * len(new_indices)
@@ -73,12 +72,12 @@ class AlbedoProvider(BaseCubeSourceProvider):
                 weights[j] = index_to_weight[i]
                 j += 1
             images = {VAR_NAME_BRIGHT: images_bright, VAR_NAME_DARK: images_dark}
-            albedo = {i: aggregate_images(images[i], weights=weights) for i in VAR_NAME}
+            var_images = {i: aggregate_images(images[i], weights=weights) for i in VAR_NAMES}
 
-        albedo = {i: gtr.resample2d(albedo[i][:, :], self.cube_config.grid_width,
-                                    self.cube_config.grid_height, us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
-                  for i in VAR_NAME}
-        return {i: albedo[i] for i in VAR_NAME}
+        var_images = {i: gtr.resample_2d(var_images[i][:, :], self.cube_config.grid_width,
+                                         self.cube_config.grid_height, us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
+                      for i in VAR_NAMES}
+        return {i: var_images[i] for i in VAR_NAMES}
 
     def _get_file_and_time_index(self, i):
         return self.source_time_ranges[i][2:4]

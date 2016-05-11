@@ -1,12 +1,12 @@
-from datetime import timedelta
 import os
+from datetime import timedelta
 
-import numpy
+import gridtools.resampling as gtr
 import netCDF4
+import numpy
 
 from cablab import BaseCubeSourceProvider
 from cablab.util import NetCDFDatasetCache
-import gridtools.resampling as gtr
 
 VAR_NAME = 'MFSC'
 FILL_VALUE = -9999
@@ -42,28 +42,27 @@ class SnowAreaExtentProvider(BaseCubeSourceProvider):
             for i in unused_indices:
                 file, _ = self._get_file_and_time_index(i)
                 self.dataset_cache.close_dataset(file)
-
         self.old_indices = new_indices
 
         if len(new_indices) == 1:
             i = next(iter(new_indices))
             file, time_index = self._get_file_and_time_index(i)
-            snow_area_extent = 1.0 * self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
+            var_image = 1.0 * self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
         else:
             weight_sum = 0.0
             snow_area_extent_sum = numpy.zeros((18000, 36000), dtype=numpy.float64)
             for i in new_indices:
                 weight = index_to_weight[i]
                 file, time_index = self._get_file_and_time_index(i)
-                snow_area_extent = self.dataset_cache.get_dataset(file).variables[VAR_NAME]
-                snow_area_extent_sum += weight * snow_area_extent[time_index, :, :]
+                var_image = self.dataset_cache.get_dataset(file).variables[VAR_NAME]
+                snow_area_extent_sum += weight * var_image[time_index, :, :]
                 weight_sum += weight
             # produces memory error when using aggregate_image function
-            snow_area_extent = snow_area_extent_sum / weight_sum
+            var_image = snow_area_extent_sum / weight_sum
 
-        snow_area_extent = gtr.resample2d(snow_area_extent, self.cube_config.grid_width, self.cube_config.grid_height,
-                                          us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
-        return {VAR_NAME: snow_area_extent}
+        var_image = gtr.resample_2d(var_image, self.cube_config.grid_width, self.cube_config.grid_height,
+                                    us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
+        return {VAR_NAME: var_image}
 
     def _get_file_and_time_index(self, i):
         return self.source_time_ranges[i][2:4]
