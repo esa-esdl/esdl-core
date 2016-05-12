@@ -17,33 +17,17 @@ Data Cube creation/update::
 
 """
 
-from pkg_resources import iter_entry_points
-
 from cablab.cube import Cube
 from cablab.cube import CubeData
 from cablab.cube_config import CUBE_MODEL_VERSION
 from cablab.cube_config import CubeConfig
-from cablab.cube_gen import BaseCubeSourceProvider
-from cablab.cube_gen import CubeSourceProvider
-from cablab.cube_gen import NetCDFCubeSourceProvider
-from cablab.cube_gen import TestCubeSourceProvider
+from cablab.cube_config import __version__
+from cablab.cube_provider import BaseCubeSourceProvider
+from cablab.cube_provider import CubeSourceProvider
+from cablab.cube_provider import NetCDFCubeSourceProvider
+from cablab.cube_provider import TestCubeSourceProvider
 
 __author__ = 'Brockmann Consult GmbH'
-
-
-def _load_source_providers():
-    source_provider_classes = dict()
-    for entry_point in iter_entry_points(group='cablab.source_providers', name=None):
-        source_provider_class = entry_point.load()
-        if issubclass(source_provider_class, CubeSourceProvider):
-            source_provider_classes[entry_point.name] = source_provider_class
-        else:
-            print('warning: cablab.source_providers: requires a \'%s\' but got a \'%s\'' % (
-                CubeSourceProvider, type(source_provider_class)))
-    return source_provider_classes
-
-
-SOURCE_PROVIDERS = _load_source_providers()
 
 __all__ = [
     'BaseCubeSourceProvider',

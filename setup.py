@@ -21,7 +21,7 @@ setup(
     package_dir={'': 'src'},
     entry_points={
         'console_scripts': [
-            'cube-cli = cablab.cube_cli:main',
+            'cube-gen = cablab.cube_gen:main',
         ],
         'cablab.source_providers': [
             'test = cablab:TestCubeSourceProvider',

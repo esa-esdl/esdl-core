@@ -7,8 +7,8 @@ import netCDF4
 
 import cablab
 import cablab.util
-
-from .cube_config import CubeConfig
+from .cube_config import CubeConfig, __version__
+from .cube_provider import CubeSourceProvider
 
 
 class Cube:
@@ -22,24 +22,24 @@ class Cube:
         self._closed = False
         self._data = None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'Cube(%s, \'%s\')' % (self._config, self._base_dir)
 
     @property
-    def base_dir(self):
+    def base_dir(self) -> str:
         """
         The cube's base directory.
         """
         return self._base_dir
 
     @property
-    def config(self):
+    def config(self) -> CubeConfig:
         """
         The cube's configuration. See CubeConfig class.
         """
         return self._config
 
-    def info(self):
+    def info(self) -> str:
         """
         Return a human-readable information string about this data cube (markdown formatted).
         """
@@ -103,7 +103,7 @@ class Cube:
             self._data = None
         self._closed = True
 
-    def update(self, provider):
+    def update(self, provider: CubeSourceProvider):
         """
         Updates the data cube with source data from the given image provider.
 
@@ -185,6 +185,26 @@ class Cube:
         var_variable[time_index, :, :] = image
 
     def _init_variable_dataset(self, provider, dataset, variable_name):
+        import time
+
+        # todo (nf 20160512) - some of these attributes could be read from cube configuration
+        # see http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#description-of-file-contents
+        # see http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#attribute-appendix
+        dataset.Conventions = 'CF-1.6'
+        dataset.institution = 'Brockmann Consult GmbH, Germany'
+        dataset.source = 'CAB-LAB data cube generation, version %s' % __version__
+        dataset.history = time.ctime(time.time()) + ' - CAB-LAB data cube generation'
+        #
+        # check (nf 20151023) - add more global attributes from CF-conventions here,
+        #                       especially those that reference original sources and originators
+        #
+        # dataset.title = ...
+        # dataset.references = ...
+        # dataset.comment = ...
+
+        dataset.northing = '%s degrees' % self.config.northing
+        dataset.easting = '%s degrees' % self.config.easting
+        dataset.spatial_res = '%s degrees' % self.config.spatial_res
 
         image_x0, image_y0, image_width, image_height = provider.spatial_coverage
 
@@ -194,6 +214,8 @@ class Cube:
         dataset.createDimension('lon', image_width)
 
         var_time = dataset.createVariable('time', 'f8', ('time',), fill_value=-9999.0)
+        var_time.long_name = 'time'
+        var_time.standard_name = 'time'
         var_time.units = self._config.time_units
         var_time.calendar = self._config.calendar
         var_time.bounds = 'time_bnds'
@@ -205,26 +227,39 @@ class Cube:
         var_time_bnds[:] = -9999.0
 
         var_longitude = dataset.createVariable('lon', 'f4', ('lon',))
+        var_longitude.long_name = 'longitude'
+        var_longitude.standard_name = 'longitude'
         var_longitude.units = 'degrees_east'
+        var_longitude.bounds = 'lon_bnds'
+
+        var_longitude_bnds = dataset.createVariable('lon_bnds', 'f4', ('lon', 'bnds'))
+        var_longitude_bnds.units = 'degrees_east'
 
         var_latitude = dataset.createVariable('lat', 'f4', ('lat',))
+        var_latitude.long_name = 'latitude'
+        var_latitude.standard_name = 'latitude'
         var_latitude.units = 'degrees_north'
+        var_latitude.bounds = 'lat_bnds'
+
+        var_latitude_bnds = dataset.createVariable('lat_bnds', 'f4', ('lat', 'bnds'))
+        var_latitude_bnds.units = 'degrees_north'
 
         spatial_res = self._config.spatial_res
+
         lon0 = self._config.easting + image_x0 * spatial_res
         for i in range(image_width):
-            var_longitude[i] = lon0 + i * spatial_res
+            lon = lon0 + i * spatial_res
+            var_longitude[i] = lon + 0.5 * spatial_res
+            var_longitude_bnds[i,0] = lon
+            var_longitude_bnds[i,1] = lon + spatial_res
+
         lat0 = self._config.northing + image_y0 * spatial_res
         for i in range(image_height):
-            var_latitude[i] = lat0 - i * spatial_res
+            lat = lat0 - i * spatial_res
+            var_latitude[i] = lat - 0.5 * spatial_res
+            var_latitude_bnds[i,0] = lat - spatial_res
+            var_latitude_bnds[i,1] = lat
 
-        # import time
-        # dataset.source = 'CAB-LAB Software (module ' + __name__ + ')'
-        # dataset.history = 'Created ' + time.ctime(time.time())
-        #
-        # check (nf 20151023) - add more global attributes from CF-conventions here,
-        #                       especially those that reference original sources and originators
-        #
         variable_descriptors = provider.variable_descriptors
         variable_attributes = variable_descriptors[variable_name]
         # Mandatory attributes
@@ -323,7 +358,7 @@ class CubeData:
         """
         if isinstance(var_index, str):
             var_index = self._var_name_to_var_index[var_index]
-        return self._datasets[var_index] if var_index >= 0 and var_index < len(self._datasets) else None
+        return self._datasets[var_index] if 0 <= var_index < len(self._datasets) else None
 
     def __getitem__(self, index):
         """
@@ -396,7 +431,8 @@ class CubeData:
         """
         self._close_datasets()
 
-    def _get_lon_range(self, longitude):
+    @staticmethod
+    def _get_lon_range(longitude):
         if longitude is None:
             return -180, 180
         try:
@@ -420,7 +456,8 @@ class CubeData:
             lon_2 += 360
         return lon_1, lon_2
 
-    def _get_lat_range(self, latitude):
+    @staticmethod
+    def _get_lat_range(latitude):
         if latitude is None:
             return -90, 90
         try:

@@ -4,6 +4,8 @@ from typing import Tuple
 
 import netCDF4
 
+__version__ = '0.2.0-b02'
+
 # The current version of the data cube's configuration and data model.
 CUBE_MODEL_VERSION = '0.1'
 
