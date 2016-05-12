@@ -13,7 +13,7 @@ VAR_NAME_550 = 'AOD550_mean'
 VAR_NAME_555 = 'AOD555_mean'
 VAR_NAME_659 = 'AOD659_mean'
 VAR_NAME_865 = 'AOD865_mean'
-VAR_NAME = [VAR_NAME_550, VAR_NAME_555, VAR_NAME_659, VAR_NAME_865, VAR_NAME_1610]
+VAR_NAMES = [VAR_NAME_550, VAR_NAME_555, VAR_NAME_659, VAR_NAME_865, VAR_NAME_1610]
 FILL_VALUE = -999.0
 
 
@@ -87,7 +87,7 @@ class AerosolsProvider(BaseCubeSourceProvider):
         if len(new_indices) == 1:
             i = next(iter(new_indices))
             file, _ = self._get_file_and_time_index(i)
-            aerosols = {i: self.dataset_cache.get_dataset(file).variables[i][0, :, :] for i in VAR_NAME}
+            aerosols = {i: self.dataset_cache.get_dataset(file).variables[i][0, :, :] for i in VAR_NAMES}
         else:
             images_1660 = [None] * len(new_indices)
             images_550 = [None] * len(new_indices)
@@ -107,12 +107,12 @@ class AerosolsProvider(BaseCubeSourceProvider):
                 j += 1
             images = {VAR_NAME_550: images_550, VAR_NAME_555: images_555, VAR_NAME_659: images_659,
                       VAR_NAME_865: images_865, VAR_NAME_1610: images_1660}
-            aerosols = {i: aggregate_images(images[i], weights=weights) for i in VAR_NAME}
+            aerosols = {i: aggregate_images(images[i], weights=weights) for i in VAR_NAMES}
 
         aerosols = {i: gtr.resample_2d(aerosols[i][:, :], self.cube_config.grid_width, self.cube_config.grid_height,
                                        us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
-                    for i in VAR_NAME}
-        return {i: aerosols[i] for i in VAR_NAME}
+                    for i in VAR_NAMES}
+        return {i: aerosols[i] for i in VAR_NAMES}
 
     def close(self):
         self.dataset_cache.close_all_datasets()
