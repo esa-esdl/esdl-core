@@ -37,7 +37,7 @@ class BurntAreaProviderTest(unittest.TestCase):
     def test_temporal_coverage(self):
         provider = BurntAreaProvider(CubeConfig(), SOURCE_DIR)
         provider.prepare()
-        temporal_coverage = provider.get_temporal_coverage()
+        temporal_coverage = provider.temporal_coverage
         self.assertEqual((datetime(1995, 1, 6, 0, 0),
                           datetime(2014, 3, 1, 0, 0)),
                          temporal_coverage)

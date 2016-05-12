@@ -34,7 +34,7 @@ class PrecipProviderTest(unittest.TestCase):
         provider = PrecipProvider(CubeConfig(), SOURCE_DIR)
         provider.prepare()
         self.assertEqual((datetime(1979, 1, 1, 0, 0, 0, 33), datetime(2015, 1, 1, 0, 0, 0, 33)),
-                         provider.get_temporal_coverage())
+                         provider.temporal_coverage)
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_get_images(self):

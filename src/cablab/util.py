@@ -2,9 +2,9 @@
 Various utility constants, functions and classes.
 Developer note: make sure this module does not import any other cablab module!
 """
-
 import gzip
 import os
+from abc import abstractmethod, ABCMeta
 
 import netCDF4
 import numpy
@@ -59,67 +59,93 @@ def aggregate_images(images, weights=None):
     return numpy.ma.average(image_stack, axis=0)
 
 
-class NetCDFDatasetCache:
+class DatasetCache(metaclass=ABCMeta):
+    """
+    A cache for datasets. A dataset is considered being a dictionary that maps variable names (str)
+    to numpy.ndarray-like objects (numeric N-D arrays supporting N-D subscript indexes).
+    A dataset must also provide a no-args close() method.
+
+    Datasets are cached the CAB-LAB user data folder **cache_base_dir**/**name**.
+
+    :param name: A name for the cache.
+    :param cache_base_dir: Cache base directory. Defaults to ~/.cablab.
+    """
+
     def __init__(self, name, cache_base_dir=None):
         if cache_base_dir is None:
             cache_base_dir = os.path.join(os.path.join(os.path.expanduser("~"), '.cablab'), 'cache')
-        self.cache_dir = os.path.join(cache_base_dir, name)
-        self.file_to_dataset = dict()
+        self._cache_dir = os.path.join(cache_base_dir, name)
+        self._file_to_dataset = dict()
+
+    @abstractmethod
+    def open_dataset(self, file):
+        """
+        Open a dataset. Never call this method directly.
+        :param file: The file path to open.
+        :return: a dataset object.
+        """
+        pass
 
     def get_dataset(self, file):
-        if file in self.file_to_dataset:
-            dataset = self.file_to_dataset[file]
-        else:
+        """
+        Get a cached dataset for given file path. May call **open_dataset()** if dataset is not yet cached.
+        :param file: The file path.
+        :return: A cached dataset
+        """
+        dataset = self.get_cached_dataset(file)
+        if dataset is None:
             root, ext = os.path.splitext(file)
             if ext == '.gz':
                 real_file = self._get_unpacked_file(file)
             else:
                 real_file = file
-            dataset = netCDF4.Dataset(real_file)
-            self.file_to_dataset[file] = dataset
+            dataset = self.open_dataset(real_file)
+            self._file_to_dataset[file] = dataset
         return dataset
 
+    def get_cached_dataset(self, file):
+        """
+        Get a cached dataset for the file path.
+        :param file: The file path.
+        :return: The cached dataset or **None**.
+        """
+        return self._file_to_dataset.get(file, None)
+
     def close_dataset(self, file):
-        if file not in self.file_to_dataset:
-            return
-        dataset = self.file_to_dataset[file]
-        dataset.close()
-        del self.file_to_dataset[file]
+        """
+        Close a dataset for the given file.
+        :param file: The file path.
+        """
+        dataset = self.get_cached_dataset(file)
+        if dataset is not None:
+            dataset.close()
+            del self._file_to_dataset[file]
 
     def close_all_datasets(self):
-        files = list(self.file_to_dataset.keys())
+        files = list(self._file_to_dataset.keys())
         for file in files:
             self.close_dataset(file)
 
     def _get_unpacked_file(self, file):
         root, _ = os.path.splitext(file)
         filename = os.path.basename(root)
-        real_file = os.path.join(self.cache_dir, filename)
+        real_file = os.path.join(self._cache_dir, filename)
         if not os.path.exists(real_file):
-            if not os.path.exists(self.cache_dir):
-                os.makedirs(self.cache_dir, exist_ok=True)
+            if not os.path.exists(self._cache_dir):
+                os.makedirs(self._cache_dir, exist_ok=True)
             with gzip.open(file, 'rb') as istream:
                 with open(real_file, 'wb') as ostream:
                     ostream.write(istream.read())
         return real_file
 
 
-# todo - use as mixin class in each provider
-class NetCDFDatasetCacheSupport:
-    """
-    Mixin class whose intended use to add NetCDFDatasetCache support to a CubeSourceProvider implementation.
-    """
+class NetCDFDatasetCache(DatasetCache):
     def __init__(self, name, cache_base_dir=None):
-        self._dataset_cache = NetCDFDatasetCache(name, cache_base_dir=cache_base_dir)
-        self._old_indices = None
+        super(NetCDFDatasetCache, self).__init__(name, cache_base_dir=cache_base_dir)
 
-    @property
-    def dataset_cache(self):
-        return self._dataset_cache
-
-    def close(self):
-        self._dataset_cache.close_all_datasets()
-        self._old_indices = None
+    @abstractmethod
+    def open_dataset(self, real_file):
+        return netCDF4.Dataset(real_file)
 
 
 class Config:

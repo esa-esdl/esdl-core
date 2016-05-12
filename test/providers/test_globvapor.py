@@ -35,7 +35,7 @@ class GlobVapourProviderTest(unittest.TestCase):
     def test_temporal_coverage(self):
         provider = GlobVapourProvider(CubeConfig(), SOURCE_DIR)
         provider.prepare()
-        temporal_coverage = provider.get_temporal_coverage()
+        temporal_coverage = provider.temporal_coverage
         self.assertEqual((datetime(1996, 1, 1, 0, 0),
                           datetime(2009, 1, 1, 0, 0)),
                          temporal_coverage)

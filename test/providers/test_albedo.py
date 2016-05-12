@@ -34,7 +34,7 @@ class AlbedoProviderTest(unittest.TestCase):
         provider = AlbedoProvider(CubeConfig(), SOURCE_DIR)
         provider.prepare()
         self.assertEqual((datetime(2001, 1, 1, 0, 0), datetime(2011, 1, 9, 0, 0)),
-                         provider.get_temporal_coverage())
+                         provider.temporal_coverage)
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_get_images(self):

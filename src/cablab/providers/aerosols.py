@@ -5,8 +5,8 @@ from datetime import timedelta
 import gridtools.resampling as gtr
 import numpy
 
-from cablab import BaseCubeSourceProvider
-from cablab.util import NetCDFDatasetCache, aggregate_images
+from cablab import NetCDFCubeSourceProvider
+from cablab.util import aggregate_images
 
 VAR_NAME_1610 = 'AOD1610_mean'
 VAR_NAME_550 = 'AOD550_mean'
@@ -17,14 +17,13 @@ VAR_NAMES = [VAR_NAME_550, VAR_NAME_555, VAR_NAME_659, VAR_NAME_865, VAR_NAME_16
 FILL_VALUE = -999.0
 
 
-class AerosolsProvider(BaseCubeSourceProvider):
-    def __init__(self, cube_config, dir_path):
-        super(AerosolsProvider, self).__init__(cube_config)
-        self.dir_path = dir_path
-        self.dataset_cache = NetCDFDatasetCache(VAR_NAME_1610)
+class AerosolsProvider(NetCDFCubeSourceProvider):
+    def __init__(self, cube_config, name, dir_path):
+        super(AerosolsProvider, self).__init__(cube_config, name, dir_path)
         self.old_indices = None
 
-    def get_variable_descriptors(self):
+    @property
+    def variable_descriptors(self):
         return {
             VAR_NAME_1610: {
                 'data_type': numpy.float32,
@@ -73,6 +72,10 @@ class AerosolsProvider(BaseCubeSourceProvider):
             }
         }
 
+    # todo: test, then remove method and test again using base class version of method
+    # Special in this implementation:
+    #   - time index is constantly zero
+    #   - silly code
     def compute_variable_images_from_sources(self, index_to_weight):
 
         # close all datasets that wont be used anymore
@@ -114,10 +117,7 @@ class AerosolsProvider(BaseCubeSourceProvider):
                     for i in VAR_NAMES}
         return {i: aerosols[i] for i in VAR_NAMES}
 
-    def close(self):
-        self.dataset_cache.close_all_datasets()
-
-    def get_source_time_ranges(self):
+    def compute_source_time_ranges(self):
         source_time_ranges = []
         for root, sub_dirs, files in os.walk(self.dir_path):
             for sub_dir in sub_dirs:
@@ -127,7 +127,7 @@ class AerosolsProvider(BaseCubeSourceProvider):
                     file_names = os.listdir(sub_dir_path)
                     for file_name in file_names:
                         time_info = file_name.split('-', 1)[0]
-                        time = self._day2date(int(time_info))
+                        time = self.day2date(int(time_info))
                         if self.cube_config.start_time <= time <= self.cube_config.end_time:
                             file = os.path.join(sub_dir_path, file_name)
                             self.dataset_cache.get_dataset(file)
@@ -136,17 +136,17 @@ class AerosolsProvider(BaseCubeSourceProvider):
         return sorted(source_time_ranges, key=lambda item: item[0])
 
     @staticmethod
-    def _day2date(times):
+    def day2date(times):
 
         """
         Return datetime objects given numeric time values in year and day format.
         For example, 2005021 corresponds to the 21st day of year 2005.
 
-        >>> AerosolsProvider._day2date(20020724)
+        >>> AerosolsProvider.day2date(20020724)
         datetime.datetime(2002, 7, 24, 0, 0)
-        >>> AerosolsProvider._day2date(20020901)
+        >>> AerosolsProvider.day2date(20020901)
         datetime.datetime(2002, 9, 1, 0, 0)
-        >>> AerosolsProvider._day2date(20071020)
+        >>> AerosolsProvider.day2date(20071020)
         datetime.datetime(2007, 10, 20, 0, 0)
 
         :param times: numeric time values

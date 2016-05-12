@@ -38,7 +38,7 @@ class SnowWaterEquivalentProviderTest(unittest.TestCase):
     def test_temporal_coverage(self):
         provider = SnowWaterEquivalentProvider(CubeConfig(), SOURCE_DIR)
         provider.prepare()
-        temporal_coverage = provider.get_temporal_coverage()
+        temporal_coverage = provider.temporal_coverage
         self.assertEqual((datetime(1980, 1, 1, 0, 0),
                           datetime(2013, 1, 1, 0, 0)),
                          temporal_coverage)

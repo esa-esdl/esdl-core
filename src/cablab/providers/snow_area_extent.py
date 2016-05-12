@@ -5,21 +5,19 @@ import gridtools.resampling as gtr
 import netCDF4
 import numpy
 
-from cablab import BaseCubeSourceProvider
-from cablab.util import NetCDFDatasetCache
+from cablab import NetCDFCubeSourceProvider
 
 VAR_NAME = 'MFSC'
 FILL_VALUE = -9999
 
 
-class SnowAreaExtentProvider(BaseCubeSourceProvider):
-    def __init__(self, cube_config, dir_path):
-        super(SnowAreaExtentProvider, self).__init__(cube_config)
-        self.dir_path = dir_path
-        self.dataset_cache = NetCDFDatasetCache(VAR_NAME)
+class SnowAreaExtentProvider(NetCDFCubeSourceProvider):
+    def __init__(self, cube_config, name, dir_path):
+        super(SnowAreaExtentProvider, self).__init__(cube_config, name, dir_path)
         self.old_indices = None
 
-    def get_variable_descriptors(self):
+    @property
+    def variable_descriptors(self):
         return {
             VAR_NAME: {
                 'data_type': numpy.float32,
@@ -29,6 +27,10 @@ class SnowAreaExtentProvider(BaseCubeSourceProvider):
             }
         }
 
+    # todo: test, then remove method and test again using base class version of method
+    # Special in this implementation:
+    #  - aggregate_image not called, see Hans' memory problem,
+    #  - performs it's own (wrong?) temporal aggregation
     def compute_variable_images_from_sources(self, index_to_weight):
 
         # close all datasets that wont be used anymore
@@ -53,17 +55,14 @@ class SnowAreaExtentProvider(BaseCubeSourceProvider):
                 var_image = self.dataset_cache.get_dataset(file).variables[VAR_NAME]
                 snow_area_extent_sum += weight * var_image[time_index, :, :]
                 weight_sum += weight
-            # produces memory error when using aggregate_image function
+            # todo: produces memory error when using aggregate_image function
             var_image = snow_area_extent_sum / weight_sum
 
         var_image = gtr.resample_2d(var_image, self.cube_config.grid_width, self.cube_config.grid_height,
                                     us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
         return {VAR_NAME: var_image}
 
-    def close(self):
-        self.dataset_cache.close_all_datasets()
-
-    def get_source_time_ranges(self):
+    def compute_source_time_ranges(self):
         source_time_ranges = []
         file_names = os.listdir(self.dir_path)
         for file_name in file_names:

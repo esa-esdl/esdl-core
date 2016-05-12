@@ -37,7 +37,7 @@ class AerosolsProviderTest(unittest.TestCase):
         provider = AerosolsProvider(CubeConfig(end_time=datetime(2003, 1, 1)), SOURCE_DIR)
         provider.prepare()
         self.assertEqual((datetime(2002, 7, 24, 0, 0), datetime(2003, 1, 2, 0, 0)),
-                         provider.get_temporal_coverage())
+                         provider.temporal_coverage)
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_get_images(self):

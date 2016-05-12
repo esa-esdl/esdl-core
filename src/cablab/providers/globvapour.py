@@ -5,21 +5,20 @@ import gridtools.resampling as gtr
 import netCDF4
 import numpy
 
-from cablab import BaseCubeSourceProvider
-from cablab.util import NetCDFDatasetCache, aggregate_images
+from cablab import NetCDFCubeSourceProvider
+from cablab.util import aggregate_images
 
 VAR_NAME = 'tcwv_res'
 FILL_VALUE = -999.0
 
 
-class GlobVapourProvider(BaseCubeSourceProvider):
-    def __init__(self, cube_config, dir_path):
-        super(GlobVapourProvider, self).__init__(cube_config)
-        self.dir_path = dir_path
-        self.dataset_cache = NetCDFDatasetCache(VAR_NAME)
+class GlobVapourProvider(NetCDFCubeSourceProvider):
+    def __init__(self, cube_config, name, dir_path):
+        super(GlobVapourProvider, self).__init__(cube_config, name, dir_path)
         self.old_indices = None
 
-    def get_variable_descriptors(self):
+    @property
+    def variable_descriptors(self):
         return {
             VAR_NAME: {
                 'data_type': numpy.float32,
@@ -31,6 +30,9 @@ class GlobVapourProvider(BaseCubeSourceProvider):
             }
         }
 
+    # todo: test, then remove method and test again using base class version of method
+    # Special in this implementation:
+    #   - VAR_NAME name is 'Ozone', but in NetCDF files there is 'atmosphere_mole_content_of_ozone'
     def compute_variable_images_from_sources(self, index_to_weight):
 
         # close all datasets that wont be used anymore
@@ -61,10 +63,7 @@ class GlobVapourProvider(BaseCubeSourceProvider):
                                     us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
         return {VAR_NAME: var_image}
 
-    def close(self):
-        self.dataset_cache.close_all_datasets()
-
-    def get_source_time_ranges(self):
+    def compute_source_time_ranges(self):
         source_time_ranges = []
         dir_names = os.listdir(self.dir_path)
 

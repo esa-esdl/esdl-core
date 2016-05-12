@@ -34,7 +34,7 @@ class AirTemperatureProviderTest(unittest.TestCase):
         provider = AirTemperatureProvider(CubeConfig(end_time=datetime(2001, 6, 1, 0, 0)), SOURCE_DIR)
         provider.prepare()
         self.assertEqual((datetime(2001, 1, 1, 0, 0), datetime(2002, 1, 1, 0, 0)),
-                         provider.get_temporal_coverage())
+                         provider.temporal_coverage)
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_get_images(self):

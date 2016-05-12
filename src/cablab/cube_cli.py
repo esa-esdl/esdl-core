@@ -1,6 +1,6 @@
-import sys
 import argparse
 import os
+import sys
 
 import cablab
 from cablab import Cube, CubeConfig
@@ -36,7 +36,7 @@ def main(args=None):
     cube_dir = args_obj.cube_dir
     cube_config_file = args_obj.cube_conf
     cube_sources = args_obj.cube_sources
-    source_providers = []
+    source_provider_infos = []
     list_mode = args_obj.list
     if cube_config_file and not os.path.isfile(cube_config_file):
         parser.error('CONFIG file not found: %s' % cube_config_file)
@@ -52,7 +52,7 @@ def main(args=None):
             if not os.path.isabs(source_args):
                 source_args = Config.instance().get_cube_source_path(source_args)
             if source_provider_class:
-                source_providers.append((source_provider_class, source_args))
+                source_provider_infos.append((source_provider_name, source_provider_class, source_args))
             else:
                 parser.error('no source provider installed with name \'%s\'' % source_provider_name)
 
@@ -64,9 +64,9 @@ def main(args=None):
         sys.exit(1)
 
     if list_mode:
-        print('source data providers (%d):' % len(cablab.SOURCE_PROVIDERS))
-        for name in cablab.SOURCE_PROVIDERS.keys():
-            print('  %s' % name)
+        print('source data providers (%d):' % len(source_provider_infos))
+        for source_provider_info in source_provider_infos:
+            print('  %s --> %s(%s)' % source_provider_info)
     if cube_dir:
         if is_new:
             if cube_config_file:
@@ -77,8 +77,7 @@ def main(args=None):
         else:
             cube = Cube.open(cube_dir)
 
-        source_providers = [source_provider_class(cube.config, source_args)
-                            for source_provider_class, source_args in source_providers]
+        source_providers = [cls(cube.config, name, args) for name, cls, args in source_provider_infos]
 
         for source_provider in source_providers:
             cube.update(source_provider)

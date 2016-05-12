@@ -5,8 +5,8 @@ import gridtools.resampling as gtr
 import numpy
 from netCDF4 import date2num, num2date
 
-from cablab import BaseCubeSourceProvider
-from cablab.util import NetCDFDatasetCache, aggregate_images
+from cablab import NetCDFCubeSourceProvider
+from cablab.util import aggregate_images
 
 VAR_NAME_BRIGHT = 'BHR_VIS'
 VAR_NAME_DARK = 'DHR_VIS'
@@ -14,14 +14,13 @@ VAR_NAMES = [VAR_NAME_BRIGHT, VAR_NAME_DARK]
 FILL_VALUE = numpy.nan
 
 
-class AlbedoProvider(BaseCubeSourceProvider):
-    def __init__(self, cube_config, dir_path):
-        super(AlbedoProvider, self).__init__(cube_config)
-        self.dir_path = dir_path
-        self.dataset_cache = NetCDFDatasetCache("albedo")
+class AlbedoProvider(NetCDFCubeSourceProvider):
+    def __init__(self, cube_config, name, dir_path):
+        super(AlbedoProvider, self).__init__(cube_config, name, dir_path)
         self.old_indices = None
 
-    def get_variable_descriptors(self):
+    @property
+    def variable_descriptors(self):
         return {
             VAR_NAME_BRIGHT: {
                 'data_type': numpy.float32,
@@ -41,6 +40,10 @@ class AlbedoProvider(BaseCubeSourceProvider):
             }
         }
 
+    # todo: test, then remove method and test again using base class version of method
+    # Special in this implementation:
+    #   - time index is constantly zero
+    #   - silly code
     def compute_variable_images_from_sources(self, index_to_weight):
 
         # close all datasets that wont be used anymore
@@ -75,16 +78,13 @@ class AlbedoProvider(BaseCubeSourceProvider):
                       for i in VAR_NAMES}
         return {i: var_images[i] for i in VAR_NAMES}
 
-    def close(self):
-        self.dataset_cache.close_all_datasets()
-
-    def get_source_time_ranges(self):
+    def compute_source_time_ranges(self):
         source_time_ranges = []
 
         file_names = os.listdir(self.dir_path)
         for file_name in file_names:
             time_info = file_name.split('.', 5)[4]
-            t1, t2 = self._day2date(int(time_info))
+            t1, t2 = self.day2date(int(time_info))
             if self.cube_config.start_time <= t1 <= self.cube_config.end_time:
                 file = os.path.join(self.dir_path, file_name)
                 self.dataset_cache.get_dataset(file)
@@ -94,14 +94,14 @@ class AlbedoProvider(BaseCubeSourceProvider):
         return sorted(source_time_ranges, key=lambda item: item[0])
 
     @staticmethod
-    def _day2date(times):
+    def day2date(times):
         """
         Return datetime objects given numeric time values in year and day format.
         For example, 2005021 corresponds to the 21st day of year 2005.
 
-        >>> AlbedoProvider._day2date(2000001)
+        >>> AlbedoProvider.day2date(2000001)
         (datetime.datetime(2000, 1, 1, 0, 0), datetime.datetime(2000, 1, 9, 0, 0))
-        >>> AlbedoProvider._day2date(2000361)
+        >>> AlbedoProvider.day2date(2000361)
         (datetime.datetime(2000, 12, 26, 0, 0), datetime.datetime(2001, 1, 3, 0, 0))
 
         :param times: numeric time values

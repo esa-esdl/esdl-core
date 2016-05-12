@@ -34,7 +34,7 @@ class SoilMoistureProviderTest(unittest.TestCase):
         provider = SoilMoistureProvider(CubeConfig(), SOURCE_DIR)
         provider.prepare()
         self.assertEqual((datetime(1979, 1, 1, 0, 0, 0, 33), datetime(2014, 1, 31, 0, 0, 0, 33)),
-                         provider.get_temporal_coverage())
+                         provider.temporal_coverage)
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_get_images(self):

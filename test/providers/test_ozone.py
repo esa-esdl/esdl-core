@@ -34,7 +34,7 @@ class OzoneProviderTest(unittest.TestCase):
         provider = OzoneProvider(CubeConfig(), SOURCE_DIR)
         provider.prepare()
         self.assertEqual((datetime(1996, 3, 10, 0, 0), datetime(2011, 6, 30, 0, 0)),
-                         provider.get_temporal_coverage())
+                         provider.temporal_coverage)
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_get_images(self):

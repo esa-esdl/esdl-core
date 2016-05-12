@@ -37,7 +37,7 @@ class SnowAreaExtentProviderTest(unittest.TestCase):
     def test_temporal_coverage(self):
         provider = SnowAreaExtentProvider(CubeConfig(), SOURCE_DIR)
         provider.prepare()
-        temporal_coverage = provider.get_temporal_coverage()
+        temporal_coverage = provider.temporal_coverage
         self.assertEqual((datetime(2003, 1, 1, 0, 0, 0, 33),
                           datetime(2013, 1, 1, 0, 0, 0, 33)),
                          temporal_coverage)

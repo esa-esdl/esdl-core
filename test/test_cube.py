@@ -165,7 +165,7 @@ class CubeSourceProviderMock(CubeSourceProvider):
                  cube_config,
                  start_time=datetime(2013, 1, 1),
                  end_time=datetime(2013, 2, 1)):
-        super(CubeSourceProviderMock, self).__init__(cube_config)
+        super(CubeSourceProviderMock, self).__init__(cube_config, 'test')
         self.start_time = start_time
         self.end_time = end_time
         self.trace = []
@@ -175,13 +175,16 @@ class CubeSourceProviderMock(CubeSourceProvider):
     def prepare(self):
         pass
 
-    def get_temporal_coverage(self):
+    @property
+    def temporal_coverage(self):
         return self.start_time, self.end_time
 
-    def get_spatial_coverage(self):
+    @property
+    def spatial_coverage(self):
         return 0, 0, self.cube_config.grid_width, self.cube_config.grid_height
 
-    def get_variable_descriptors(self):
+    @property
+    def variable_descriptors(self):
         return {
             'LAI': {
                 'data_type': numpy.float32,

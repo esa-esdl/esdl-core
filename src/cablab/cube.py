@@ -1,14 +1,17 @@
 import math
 import os
 import time
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import OrderedDict
 from datetime import datetime, timedelta
 
+import gridtools.resampling as gtr
 import netCDF4
+import numpy as np
 
 import cablab
 import cablab.util
+from .util import NetCDFDatasetCache, aggregate_images, temporal_weight
 
 # The current version of the data cube's configuration and data model.
 CUBE_MODEL_VERSION = '0.1'
@@ -20,17 +23,21 @@ class CubeSourceProvider(metaclass=ABCMeta):
     Cube source providers are passed to the **Cube.update()** method.
 
     :param cube_config: Specifies the fixed layout and conventions used for the cube.
+    :param name: The provider's registration name.
     """
 
-    def __init__(self, cube_config):
+    def __init__(self, cube_config, name):
         if not cube_config:
-            raise ValueError('cube_config must not be None')
+            raise ValueError('cube_config expected')
+        if not name:
+            raise ValueError('name expected')
+        self._name = name
         self._cube_config = cube_config
 
     @property
     def name(self) -> str:
-        """ The provider's name. """
-        return type(self).__name__
+        """ The provider's registration name. """
+        return self._name
 
     @property
     def cube_config(self):
@@ -45,8 +52,8 @@ class CubeSourceProvider(metaclass=ABCMeta):
         """
         pass
 
-    @abstractmethod
-    def get_temporal_coverage(self) -> tuple:
+    @abstractproperty
+    def temporal_coverage(self) -> tuple:
         """
         Return the start and end time of the available source data.
 
@@ -54,8 +61,8 @@ class CubeSourceProvider(metaclass=ABCMeta):
         """
         return None
 
-    @abstractmethod
-    def get_spatial_coverage(self) -> tuple:
+    @abstractproperty
+    def spatial_coverage(self) -> tuple:
         """
         Return the spatial coverage as a rectangle represented by a tuple of integers (x, y, width, height) in the
         cube's image coordinates.
@@ -64,15 +71,17 @@ class CubeSourceProvider(metaclass=ABCMeta):
         """
         return None
 
-    @abstractmethod
-    def get_variable_descriptors(self) -> dict:
+    @abstractproperty
+    def variable_descriptors(self) -> dict:
         """
         Return a variable name to variable descriptor mapping of all provided variables.
         Each descriptor is a dictionary of variable attribute names to their values.
         The attributes ``data_type`` (a numpy data type) and ``fill_value`` are mandatory.
 
+
         :return: dictionary of variable names to attribute dictionaries
         """
+        # todo - describe new resamping options here
         return None
 
     @abstractmethod
@@ -112,19 +121,27 @@ class BaseCubeSourceProvider(CubeSourceProvider):
     A partial implementation of the **CubeSourceProvider** interface that computes its output image data
     using weighted averages. The weights are computed according to the overlap of source time ranges and a
     requested target time range.
+
+    :param cube_config: Specifies the fixed layout and conventions used for the cube.
+    :param name: The provider's registration name.
     """
 
-    def __init__(self, cube_config):
-        super(BaseCubeSourceProvider, self).__init__(cube_config)
+    def __init__(self, cube_config, name):
+        super(BaseCubeSourceProvider, self).__init__(cube_config, name)
         self._source_time_ranges = None
 
     def prepare(self):
         """
-        Calls **get_source_time_ranges** and assigns the return value to the field **source_time_ranges**.
+        Calls **compute_source_time_ranges** and assigns the return value to the field **source_time_ranges**.
         """
-        self._source_time_ranges = self.get_source_time_ranges()
+        self._source_time_ranges = self.compute_source_time_ranges()
 
-    def get_spatial_coverage(self):
+    @property
+    def source_time_ranges(self):
+        return self._source_time_ranges
+
+    @property
+    def spatial_coverage(self):
         """
         Return the spatial grid coverage given in the Cube's configuration (default).
 
@@ -133,11 +150,14 @@ class BaseCubeSourceProvider(CubeSourceProvider):
         return 0, 0, self.cube_config.grid_width, self.cube_config.grid_height
 
     @property
-    def source_time_ranges(self):
-        return self._source_time_ranges
+    def temporal_coverage(self) -> (datetime, datetime):
+        """
+        Return the temporal coverage derived from the value returned by **compute_source_time_ranges()**.
+        """
+        return self._source_time_ranges[0][0], self._source_time_ranges[-1][1]
 
     @abstractmethod
-    def get_source_time_ranges(self) -> list:
+    def compute_source_time_ranges(self) -> list:
         """
         Return a sorted list of all time ranges of every source file.
         Items in this list must be 4-element tuples of the form
@@ -146,12 +166,6 @@ class BaseCubeSourceProvider(CubeSourceProvider):
         This method must be implemented by derived classes.
         """
         return None
-
-    def get_temporal_coverage(self) -> (datetime, datetime):
-        """
-        Return the temporal coverage derived from the value returned by **get_source_time_ranges()**.
-        """
-        return self._source_time_ranges[0][0], self._source_time_ranges[-1][1]
 
     def compute_variable_images(self, period_start, period_end):
         """
@@ -164,24 +178,24 @@ class BaseCubeSourceProvider(CubeSourceProvider):
                  Return ``None`` if no such variables exists for the given target time range.
         """
 
-        t1 = time.time()
-
         source_time_ranges = self._source_time_ranges
         if len(source_time_ranges) == 0:
             return None
+
         index_to_weight = dict()
         for i in range(len(source_time_ranges)):
             source_start_time, source_end_time = source_time_ranges[i][0:2]
-            weight = cablab.util.temporal_weight(source_start_time, source_end_time,
-                                                 period_start, period_end)
+            weight = temporal_weight(source_start_time, source_end_time,
+                                     period_start, period_end)
             if weight > 0.0:
                 index_to_weight[i] = weight
         if not index_to_weight:
             return None
+
         self.log('computing images for time range %s to %s from %d source(s)...' % (period_start, period_end,
                                                                                     len(index_to_weight)))
+        t1 = time.time()
         result = self.compute_variable_images_from_sources(index_to_weight)
-
         t2 = time.time()
         self.log('images computed for %s, took %f seconds' % (str(list(result.keys())), t2 - t1))
 
@@ -193,7 +207,7 @@ class BaseCubeSourceProvider(CubeSourceProvider):
         Compute the target images for all variables from the sources with the given time indices to weights mapping.
 
         The time indices in *index_to_weight* are guaranteed to point into the time ranges list returned by
-        **get_source_time_ranges()**.
+        **compute_source_time_ranges()**.
 
         The weight values in *index_to_weight* are float values computed from the overlap of source time ranges with
         a requested target time range.
@@ -221,6 +235,79 @@ class BaseCubeSourceProvider(CubeSourceProvider):
         return self._source_time_ranges[var_index][2:4]
 
 
+class NetCDFCubeSourceProvider(BaseCubeSourceProvider):
+    """
+    A BaseCubeSourceProvider that
+    * Uses NetCDF source datasets read from a given **dir_path**
+    * Performs temporal aggregation first and then spatial resampling
+    """
+
+    def __init__(self, cube_config, name, dir_path):
+        super(NetCDFCubeSourceProvider, self).__init__(cube_config, name)
+        self._dir_path = dir_path
+        self._dataset_cache = NetCDFDatasetCache(name)
+        self._old_indices = None
+
+    @property
+    def name(self):
+        return self._dir_path
+
+    @property
+    def dir_path(self):
+        return self._dir_path
+
+    @property
+    def dataset_cache(self):
+        return self._dataset_cache
+
+    def compute_variable_images_from_sources(self, index_to_weight):
+
+        # close all datasets that wont be used anymore
+        new_indices = set(index_to_weight.keys())
+        if self._old_indices:
+            unused_indices = self._old_indices - new_indices
+            for i in unused_indices:
+                file, _ = self._get_file_and_time_index(i)
+                self._dataset_cache.close_dataset(file)
+        self._old_indices = new_indices
+
+        var_descriptors = self.variable_descriptors
+        target_var_images = dict()
+        for var_name, var_attributes in var_descriptors.items():
+            source_var_images = [None] * len(new_indices)
+            source_weights = [None] * len(new_indices)
+            var_image_index = 0
+            for i in new_indices:
+                file, time_index = self._get_file_and_time_index(i)
+                variable = self._dataset_cache.get_dataset(file).variables[var_name]
+                if len(variable.shape) == 3:
+                    var_image = variable[time_index, :, :]
+                elif len(variable.shape) == 2:
+                    var_image = variable[:, :]
+                else:
+                    raise TypeError("unexpected shape for variable '%s'" % var_name)
+                source_var_images[var_image_index] = var_image
+                source_weights[var_image_index] = index_to_weight[i]
+                var_image_index += 1
+            if len(new_indices) > 1:
+                # Temporal aggregation
+                var_image = aggregate_images(source_var_images, weights=source_weights)
+            else:
+                # Temporal aggregation not required
+                var_image = source_var_images[0]
+            # Spatial resampling
+            var_image = gtr.resample_2d(var_image,
+                                        self.cube_config.grid_width,
+                                        self.cube_config.grid_height,
+                                        ds_method=gtr.__dict__['DS_' + var_attributes.get('ds_method', 'MEAN')],
+                                        us_method=gtr.__dict__['US_' + var_attributes.get('us_method', 'NEAREST')],
+                                        fill_value=var_attributes.get('fill_value', np.nan))
+            target_var_images[var_name] = var_image
+
+        return target_var_images
+
+    def close(self):
+        self._dataset_cache.close_all_datasets()
 
 
 class CubeConfig:
@@ -491,7 +578,7 @@ class Cube:
 
         provider.prepare()
 
-        target_start_time, target_end_time = provider.get_temporal_coverage()
+        target_start_time, target_end_time = provider.temporal_coverage
         if self._config.start_time and self._config.start_time > target_start_time:
             target_start_time = self._config.start_time
         if self._config.end_time and self._config.end_time < target_end_time:
@@ -559,7 +646,7 @@ class Cube:
 
     def _init_variable_dataset(self, provider, dataset, variable_name):
 
-        image_x0, image_y0, image_width, image_height = provider.get_spatial_coverage()
+        image_x0, image_y0, image_width, image_height = provider.spatial_coverage
 
         dataset.createDimension('time', self._config.num_periods_per_year)
         dataset.createDimension('lat', image_height)
@@ -595,7 +682,7 @@ class Cube:
         #
         # check (nf 20151023) - add more global attributes from CF-conventions here
         #
-        variable_descriptors = provider.get_variable_descriptors()
+        variable_descriptors = provider.variable_descriptors
         variable_attributes = variable_descriptors[variable_name]
         # Mandatory attributes
         variable_data_type = variable_attributes['data_type']

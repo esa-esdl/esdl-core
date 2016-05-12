@@ -5,21 +5,20 @@ import gridtools.resampling as gtr
 import netCDF4
 import numpy
 
-from cablab import BaseCubeSourceProvider
-from cablab.util import NetCDFDatasetCache, aggregate_images
+from cablab import NetCDFCubeSourceProvider
+from cablab.util import aggregate_images
 
 VAR_NAME = 'Ozone'
 FILL_VALUE = numpy.NaN
 
 
-class OzoneProvider(BaseCubeSourceProvider):
-    def __init__(self, cube_config, dir_path):
-        super(OzoneProvider, self).__init__(cube_config)
-        self.dir_path = dir_path
-        self.dataset_cache = NetCDFDatasetCache(VAR_NAME)
+class OzoneProvider(NetCDFCubeSourceProvider):
+    def __init__(self, cube_config, name, dir_path):
+        super(OzoneProvider, self).__init__(cube_config, name, dir_path)
         self.old_indices = None
 
-    def get_variable_descriptors(self):
+    @property
+    def variable_descriptors(self):
         return {
             VAR_NAME: {
                 'data_type': numpy.float32,
@@ -32,6 +31,10 @@ class OzoneProvider(BaseCubeSourceProvider):
             }
         }
 
+    # todo: test, then remove method and test again using base class version of method
+    # Special in this implementation:
+    #   - VAR_NAME name is 'Ozone', but in NetCDF files there is 'atmosphere_mole_content_of_ozone'
+    #   - Variable is 2-D, time dim missing
     def compute_variable_images_from_sources(self, index_to_weight):
 
         # close all datasets that wont be used anymore
@@ -62,10 +65,7 @@ class OzoneProvider(BaseCubeSourceProvider):
                                     us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
         return {VAR_NAME: var_image}
 
-    def close(self):
-        self.dataset_cache.close_all_datasets()
-
-    def get_source_time_ranges(self):
+    def compute_source_time_ranges(self):
         file_names = os.listdir(self.dir_path)
         source_time_ranges = list()
         for file_name in file_names:
