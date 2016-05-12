@@ -143,7 +143,6 @@ class NetCDFDatasetCache(DatasetCache):
     def __init__(self, name, cache_base_dir=None):
         super(NetCDFDatasetCache, self).__init__(name, cache_base_dir=cache_base_dir)
 
-    @abstractmethod
     def open_dataset(self, real_file):
         return netCDF4.Dataset(real_file)
 
