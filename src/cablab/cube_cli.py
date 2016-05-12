@@ -64,9 +64,9 @@ def main(args=None):
         sys.exit(1)
 
     if list_mode:
-        print('source data providers (%d):' % len(source_provider_infos))
-        for source_provider_info in source_provider_infos:
-            print('  %s --> %s(%s)' % source_provider_info)
+        print('source data providers (%d):' % len(cablab.SOURCE_PROVIDERS))
+        for name, value in cablab.SOURCE_PROVIDERS.items():
+            print('  %s -> %s.%s' % (name, value.__module__, value.__name__))
     if cube_dir:
         if is_new:
             if cube_config_file:
