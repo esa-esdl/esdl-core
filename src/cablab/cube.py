@@ -4,6 +4,7 @@ import time
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import OrderedDict
 from datetime import datetime, timedelta
+from typing import Tuple, Dict, Any
 
 import gridtools.resampling as gtr
 import netCDF4
@@ -40,7 +41,7 @@ class CubeSourceProvider(metaclass=ABCMeta):
         return self._name
 
     @property
-    def cube_config(self):
+    def cube_config(self) -> object:
         """ The data cube's configuration. """
         return self._cube_config
 
@@ -53,7 +54,7 @@ class CubeSourceProvider(metaclass=ABCMeta):
         pass
 
     @abstractproperty
-    def temporal_coverage(self) -> tuple:
+    def temporal_coverage(self) -> Tuple[datetime, datetime]:
         """
         Return the start and end time of the available source data.
 
@@ -62,7 +63,7 @@ class CubeSourceProvider(metaclass=ABCMeta):
         return None
 
     @abstractproperty
-    def spatial_coverage(self) -> tuple:
+    def spatial_coverage(self) -> Tuple[int, int, int, int]:
         """
         Return the spatial coverage as a rectangle represented by a tuple of integers (x, y, width, height) in the
         cube's image coordinates.
@@ -72,20 +73,26 @@ class CubeSourceProvider(metaclass=ABCMeta):
         return None
 
     @abstractproperty
-    def variable_descriptors(self) -> dict:
+    def variable_descriptors(self) -> Dict[str, Dict[str, Any]]:
         """
-        Return a variable name to variable descriptor mapping of all provided variables.
-        Each descriptor is a dictionary of variable attribute names to their values.
-        The attributes ``data_type`` (a numpy data type) and ``fill_value`` are mandatory.
+        Return a dictionary which maps target(!) variable names to a dictionary of target(!) attribute values.
+        The following attributes have a special meaning and shall or should be provided:
 
+        * ``data_type``: A numpy data type. Mandatory attribute.
+        * ``fill_value``: The value used for indicating missing grid cells. Mandatory attribute.
+        * ``source_name``: the name of the variable in the source (files). Optional, defaults to the target variable's name.
+        * ``scale_factor``: See CF conventions. Optional, defaults to one (``1.0``).
+        * ``add_offset``: See CF conventions. Optional, defaults to zero (``0.0``).
+        * ``units``: See CF conventions. Optional.
+        * ``standard_name``: See CF conventions. Optional.
+        * ``long_name``: See CF conventions. Optional.
 
         :return: dictionary of variable names to attribute dictionaries
         """
-        # todo - describe new resamping options here, see gridtools.resampling.DS_xxx and US_xx
         return None
 
     @abstractmethod
-    def compute_variable_images(self, period_start, period_end) -> dict:
+    def compute_variable_images(self, period_start, period_end) -> Dict[str, np.ndarray]:
         """
         Return variable name to variable image mapping of all provided variables.
         Each image is a numpy array with the shape (height, width) derived from the **get_spatial_coverage()** method.
@@ -272,7 +279,7 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider):
             var_image_index = 0
             for i in new_indices:
                 file, time_index = self._get_file_and_time_index(i)
-                variable = self._dataset_cache.get_dataset(file).variables[var_name]
+                variable = self._dataset_cache.get_dataset(file).variables[var_attributes.get('source_name', var_name)]
                 if len(variable.shape) == 3:
                     var_image = variable[time_index, :, :]
                 elif len(variable.shape) == 2:
@@ -299,6 +306,8 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider):
 
         return target_var_images
 
+    # todo (nf 20160512) - move one class up and let it return a modified index_to_weight,
+    # call in compute_variable_images()
     def close_unused_open_files(self, index_to_weight):
         """
         Close all datasets that wont be used anymore w.r.t. the given **index_to_weight** dictionary passed to the
@@ -327,8 +336,6 @@ class TestCubeSourceProvider(CubeSourceProvider):
                  variable_name):
         super(TestCubeSourceProvider, self).__init__(cube_config, name)
         self._variable_name = variable_name
-        self._start_time = datetime(2005, 1, 1)
-        self._end_time = datetime(2006, 1, 1)
         self._value = 0.0
 
     def prepare(self):
@@ -336,7 +343,7 @@ class TestCubeSourceProvider(CubeSourceProvider):
 
     @property
     def temporal_coverage(self):
-        return self._start_time, self._end_time
+        return self.cube_config.start_time, self.cube_config.end_time
 
     @property
     def spatial_coverage(self):
@@ -764,6 +771,7 @@ class Cube:
                 try:
                     var_variable.__setattr__(name, value)
                 except ValueError as ve:
+                    # todo (nf 20160512) - log, or print to stderr
                     print('%s = %s failed (%s)!' % (name, value, str(ve)))
         return dataset
 

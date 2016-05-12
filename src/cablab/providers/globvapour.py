@@ -1,15 +1,10 @@
 import os
 from datetime import datetime, timedelta
 
-import gridtools.resampling as gtr
 import netCDF4
 import numpy
 
 from cablab import NetCDFCubeSourceProvider
-from cablab.util import aggregate_images
-
-VAR_NAME = 'tcwv_res'
-FILL_VALUE = -999.0
 
 
 class GlobVapourProvider(NetCDFCubeSourceProvider):
@@ -20,48 +15,16 @@ class GlobVapourProvider(NetCDFCubeSourceProvider):
     @property
     def variable_descriptors(self):
         return {
-            VAR_NAME: {
+            'total_column_water_vapour': {
+                'source_name': 'tcwv_res',
                 'data_type': numpy.float32,
-                'fill_value': FILL_VALUE,
+                'fill_value': -999.0,
                 'units': 'kg m-2',
-                'long_name': 'Total Column Water Vapour',
+                'long_name': 'total column water vapour',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
             }
         }
-
-    # todo: test, then remove method and test again using base class version of method
-    # Special in this implementation:
-    #   - VAR_NAME name is 'Ozone', but in NetCDF files there is 'atmosphere_mole_content_of_ozone'
-    def compute_variable_images_from_sources(self, index_to_weight):
-
-        # close all datasets that wont be used anymore
-        new_indices = set(index_to_weight.keys())
-        if self.old_indices:
-            unused_indices = self.old_indices - new_indices
-            for i in unused_indices:
-                file, _ = self._get_file_and_time_index(i)
-                self.dataset_cache.close_dataset(file)
-        self.old_indices = new_indices
-
-        if len(new_indices) == 1:
-            i = next(iter(new_indices))
-            file, time_index = self._get_file_and_time_index(i)
-            var_image = self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
-        else:
-            images = [None] * len(new_indices)
-            weights = [None] * len(new_indices)
-            j = 0
-            for i in new_indices:
-                file, time_index = self._get_file_and_time_index(i)
-                images[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
-                weights[j] = index_to_weight[i]
-                j += 1
-            var_image = aggregate_images(images, weights=weights)
-
-        var_image = gtr.resample_2d(var_image, self.cube_config.grid_width, self.cube_config.grid_height,
-                                    us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
-        return {VAR_NAME: var_image}
 
     def compute_source_time_ranges(self):
         source_time_ranges = []

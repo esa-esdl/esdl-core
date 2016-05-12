@@ -1,15 +1,10 @@
 import os
 from datetime import timedelta
 
-import gridtools.resampling as gtr
 import netCDF4
 import numpy
 
 from cablab import NetCDFCubeSourceProvider
-from cablab.util import aggregate_images
-
-VAR_NAME = 't2m'
-FILL_VALUE = -32767
 
 
 class AirTemperatureProvider(NetCDFCubeSourceProvider):
@@ -20,49 +15,16 @@ class AirTemperatureProvider(NetCDFCubeSourceProvider):
     @property
     def variable_descriptors(self):
         return {
-            VAR_NAME: {
+            'air_temperature_2m': {
+                'source_name': 't2m',
                 'data_type': numpy.float32,
-                'fill_value': FILL_VALUE,
+                'fill_value': -32767,
                 'units': 'K',
                 'long_name': '2 metre temperature',
                 'scale_factor': 0.0019718202938428923,
                 'add_offset': 259.2678739531343,
             }
         }
-
-    # todo: test, then remove method and test again using base class version of method
-    # Special in this implementation:
-    #   - lat dim indexed by const expression '0:720' - why???
-    #   - note 't2m' is a stupid variable name!
-    def compute_variable_images_from_sources(self, index_to_weight):
-
-        # close all datasets that wont be used anymore
-        new_indices = set(index_to_weight.keys())
-        if self.old_indices:
-            unused_indices = self.old_indices - new_indices
-            for i in unused_indices:
-                file, _ = self._get_file_and_time_index(i)
-                self.dataset_cache.close_dataset(file)
-        self.old_indices = new_indices
-
-        if len(new_indices) == 1:
-            i = next(iter(new_indices))
-            file, time_index = self._get_file_and_time_index(i)
-            var_image = self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, 0:720, :]
-        else:
-            images = [None] * len(new_indices)
-            weights = [None] * len(new_indices)
-            j = 0
-            for i in new_indices:
-                file, time_index = self._get_file_and_time_index(i)
-                images[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, 0:720, :]
-                weights[j] = index_to_weight[i]
-                j += 1
-            var_image = aggregate_images(images, weights=weights)
-
-        var_image = gtr.resample_2d(var_image, self.cube_config.grid_width, self.cube_config.grid_height,
-                                    us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
-        return {VAR_NAME: var_image}
 
     def compute_source_time_ranges(self):
         source_time_ranges = []

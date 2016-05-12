@@ -2,19 +2,9 @@ import datetime
 import os
 from datetime import timedelta
 
-import gridtools.resampling as gtr
 import numpy
 
 from cablab import NetCDFCubeSourceProvider
-from cablab.util import aggregate_images
-
-VAR_NAME_1610 = 'AOD1610_mean'
-VAR_NAME_550 = 'AOD550_mean'
-VAR_NAME_555 = 'AOD555_mean'
-VAR_NAME_659 = 'AOD659_mean'
-VAR_NAME_865 = 'AOD865_mean'
-VAR_NAMES = [VAR_NAME_550, VAR_NAME_555, VAR_NAME_659, VAR_NAME_865, VAR_NAME_1610]
-FILL_VALUE = -999.0
 
 
 class AerosolsProvider(NetCDFCubeSourceProvider):
@@ -25,97 +15,57 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
     @property
     def variable_descriptors(self):
         return {
-            VAR_NAME_1610: {
+            'aerosol_optical_thickness_1610': {
+                'source_name': 'AOD1610_mean',
                 'data_type': numpy.float32,
-                'fill_value': FILL_VALUE,
+                'fill_value': -999.0,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 1610 nm',
-                'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
+                # 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
             },
-            VAR_NAME_550: {
+            'aerosol_optical_thickness_550': {
+                'source_name': 'AOD550_mean',
                 'data_type': numpy.float32,
-                'fill_value': FILL_VALUE,
+                'fill_value': -999.0,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 550 nm',
-                'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
+                # 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
             },
-            VAR_NAME_555: {
+            'aerosol_optical_thickness_555': {
+                'source_name': 'AOD555_mean',
                 'data_type': numpy.float32,
-                'fill_value': FILL_VALUE,
+                'fill_value': -999.0,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 555 nm',
-                'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
+                # 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
             },
-            VAR_NAME_659: {
+            'aerosol_optical_thickness_659': {
+                'source_name': 'AOD659_mean',
                 'data_type': numpy.float32,
-                'fill_value': FILL_VALUE,
+                'fill_value': -999.0,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 659 nm',
-                'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
+                # 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
             },
-            VAR_NAME_865: {
+            'aerosol_optical_thickness_865': {
+                'source_name': 'AOD865_mean',
                 'data_type': numpy.float32,
-                'fill_value': FILL_VALUE,
+                'fill_value': -999.0,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 865 nm',
-                'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
+                # 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
             }
         }
-
-    # todo: test, then remove method and test again using base class version of method
-    # Special in this implementation:
-    #   - time index is constantly zero
-    #   - silly code
-    def compute_variable_images_from_sources(self, index_to_weight):
-
-        # close all datasets that wont be used anymore
-        new_indices = set(index_to_weight.keys())
-        if self.old_indices:
-            unused_indices = self.old_indices - new_indices
-            for i in unused_indices:
-                file, _ = self._get_file_and_time_index(i)
-                self.dataset_cache.close_dataset(file)
-        self.old_indices = new_indices
-
-        if len(new_indices) == 1:
-            i = next(iter(new_indices))
-            file, _ = self._get_file_and_time_index(i)
-            aerosols = {i: self.dataset_cache.get_dataset(file).variables[i][0, :, :] for i in VAR_NAMES}
-        else:
-            images_1660 = [None] * len(new_indices)
-            images_550 = [None] * len(new_indices)
-            images_555 = [None] * len(new_indices)
-            images_659 = [None] * len(new_indices)
-            images_865 = [None] * len(new_indices)
-            weights = [None] * len(new_indices)
-            j = 0
-            for i in new_indices:
-                file, _ = self._get_file_and_time_index(i)
-                images_1660[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME_1610][0, :, :]
-                images_550[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME_550][0, :, :]
-                images_555[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME_555][0, :, :]
-                images_659[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME_659][0, :, :]
-                images_865[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME_865][0, :, :]
-                weights[j] = index_to_weight[i]
-                j += 1
-            images = {VAR_NAME_550: images_550, VAR_NAME_555: images_555, VAR_NAME_659: images_659,
-                      VAR_NAME_865: images_865, VAR_NAME_1610: images_1660}
-            aerosols = {i: aggregate_images(images[i], weights=weights) for i in VAR_NAMES}
-
-        aerosols = {i: gtr.resample_2d(aerosols[i][:, :], self.cube_config.grid_width, self.cube_config.grid_height,
-                                       us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
-                    for i in VAR_NAMES}
-        return {i: aerosols[i] for i in VAR_NAMES}
 
     def compute_source_time_ranges(self):
         source_time_ranges = []

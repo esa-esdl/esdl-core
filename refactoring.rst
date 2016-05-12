@@ -46,4 +46,22 @@ DONE (8) Provider interface:
     rename get_spatial_coverage(self) -> spatial_coverage, make abstract property
     rename get_variable_descriptors(self) -> variable_descriptors, make abstract property
 
-(9) must address netCDF variable renamings
+DONE (9) must address netCDF variable renamings. Introduce var attribute 'source_name'
+
+DONE (10) Replace special compute_variable_images_from_sources() impl. by generic one in base class.
+
+
+(11) Review all variable_descriptors() impls (Fabian and Gunnar):
+     * check: target variable names, use CF names or just CF-compliant names?
+     * check: why are the different 'fill_value' values? we should use a common one for each data type, e.g. np.nan
+     * check: find correct 'standard_name' for each variable, current ones are mostly wrong
+     * check: 'long_name' name is often wrong or confusing,
+              e.g. 'level 3b fractional snow cover (%) aggregated monthly' when our period is 8 days.
+              All lower case?
+     * check: possibly add 'comment' or 'description' or 'history' and tell where data comes from
+
+(12) Generated netCDF files and variables still lack important CF variables:
+     * 'Conventions'
+     * 'history'
+     * 'coordinates'
+     * 'lat_bnd', 'lon_bnds' + their 'standard_name' values, see #20, #30

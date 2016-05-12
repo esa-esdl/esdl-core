@@ -19,18 +19,19 @@ class SnowAreaExtentProvider(NetCDFCubeSourceProvider):
     @property
     def variable_descriptors(self):
         return {
-            VAR_NAME: {
+            'fractional_snow_cover': {
+                'source_name': 'MFSC',
                 'data_type': numpy.float32,
-                'fill_value': FILL_VALUE,
+                'fill_value': -9999.0,
                 'units': 'percent',
-                'long_name': 'Level 3B Fractional Snow Cover (%)  Aggregated Monthly',
+                # 'long_name': 'level 3b fractional snow cover (%) aggregated monthly',
             }
         }
 
     # todo: test, then remove method and test again using base class version of method
     # Special in this implementation:
     #  - aggregate_image not called, see Hans' memory problem,
-    #  - performs it's own (wrong?) temporal aggregation
+    #  - performs it's own temporal aggregation which is wrong because it doesn't consider masked values
     def compute_variable_images_from_sources(self, index_to_weight):
 
         # close all datasets that wont be used anymore

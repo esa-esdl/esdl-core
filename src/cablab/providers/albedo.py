@@ -1,17 +1,10 @@
 import datetime
 import os
 
-import gridtools.resampling as gtr
 import numpy
 from netCDF4 import date2num, num2date
 
 from cablab import NetCDFCubeSourceProvider
-from cablab.util import aggregate_images
-
-VAR_NAME_BRIGHT = 'BHR_VIS'
-VAR_NAME_DARK = 'DHR_VIS'
-VAR_NAMES = [VAR_NAME_BRIGHT, VAR_NAME_DARK]
-FILL_VALUE = numpy.nan
 
 
 class AlbedoProvider(NetCDFCubeSourceProvider):
@@ -22,61 +15,25 @@ class AlbedoProvider(NetCDFCubeSourceProvider):
     @property
     def variable_descriptors(self):
         return {
-            VAR_NAME_BRIGHT: {
+            'white_sky_albedo': {
+                'source_name': 'BHR_VIS',
                 'data_type': numpy.float32,
-                'fill_value': FILL_VALUE,
+                'fill_value': numpy.nan,
                 'units': '-',
-                'long_name': 'White Sky Albedo in VIS',
+                'long_name': 'white sky albedo for visible wavebands',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
             },
-            VAR_NAME_DARK: {
+            'black_sky_albedo': {
+                'source_name': 'DHR_VIS',
                 'data_type': numpy.float32,
-                'fill_value': FILL_VALUE,
+                'fill_value': numpy.nan,
                 'units': '-',
-                'long_name': 'Black Sky Albedo in VIS',
+                'long_name': 'black sky albedo for visible wavebands',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
             }
         }
-
-    # todo: test, then remove method and test again using base class version of method
-    # Special in this implementation:
-    #   - time index is constantly zero
-    #   - silly code
-    def compute_variable_images_from_sources(self, index_to_weight):
-
-        # close all datasets that wont be used anymore
-        new_indices = set(index_to_weight.keys())
-        if self.old_indices:
-            unused_indices = self.old_indices - new_indices
-            for i in unused_indices:
-                file, _ = self._get_file_and_time_index(i)
-                self.dataset_cache.close_dataset(file)
-        self.old_indices = new_indices
-
-        if len(new_indices) == 1:
-            i = next(iter(new_indices))
-            file, _ = self._get_file_and_time_index(i)
-            var_images = {i: self.dataset_cache.get_dataset(file).variables[i][0, :, :] for i in VAR_NAMES}
-        else:
-            images_bright = [None] * len(new_indices)
-            images_dark = [None] * len(new_indices)
-            weights = [None] * len(new_indices)
-            j = 0
-            for i in new_indices:
-                file, _ = self._get_file_and_time_index(i)
-                images_bright[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME_BRIGHT][0, :, :]
-                images_dark[j] = self.dataset_cache.get_dataset(file).variables[VAR_NAME_DARK][0, :, :]
-                weights[j] = index_to_weight[i]
-                j += 1
-            images = {VAR_NAME_BRIGHT: images_bright, VAR_NAME_DARK: images_dark}
-            var_images = {i: aggregate_images(images[i], weights=weights) for i in VAR_NAMES}
-
-        var_images = {i: gtr.resample_2d(var_images[i][:, :], self.cube_config.grid_width,
-                                         self.cube_config.grid_height, us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
-                      for i in VAR_NAMES}
-        return {i: var_images[i] for i in VAR_NAMES}
 
     def compute_source_time_ranges(self):
         source_time_ranges = []
