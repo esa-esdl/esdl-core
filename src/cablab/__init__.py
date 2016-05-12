@@ -19,14 +19,14 @@ Data Cube creation/update::
 
 from pkg_resources import iter_entry_points
 
-from cablab.cube import BaseCubeSourceProvider
-from cablab.cube import NetCDFCubeSourceProvider
-from cablab.cube import TestCubeSourceProvider
-from cablab.cube import CUBE_MODEL_VERSION
 from cablab.cube import Cube
-from cablab.cube import CubeConfig
 from cablab.cube import CubeData
-from cablab.cube import CubeSourceProvider
+from cablab.cube_config import CUBE_MODEL_VERSION
+from cablab.cube_config import CubeConfig
+from cablab.cube_gen import BaseCubeSourceProvider
+from cablab.cube_gen import CubeSourceProvider
+from cablab.cube_gen import NetCDFCubeSourceProvider
+from cablab.cube_gen import TestCubeSourceProvider
 
 __author__ = 'Brockmann Consult GmbH'
 
