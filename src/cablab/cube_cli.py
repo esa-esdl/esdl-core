@@ -6,7 +6,7 @@ import cablab
 from cablab import Cube, CubeConfig
 from cablab.util import Config
 
-__VERSION__ = '0.1'
+__VERSION__ = '0.2-s01'
 
 
 def main(args=None):
