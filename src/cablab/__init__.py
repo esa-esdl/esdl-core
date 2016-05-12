@@ -21,6 +21,7 @@ from pkg_resources import iter_entry_points
 
 from cablab.cube import BaseCubeSourceProvider
 from cablab.cube import NetCDFCubeSourceProvider
+from cablab.cube import TestCubeSourceProvider
 from cablab.cube import CUBE_MODEL_VERSION
 from cablab.cube import Cube
 from cablab.cube import CubeConfig
@@ -47,6 +48,7 @@ SOURCE_PROVIDERS = _load_source_providers()
 __all__ = [
     'BaseCubeSourceProvider',
     'NetCDFCubeSourceProvider',
+    'TestCubeSourceProvider',
     'CUBE_MODEL_VERSION',
     'Cube',
     'CubeConfig',

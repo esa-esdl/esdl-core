@@ -81,7 +81,7 @@ class CubeSourceProvider(metaclass=ABCMeta):
 
         :return: dictionary of variable names to attribute dictionaries
         """
-        # todo - describe new resamping options here
+        # todo - describe new resamping options here, see gridtools.resampling.DS_xxx and US_xx
         return None
 
     @abstractmethod
@@ -308,6 +308,52 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider):
 
     def close(self):
         self._dataset_cache.close_all_datasets()
+
+
+class TestCubeSourceProvider(CubeSourceProvider):
+    def __init__(self,
+                 cube_config,
+                 name,
+                 variable_name):
+        super(TestCubeSourceProvider, self).__init__(cube_config, name)
+        self._variable_name = variable_name
+        self._start_time = datetime(2005, 1, 1)
+        self._end_time = datetime(2006, 1, 1)
+        self._value = 0.0
+
+    def prepare(self):
+        pass
+
+    @property
+    def temporal_coverage(self):
+        return self._start_time, self._end_time
+
+    @property
+    def spatial_coverage(self):
+        return 0, 0, self.cube_config.grid_width, self.cube_config.grid_height
+
+    @property
+    def variable_descriptors(self):
+        return {
+            self._variable_name: {
+                'data_type': np.float32,
+                'fill_value': np.nan,
+                'scale_factor': 1.0,
+                'add_offset': 0.0,
+            }
+        }
+
+    def compute_variable_images(self, period_start, period_end):
+        self._value += 0.1
+        image_width = self.cube_config.grid_width
+        image_height = self.cube_config.grid_height
+        image_shape = (image_height, image_width)
+        return {
+            self._variable_name: np.full(image_shape, self._value, dtype=np.float32)
+        }
+
+    def close(self):
+        pass
 
 
 class CubeConfig:
