@@ -262,14 +262,7 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider):
 
     def compute_variable_images_from_sources(self, index_to_weight):
 
-        # close all datasets that wont be used anymore
-        new_indices = set(index_to_weight.keys())
-        if self._old_indices:
-            unused_indices = self._old_indices - new_indices
-            for i in unused_indices:
-                file, _ = self._get_file_and_time_index(i)
-                self._dataset_cache.close_dataset(file)
-        self._old_indices = new_indices
+        new_indices = self.close_unused_open_files(index_to_weight)
 
         var_descriptors = self.variable_descriptors
         target_var_images = dict()
@@ -305,6 +298,23 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider):
             target_var_images[var_name] = var_image
 
         return target_var_images
+
+    def close_unused_open_files(self, index_to_weight):
+        """
+        Close all datasets that wont be used anymore w.r.t. the given **index_to_weight** dictionary passed to the
+        **compute_variable_images_from_sources()** method.
+
+        :param index_to_weight: A dictionary mapping time indexes --> weight values.
+        :return: set of time indexes into currently active files w.r.t. the given **index_to_weight** parameter.
+        """
+        new_indices = set(index_to_weight.keys())
+        if self._old_indices:
+            unused_indices = self._old_indices - new_indices
+            for i in unused_indices:
+                file, _ = self._get_file_and_time_index(i)
+                self._dataset_cache.close_dataset(file)
+        self._old_indices = new_indices
+        return new_indices
 
     def close(self):
         self._dataset_cache.close_all_datasets()
