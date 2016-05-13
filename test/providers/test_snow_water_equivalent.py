@@ -1,7 +1,8 @@
 import os
 import unittest
-import numpy as np
 from datetime import datetime
+
+import numpy as np
 
 from cablab import CubeConfig
 from cablab.providers.snow_water_equivalent import SnowWaterEquivalentProvider
@@ -13,9 +14,9 @@ SOURCE_DIR = Config.instance().get_cube_source_path('SWE')
 class SnowWaterEquivalentProviderTest(unittest.TestCase):
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_source_time_ranges(self):
-        provider = SnowWaterEquivalentProvider(CubeConfig(), SOURCE_DIR)
+        provider = SnowWaterEquivalentProvider(CubeConfig(), dir=SOURCE_DIR)
         provider.prepare()
-        source_time_ranges = provider.get_source_time_ranges()
+        source_time_ranges = provider.source_time_ranges
         self.assertEqual(12054, len(source_time_ranges))
         self.assertEqual((datetime(1980, 1, 1, 0, 0),
                           datetime(1980, 1, 2, 0, 0),
@@ -36,7 +37,7 @@ class SnowWaterEquivalentProviderTest(unittest.TestCase):
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_temporal_coverage(self):
-        provider = SnowWaterEquivalentProvider(CubeConfig(), SOURCE_DIR)
+        provider = SnowWaterEquivalentProvider(CubeConfig(), dir=SOURCE_DIR)
         provider.prepare()
         temporal_coverage = provider.temporal_coverage
         self.assertEqual((datetime(1980, 1, 1, 0, 0),
@@ -45,23 +46,23 @@ class SnowWaterEquivalentProviderTest(unittest.TestCase):
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_get_images(self):
-        provider = SnowWaterEquivalentProvider(CubeConfig(), SOURCE_DIR)
+        provider = SnowWaterEquivalentProvider(CubeConfig(), dir=SOURCE_DIR)
         provider.prepare()
         images = provider.compute_variable_images(datetime(2010, 1, 1), datetime(2010, 12, 31))
         self.assertIsNotNone(images)
-        self.assertTrue('SWE' in images)
-        image = images['SWE']
+        self.assertTrue('snow_water_equivalent' in images)
+        image = images['snow_water_equivalent']
         self.assertEqual((720, 1440), image.shape)
         self.assertEqual(0, np.isnan(image).sum())
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_get_high_res_images(self):
         provider = SnowWaterEquivalentProvider(CubeConfig(grid_width=4320, grid_height=2160, spatial_res=1 / 12),
-                                               SOURCE_DIR)
+                                               dir=SOURCE_DIR)
         provider.prepare()
         images = provider.compute_variable_images(datetime(2010, 1, 1), datetime(2010, 12, 31))
         self.assertIsNotNone(images)
-        self.assertTrue('SWE' in images)
-        image = images['SWE']
+        self.assertTrue('snow_water_equivalent' in images)
+        image = images['snow_water_equivalent']
         self.assertEqual((2160, 4320), image.shape)
         self.assertEqual(0, np.isnan(image).sum())
