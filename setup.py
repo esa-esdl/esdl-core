@@ -36,7 +36,6 @@ setup(
             'globvapour = cablab.providers.globvapour:GlobVapourProvider',
             'air_temperature = cablab.providers.air_temperature:AirTemperatureProvider',
             'snow_water_equivalent = cablab.providers.snow_water_equivalent:SnowWaterEquivalentProvider'
-
         ],
     },
     # *Minimum* requirements
