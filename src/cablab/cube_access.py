@@ -68,14 +68,16 @@ class CubeDataAccess:
             key = self._variable_dict[key]
             dataset = self._get_or_open_dataset(key)
             return dataset.variables[key.name]
-        else:
+        elif not isinstance(key, tuple):
             indices = self._get_var_indices(key)
-            data_arrays = [None] * len(indices)
+            data_arrays = []
             for i in indices:
                 key = self._variable_list[i]
                 dataset = self._get_or_open_dataset(key)
                 data_arrays.append(dataset.variables[key.name])
             return data_arrays
+        else:
+            raise IndexError('key cannot be a tuple')
 
     def dataset(self, key=None):
         """
@@ -95,7 +97,7 @@ class CubeDataAccess:
         elif isinstance(key, str):
             key = self._variable_dict[key]
             return self._get_or_open_dataset(key)
-        else:
+        elif not isinstance(key, tuple):
             indices = self._get_var_indices(key)
             data_arrays = {}
             for i in indices:
@@ -103,6 +105,8 @@ class CubeDataAccess:
                 dataset = self._get_or_open_dataset(key)
                 data_arrays[key.name] = dataset.variables[key.name]
             return xr.Dataset(data_arrays)
+        else:
+            raise IndexError('key cannot be a tuple')
 
     def __getitem__(self, key):
         """
