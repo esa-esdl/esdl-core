@@ -29,7 +29,7 @@ DONE (5) a) rename get_source_time_ranges() -> compute_source_time_ranges()
     b) store result of compute_source_time_ranges in self._source_time_ranges
     c) introduce property source_time_ranges
 
-(6) a) rename cube_cli.py -> cube_gen.py
+DONE (6) a) rename cube_cli.py -> cube_gen.py
     b) move Provider stuff from cube.py to cube_gen.py
     c) rename cube.py -> cube_access.py, merge xarray stuff from branch 'issue_29'
     d) new cube_config.py
