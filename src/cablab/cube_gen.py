@@ -25,6 +25,32 @@ def _load_source_providers():
 SOURCE_PROVIDERS = _load_source_providers()
 
 
+def _parse_source_arg(source: str):
+    from collections import OrderedDict
+    parts = source.split(':')
+    name = parts[0]
+    if not name:
+        return name, None, None, 'SOURCE name must not be empty'
+    args = list()
+    kwargs = OrderedDict()
+    error_msg = None
+    for p in parts[1:]:
+        kv = p.split('=', maxsplit=1)
+        if len(kv) == 2:
+            k, v = kv
+            if not k:
+                error_msg = 'empty keyword in SOURCE'
+                break
+            kwargs[k] = v
+        elif len(kv) == 1:
+            args.append(kv)
+        else:
+            error_msg = 'illegal empty SOURCE'
+            break
+    return name, args, kwargs, error_msg
+
+
+
 def main(args=None):
     if not args:
         args = sys.argv[1:]
@@ -63,14 +89,14 @@ def main(args=None):
         if not is_new and cube_config_file:
             parser.error('TARGET directory must be empty')
         for source in cube_sources:
-            source_provider_name, source_args = source.split(':', maxsplit=1)
-            source_provider_class = SOURCE_PROVIDERS.get(source_provider_name)
-            if not os.path.isabs(source_args):
-                source_args = Config.instance().get_cube_source_path(source_args)
-            if source_provider_class:
-                source_provider_infos.append((source_provider_name, source_provider_class, source_args))
+            source_name, source_args, source_kwargs, source_error_msg = _parse_source_arg(source)
+            if source_error_msg:
+                parser.error(source_error_msg)
+            source_class = SOURCE_PROVIDERS.get(source_name)
+            if source_class:
+                source_provider_infos.append((source_name, source_class, source_args, source_kwargs))
             else:
-                parser.error('no source provider installed with name \'%s\'' % source_provider_name)
+                parser.error("no source provider installed with name '%s'" % source_name)
 
     #
     # Run tool
@@ -81,8 +107,8 @@ def main(args=None):
 
     if list_mode:
         print('source data providers (%d):' % len(SOURCE_PROVIDERS))
-        for name, value in SOURCE_PROVIDERS.items():
-            print('  %s -> %s.%s' % (name, value.__module__, value.__name__))
+        for source_name, value in SOURCE_PROVIDERS.items():
+            print('  %s -> %s.%s' % (source_name, value.__module__, value.__name__))
     if cube_dir:
         if is_new:
             if cube_config_file:
@@ -93,7 +119,8 @@ def main(args=None):
         else:
             cube = Cube.open(cube_dir)
 
-        source_providers = [cls(cube.config, name, args) for name, cls, args in source_provider_infos]
+        source_providers = [cls(cube.config, *args, name=name, **kwargs)
+                            for name, cls, args, kwargs in source_provider_infos]
 
         for source_provider in source_providers:
             cube.update(source_provider)

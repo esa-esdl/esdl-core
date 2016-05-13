@@ -8,14 +8,14 @@ from cablab import NetCDFCubeSourceProvider
 
 
 class GlobVapourProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name, dir_path):
-        super(GlobVapourProvider, self).__init__(cube_config, name, dir_path)
+    def __init__(self, cube_config, name='globvapour', dir=None):
+        super(GlobVapourProvider, self).__init__(cube_config, name, dir)
         self.old_indices = None
 
     @property
     def variable_descriptors(self):
         return {
-            'total_column_water_vapour': {
+            'water_vapour': {
                 'source_name': 'tcwv_res',
                 'data_type': numpy.float32,
                 'fill_value': -999.0,

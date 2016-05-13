@@ -7,8 +7,8 @@ from cablab import NetCDFCubeSourceProvider
 
 
 class CEmissionsProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name, dir_path):
-        super(CEmissionsProvider, self).__init__(cube_config, name, dir_path)
+    def __init__(self, cube_config, name='c_emissions', dir=None):
+        super(CEmissionsProvider, self).__init__(cube_config, name, dir)
         self.old_indices = None
 
     @property

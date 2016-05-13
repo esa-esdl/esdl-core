@@ -8,8 +8,8 @@ from cablab import NetCDFCubeSourceProvider
 
 
 class AlbedoProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name, dir_path):
-        super(AlbedoProvider, self).__init__(cube_config, name, dir_path)
+    def __init__(self, cube_config, name='albedo', dir=None):
+        super(AlbedoProvider, self).__init__(cube_config, name, dir)
         self.old_indices = None
 
     @property

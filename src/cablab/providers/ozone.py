@@ -8,15 +8,15 @@ from cablab import NetCDFCubeSourceProvider
 
 
 class OzoneProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name, dir_path):
-        super(OzoneProvider, self).__init__(cube_config, name, dir_path)
+    def __init__(self, cube_config, name='ozone', dir=None):
+        super(OzoneProvider, self).__init__(cube_config, name, dir)
         self.old_indices = None
 
     @property
     def variable_descriptors(self):
         return {
             'ozone': {
-                'source_name': 'Ozone',
+                'source_name': 'atmosphere_mole_content_of_ozone',
                 'data_type': numpy.float32,
                 'fill_value': numpy.NaN,
                 'units': 'DU',
@@ -38,5 +38,6 @@ class OzoneProvider(NetCDFCubeSourceProvider):
             dataset.close()
             source_time_ranges.append((datetime(int(t1[0:4]), int(t1[4:6]), int(t1[6:8])),
                                        datetime(int(t2[0:4]), int(t2[4:6]), int(t2[6:8])),
-                                       file))
+                                       file,
+                                       None))
         return sorted(source_time_ranges, key=lambda item: item[0])

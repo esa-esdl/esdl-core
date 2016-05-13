@@ -8,8 +8,8 @@ from cablab import NetCDFCubeSourceProvider
 
 
 class AerosolsProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name, dir_path):
-        super(AerosolsProvider, self).__init__(cube_config, name, dir_path)
+    def __init__(self, cube_config, name='aerosols', dir=None):
+        super(AerosolsProvider, self).__init__(cube_config, name, dir)
         self.old_indices = None
 
     @property

@@ -8,8 +8,8 @@ from cablab import NetCDFCubeSourceProvider
 
 
 class SoilMoistureProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name, dir_path):
-        super(SoilMoistureProvider, self).__init__(cube_config, name, dir_path)
+    def __init__(self, cube_config, name='soil_moisture', dir=None):
+        super(SoilMoistureProvider, self).__init__(cube_config, name, dir)
         self.old_indices = None
 
     @property

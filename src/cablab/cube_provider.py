@@ -1,3 +1,4 @@
+import os.path
 import time
 from abc import ABCMeta, abstractmethod, abstractproperty
 from datetime import datetime
@@ -7,7 +8,7 @@ import gridtools.resampling as gtr
 import numpy as np
 
 from .cube_config import CubeConfig
-from .util import NetCDFDatasetCache, aggregate_images, temporal_weight
+from .util import Config, NetCDFDatasetCache, aggregate_images, temporal_weight
 
 
 class CubeSourceProvider(metaclass=ABCMeta):
@@ -240,11 +241,22 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider):
     A BaseCubeSourceProvider that
     * Uses NetCDF source datasets read from a given **dir_path**
     * Performs temporal aggregation first and then spatial resampling
+
+    :param cube_config: Specifies the fixed layout and conventions used for the cube.
+    :param name: The provider's registration name.
+    :param dir_path: Source directory to read the files from. If relative path,
+           it will be resolved against the **cube_sources_root** path of the
+           global CAB-LAB configuration (**cablab.util.Config.instance()**).
     """
 
-    def __init__(self, cube_config, name, dir_path):
+    def __init__(self, cube_config: CubeConfig, name: str, dir_path: str):
         super(NetCDFCubeSourceProvider, self).__init__(cube_config, name)
-        self._dir_path = dir_path
+        if dir_path is None:
+            raise ValueError('dir_path expected')
+        if not os.path.isabs(dir_path):
+            self._dir_path = Config.instance().get_cube_source_path(dir_path)
+        else:
+            self._dir_path = dir_path
         self._dataset_cache = NetCDFDatasetCache(name)
         self._old_indices = None
 
@@ -324,15 +336,19 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider):
 
 class TestCubeSourceProvider(CubeSourceProvider):
     """
-    CubeSourceProvider implementation used for testing.
+    CubeSourceProvider implementation used for testing cube generation without any source files.
+
+    The following usage generates a cube with two variables ``test_1`` and ``test_2``:
+        cube-gen -c ./myconf.py ./mycube test:var=test_1 test:var=test_2
+
+    :param cube_config: Specifies the fixed layout and conventions used for the cube.
+    :param name: The provider's registration name. Defaults to ``"test"``.
+    :param var: Name of a (float32) variable which will be filled with random numbers.
     """
 
-    def __init__(self,
-                 cube_config,
-                 name,
-                 variable_name):
+    def __init__(self, cube_config: CubeConfig, name: str = 'test', var: str = 'test'):
         super(TestCubeSourceProvider, self).__init__(cube_config, name)
-        self._variable_name = variable_name
+        self._variable_name = var
         self._value = 0.0
 
     def prepare(self):

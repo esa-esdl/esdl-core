@@ -12,8 +12,8 @@ FILL_VALUE = -9999
 
 
 class SnowAreaExtentProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name, dir_path):
-        super(SnowAreaExtentProvider, self).__init__(cube_config, name, dir_path)
+    def __init__(self, cube_config, name='snow_area_extent', dir=None):
+        super(SnowAreaExtentProvider, self).__init__(cube_config, name, dir)
         self.old_indices = None
 
     @property

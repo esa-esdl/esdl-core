@@ -8,8 +8,8 @@ from cablab import NetCDFCubeSourceProvider
 
 
 class SnowWaterEquivalentProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name, dir_path):
-        super(SnowWaterEquivalentProvider, self).__init__(cube_config, name, dir_path)
+    def __init__(self, cube_config, name='snow_water_equivalent', dir=None):
+        super(SnowWaterEquivalentProvider, self).__init__(cube_config, name, dir)
         self.old_indices = None
 
     @property
