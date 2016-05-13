@@ -1,28 +1,119 @@
+import os.path
+import shutil
+from datetime import datetime
 from unittest import TestCase
 
-from cablab import Cube
+import xarray as xr
+
+from cablab import Cube, CubeConfig, TestCubeSourceProvider
 from cablab.cube_access import CubeDataAccess
 
-CUBE_DIR = 'C:\\Users\\Norman\\EOData\\CAB-LAB\\cube-1.01'
+CUBE_DIR = 'testcube'
+
+
+def _del_cube_dir():
+    while os.path.exists(CUBE_DIR):
+        shutil.rmtree(CUBE_DIR, True)
+
+
+class cube_data:
+    """
+    Cube data context manager. For testing only.
+    """
+
+    def __enter__(self):
+        cube = Cube.open(CUBE_DIR)
+        self.data = CubeDataAccess(cube)
+        return self.data
+
+    def __exit__(self, type, value, traceback):
+        self.data.close()
 
 
 class CubeDataAccessTest(TestCase):
-    def test_it(self):
-        cube = Cube.open(CUBE_DIR)
+    @classmethod
+    def setUpClass(cls):
+        _del_cube_dir()
+        cube = Cube.create(CUBE_DIR, CubeConfig(spatial_res=1.0,
+                                                start_time=datetime(2005, 1, 1),
+                                                end_time=datetime(2005, 3, 1),
+                                                grid_width=360, grid_height=180,
+                                                compression=True))
+        try:
+            cube.update(TestCubeSourceProvider(cube.config, var='a_var'))
+            cube.update(TestCubeSourceProvider(cube.config, var='b_var'))
+            cube.update(TestCubeSourceProvider(cube.config, var='c_var'))
+        finally:
+            cube.close()
 
-        data = CubeDataAccess(cube)
+    @classmethod
+    def tearDownClass(cls):
+        _del_cube_dir()
 
-        names = data.variable_names
-        print(names)
+    def test_variable_api(self):
+        with cube_data() as data:
+            self.assertEquals(['a_var', 'b_var', 'c_var'], data.variable_names)
 
-        ozone_da = data.variables('Ozone')
-        ozone_ds = data.dataset('Ozone')
-        ozone_precip_ds = data.dataset(['Ozone', 'Precip'])
-        #all_ds = data.dataset()
+            var = data.variables('a_var')
+            self.assertIs(xr.Variable, type(var))
 
-        #self.assertEqual(cube.config.spatial_res, cube2.config.spatial_res)
-        #self.assertEqual(cube.config.temporal_res, cube2.config.temporal_res)
-        #self.assertEqual(cube.config.file_format, cube2.config.file_format)
-        #self.assertEqual(cube.config.compression, cube2.config.compression)
+            vars = data.variables([0, 2, 1])
+            self.assertIs(list, type(vars))
+            self.assertEqual(3, len(vars))
+            self.assertEqual(xr.Variable, type(vars[0]))
+            self.assertEqual(xr.Variable, type(vars[1]))
+            self.assertEqual(xr.Variable, type(vars[2]))
 
-        data.close()
+            vars = data.variables(['a_var', 'c_var'])
+            self.assertIs(list, type(vars))
+            self.assertEqual(2, len(vars))
+            self.assertEqual(xr.Variable, type(vars[0]))
+            self.assertEqual(xr.Variable, type(vars[1]))
+
+            with self.assertRaises(IndexError):
+                # do not allow tuples as index (because data is 1-D, not N-D, with respect to contained variables)
+                vars = data.variables(('a_var', 'c_var'))
+
+    def test_get_item_api(self):
+        with cube_data() as data:
+            self.assertEqual(3, len(data))
+
+            var = data[0]
+            self.assertIs(xr.Variable, type(var))
+
+            var = data['a_var']
+            self.assertIs(xr.Variable, type(var))
+
+            vars = data[[0, 2, 1]]
+            self.assertIs(list, type(vars))
+            self.assertEqual(3, len(vars))
+            self.assertEqual(xr.Variable, type(vars[0]))
+            self.assertEqual(xr.Variable, type(vars[1]))
+            self.assertEqual(xr.Variable, type(vars[2]))
+
+            vars = data[['a_var', 'c_var']]
+            self.assertIs(list, type(vars))
+            self.assertEqual(2, len(vars))
+            self.assertEqual(xr.Variable, type(vars[0]))
+            self.assertEqual(xr.Variable, type(vars[1]))
+
+            with self.assertRaises(IndexError):
+                # do not allow tuples as index (because data is 1-D, not N-D, with respect to contained variables)
+                vars = data['a_var', 'c_var']
+
+    def test_dataset_api(self):
+        with cube_data() as data:
+            ds = data.dataset('a_var')
+            self.assertIs(xr.Dataset, type(ds))
+            self.assertIn('a_var', ds)
+
+            ds = data.dataset(['a_var', 'b_var'])
+            self.assertIs(xr.Dataset, type(ds))
+            self.assertIn('a_var', ds)
+            self.assertIn('b_var', ds)
+
+            ds = data.dataset()
+            self.assertIs(xr.Dataset, type(ds))
+            self.assertIn('a_var', ds)
+            self.assertIn('b_var', ds)
+            self.assertIn('c_var', ds)
