@@ -6,12 +6,10 @@ except ImportError:
     ez_setup.use_setuptools()
 
 from setuptools import setup, find_packages
-from Cython.Build import cythonize
-import numpy
 
 setup(
     name="cablab-core",
-    version="0.1.0",
+    version="0.2.0",
     description='CAB-LAB Data Cube Software',
     license='GPL 3',
     author='CAB-LAB Development Team',
@@ -23,9 +21,10 @@ setup(
     package_dir={'': 'src'},
     entry_points={
         'console_scripts': [
-            'cube-cli = cablab.cube_cli:main',
+            'cube-gen = cablab.cube_gen:main',
         ],
         'cablab.source_providers': [
+            'test = cablab:TestCubeSourceProvider',
             'burnt_area = cablab.providers.burnt_area:BurntAreaProvider',
             'c_emissions = cablab.providers.c_emissions:CEmissionsProvider',
             'ozone = cablab.providers.ozone:OzoneProvider',
@@ -37,11 +36,8 @@ setup(
             'globvapour = cablab.providers.globvapour:GlobVapourProvider',
             'air_temperature = cablab.providers.air_temperature:AirTemperatureProvider',
             'snow_water_equivalent = cablab.providers.snow_water_equivalent:SnowWaterEquivalentProvider'
-
         ],
     },
     # *Minimum* requirements
-    install_requires=['numpy', 'netCDF4'],
-    ext_modules=cythonize(["src/cablab/*.pyx"]),
-    include_dirs=[numpy.get_include()]
+    install_requires=['numpy', 'netCDF4', 'gridtools'],
 )

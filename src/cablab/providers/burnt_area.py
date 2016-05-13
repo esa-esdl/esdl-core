@@ -1,87 +1,32 @@
-from datetime import datetime
 import os
+from datetime import datetime
 
-import numpy
 import netCDF4
+import numpy
 
-from cablab import BaseCubeSourceProvider
-from cablab.util import NetCDFDatasetCache, aggregate_images
-
-VAR_NAME = 'BurntArea'
+from cablab import NetCDFCubeSourceProvider
 
 
-class BurntAreaProvider(BaseCubeSourceProvider):
-    def __init__(self, cube_config, dir_path):
-        super(BurntAreaProvider, self).__init__(cube_config)
-        # todo (nf 20151028) - remove check once we have addressed spatial aggregation/interpolation, see issue #3
-        if cube_config.grid_width != 1440 or cube_config.grid_height != 720:
-            raise ValueError('illegal cube configuration, '
-                             'provider does not yet implement proper spatial aggregation/interpolation')
-        self.dir_path = dir_path
-        self.source_time_ranges = None
-        self.dataset_cache = NetCDFDatasetCache(VAR_NAME)
+class BurntAreaProvider(NetCDFCubeSourceProvider):
+    def __init__(self, cube_config, name='burnt_area', dir=None):
+        super(BurntAreaProvider, self).__init__(cube_config, name, dir)
         self.old_indices = None
 
-    def prepare(self):
-        self._init_source_time_ranges()
-
-    def get_variable_descriptors(self):
+    @property
+    def variable_descriptors(self):
         return {
-            VAR_NAME: {
+            'burnt_area': {
+                'source_name': 'BurntArea',
                 'data_type': numpy.float32,
                 'fill_value': -9999.0,
                 'units': 'hectares',
-                'long_name': 'Monthly Burnt Area',
+                # 'long_name': 'Monthly Burnt Area',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
             }
         }
 
-    def compute_variable_images_from_sources(self, index_to_weight):
-
-        # close all datasets that wont be used anymore
-        new_indices = set(index_to_weight.keys())
-        if self.old_indices:
-            unused_indices = self.old_indices - new_indices
-            for i in unused_indices:
-                file, time_index = self._get_file_and_time_index(i)
-                self.dataset_cache.close_dataset(file)
-
-        self.old_indices = new_indices
-
-        if len(new_indices) == 1:
-            i = next(iter(new_indices))
-            file, time_index = self._get_file_and_time_index(i)
-            dataset = self.dataset_cache.get_dataset(file)
-            burnt_area = dataset.variables[VAR_NAME][time_index, :, :]
-        else:
-            images = [None] * len(new_indices)
-            weights = [None] * len(new_indices)
-            j = 0
-            for i in new_indices:
-                file, time_index = self._get_file_and_time_index(i)
-                dataset = self.dataset_cache.get_dataset(file)
-                variable = dataset.variables[VAR_NAME]
-                images[j] = variable[time_index, :, :]
-                weights[j] = index_to_weight[i]
-                j += 1
-            burnt_area = aggregate_images(images, weights=weights)
-
-        return {VAR_NAME: burnt_area}
-
-    def _get_file_and_time_index(self, i):
-        return self.source_time_ranges[i][2:4]
-
-    def get_source_time_ranges(self):
-        return self.source_time_ranges
-
-    def get_spatial_coverage(self):
-        return 0, 0, 1440, 720
-
-    def close(self):
-        self.dataset_cache.close_all_datasets()
-
-    def _init_source_time_ranges(self):
+    def compute_source_time_ranges(self):
         source_time_ranges = []
         file_names = os.listdir(self.dir_path)
         for file_name in file_names:
@@ -97,4 +42,4 @@ class BurntAreaProvider(BaseCubeSourceProvider):
                 t1 = datetime(dates1[i].year, dates1[i].month, dates1[i].day)
                 t2 = datetime(dates2[i].year, dates2[i].month, dates2[i].day)
                 source_time_ranges.append((t1, t2, file, i))
-        self.source_time_ranges = sorted(source_time_ranges, key=lambda item: item[0])
+        return sorted(source_time_ranges, key=lambda item: item[0])

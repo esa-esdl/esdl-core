@@ -1,7 +1,5 @@
 import math
 import os
-import time
-from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 from datetime import datetime, timedelta
 
@@ -9,354 +7,8 @@ import netCDF4
 
 import cablab
 import cablab.util
-
-# The current version of the data cube's configuration and data model.
-CUBE_MODEL_VERSION = '0.1'
-
-
-class CubeSourceProvider(metaclass=ABCMeta):
-    """
-    An abstract interface for objects representing data source providers for the data cube.
-    Cube source providers are passed to the **Cube.update()** method.
-
-    :param cube_config: Specifies the fixed layout and conventions used for the cube.
-    """
-
-    def __init__(self, cube_config):
-        if not cube_config:
-            raise ValueError('cube_config must not be None')
-        self._cube_config = cube_config
-
-    @property
-    def name(self) -> str:
-        """ The provider's name. """
-        return type(self).__name__
-
-    @property
-    def cube_config(self):
-        """ The data cube's configuration. """
-        return self._cube_config
-
-    @abstractmethod
-    def prepare(self):
-        """
-        Called by a Cube instance's **update()** method before any other provider methods are called.
-        Provider instances should prepare themselves w.r.t. the given cube configuration *cube_config*.
-        """
-        pass
-
-    @abstractmethod
-    def get_temporal_coverage(self) -> tuple:
-        """
-        Return the start and end time of the available source data.
-
-        :return: A tuple of datetime.datetime instances (start_time, end_time).
-        """
-        return None
-
-    @abstractmethod
-    def get_spatial_coverage(self) -> tuple:
-        """
-        Return the spatial coverage as a rectangle represented by a tuple of integers (x, y, width, height) in the
-        cube's image coordinates.
-
-        :return: A tuple of integers (x, y, width, height) in the cube's image coordinates.
-        """
-        return None
-
-    @abstractmethod
-    def get_variable_descriptors(self) -> dict:
-        """
-        Return a variable name to variable descriptor mapping of all provided variables.
-        Each descriptor is a dictionary of variable attribute names to their values.
-        The attributes ``data_type`` (a numpy data type) and ``fill_value`` are mandatory.
-
-        :return: dictionary of variable names to attribute dictionaries
-        """
-        return None
-
-    @abstractmethod
-    def compute_variable_images(self, period_start, period_end) -> dict:
-        """
-        Return variable name to variable image mapping of all provided variables.
-        Each image is a numpy array with the shape (height, width) derived from the **get_spatial_coverage()** method.
-
-        The images must be computed (by aggregation or interpolation or copy) from the source data in the given
-        time period *period_start* <= source_data_time < *period_end* and taking into account other data cube
-        configuration settings.
-
-        The method is called by a Cube instance's **update()** method for all possible time periods in the time
-        range given by the **get_temporal_coverage()** method. The times given are adjusted w.r.t. the cube's
-        reference time and temporal resolution.
-
-        :param period_start: The period start time as a datetime.datetime instance
-        :param period_end: The period end time as a datetime.datetime instance
-
-        :return: A dictionary variable name --> image. Each image must be numpy array-like object of shape
-                 (grid_height, grid_width) as given by the **CubeConfig**.
-                 Return ``None`` if no such variables exists for the given target time range.
-        """
-        return None
-
-    @abstractmethod
-    def close(self):
-        """
-        Called by the cube's **update()** method after all images have been retrieved and the provider is no
-        longer used.
-        """
-        pass
-
-
-class BaseCubeSourceProvider(CubeSourceProvider):
-    """
-    A partial implementation of the **CubeSourceProvider** interface that computes its output image data
-    using weighted averages. The weights are computed according to the overlap of source time ranges and a
-    requested target time range.
-    """
-
-    def __init__(self, cube_config):
-        super(BaseCubeSourceProvider, self).__init__(cube_config)
-
-    @abstractmethod
-    def get_source_time_ranges(self) -> list:
-        """
-        Return a sorted list of all time ranges of every source file.
-        Items in this list must be 2-element tuples of datetime instances.
-        The list should be pre-computed in the **prepare()** method.
-        """
-        return None
-
-    def get_temporal_coverage(self) -> (datetime, datetime):
-        """
-        Return the temporal coverage derived from the value returned by **get_source_time_ranges()**.
-        """
-        source_time_ranges = self.get_source_time_ranges()
-        return source_time_ranges[0][0], source_time_ranges[-1][1]
-
-    def compute_variable_images(self, period_start, period_end):
-        """
-        For each source time range that has an overlap with the given target time range compute a weight
-        according to the overlapping range. Pass these weights as source index to weight mapping
-        to **compute_variable_images_from_sources(index_to_weight)** and return the result.
-
-        :return: A dictionary variable name --> image. Each image must be numpy array-like object of shape
-                 (grid_height, grid_width) as given by the **CubeConfig**.
-                 Return ``None`` if no such variables exists for the given target time range.
-        """
-
-        t1 = time.time()
-
-        source_time_ranges = self.get_source_time_ranges()
-        if len(source_time_ranges) == 0:
-            return None
-        index_to_weight = dict()
-        for i in range(len(source_time_ranges)):
-            source_start_time, source_end_time = source_time_ranges[i][0:2]
-            weight = cablab.util.temporal_weight(source_start_time, source_end_time,
-                                                 period_start, period_end)
-            if weight > 0.0:
-                index_to_weight[i] = weight
-        if not index_to_weight:
-            return None
-        self.log('computing images for time range %s to %s from %d source(s)...' % (period_start, period_end,
-                                                                                    len(index_to_weight)))
-        result = self.compute_variable_images_from_sources(index_to_weight)
-
-        t2 = time.time()
-        self.log('images computed for %s, took %f seconds' % (str(list(result.keys())), t2 - t1))
-
-        return result
-
-    @abstractmethod
-    def compute_variable_images_from_sources(self, index_to_weight):
-        """
-        Compute the target images for all variables from the sources with the given time indices to weights mapping.
-
-        The time indices in *index_to_weight* are guaranteed to point into the time ranges list returned by
-        **get_source_time_ranges()**.
-
-        The weight values in *index_to_weight* are float values computed from the overlap of source time ranges with
-        a requested target time range.
-
-        :param index_to_weight: A dictionary mapping time indexes --> weight values.
-        :return: A dictionary variable name --> image. Each image must be numpy array-like object of shape
-                 (grid_height, grid_width) as specified by the cube's layout configuration **CubeConfig**.
-                 Return ``None`` if no such variables exists for the given target time range.
-        """
-        pass
-
-    def log(self, message):
-        """
-        Log a *message*.
-
-        :param message: The message to be logged.
-        """
-        print('%s: %s' % (self.name, message))
-
-
-class CubeConfig:
-    """
-    A data cube's static configuration information.
-
-    :param spatial_res: The spatial image resolution in degree.
-    :param grid_x0: The fixed grid X offset (longitude direction).
-    :param grid_y0: The fixed grid Y offset (latitude direction).
-    :param grid_width: The fixed grid width in pixels (longitude direction).
-    :param grid_height: The fixed grid height in pixels (latitude direction).
-    :param temporal_res: The temporal resolution in days.
-    :param ref_time: A datetime value which defines the units in which time values are given, namely
-                     'days since *ref_time*'.
-    :param start_time: The inclusive start time of the first image of any variable in the cube given as datetime value.
-                       ``None`` means unlimited.
-    :param end_time: The exclusive end time of the last image of any variable in the cube given as datetime value.
-                     ``None`` means unlimited.
-    :param variables: A list of variable names to be included in the cube.
-    :param file_format: The file format used. Must be one of 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_CLASSIC'
-                        or 'NETCDF3_64BIT'.
-    :param compression: Whether the data should be compressed.
-    """
-
-    def __init__(self,
-                 spatial_res=0.25,
-                 grid_x0=0,
-                 grid_y0=0,
-                 grid_width=1440,
-                 grid_height=720,
-                 temporal_res=8,
-                 calendar='gregorian',
-                 ref_time=datetime(2001, 1, 1),
-                 start_time=datetime(2001, 1, 1),
-                 end_time=datetime(2011, 1, 1),
-                 variables=None,
-                 file_format='NETCDF4_CLASSIC',
-                 compression=False,
-                 model_version=CUBE_MODEL_VERSION):
-        self.model_version = model_version
-        self.spatial_res = spatial_res
-        self.grid_x0 = grid_x0
-        self.grid_y0 = grid_y0
-        self.grid_width = grid_width
-        self.grid_height = grid_height
-        self.temporal_res = temporal_res
-        self.calendar = calendar
-        self.ref_time = ref_time
-        self.start_time = start_time
-        self.end_time = end_time
-        self.variables = variables
-        self.file_format = file_format
-        self.compression = compression
-        self._validate()
-
-    def __repr__(self):
-        return 'CubeConfig(spatial_res=%f, grid_x0=%d, grid_y0=%d, grid_width=%d, grid_height=%d, ' \
-               'temporal_res=%d, ref_time=%s)' % (
-                   self.spatial_res,
-                   self.grid_x0, self.grid_y0,
-                   self.grid_width, self.grid_height,
-                   self.temporal_res,
-                   repr(self.ref_time))
-
-    @property
-    def northing(self):
-        """
-        The longitude position of the upper-left-most corner of the upper-left-most grid cell
-        given by (grid_x0, grid_y0).
-        """
-        return 90.0 - self.grid_y0 * self.spatial_res
-
-    @property
-    def easting(self):
-        """
-        The latitude position of the upper-left-most corner of the upper-left-most grid cell
-        given by (grid_x0, grid_y0).
-        """
-        return -180.0 + self.grid_x0 * self.spatial_res
-
-    @property
-    def geo_bounds(self):
-        """
-        The geographical boundary given as ((LL-lon, LL-lat), (UR-lon, UR-lat)).
-        """
-        return ((self.easting, self.northing - self.grid_height * self.spatial_res),
-                (self.easting + self.grid_width * self.spatial_res, self.northing))
-
-    @property
-    def time_units(self):
-        """
-        Return the time units used by the data cube as string using the format 'days since *ref_time*'.
-        """
-        ref_time = self.ref_time
-        return 'days since %4d-%02d-%02d %02d:%02d' % \
-               (ref_time.year, ref_time.month, ref_time.day, ref_time.hour, ref_time.minute)
-
-    @property
-    def num_periods_per_year(self):
-        """
-        Return the number of target periods per year.
-        """
-        return math.ceil(365.0 / self.temporal_res)
-
-    def date2num(self, date):
-        """
-        Return the number of days for the given *date* as a number in the time units
-        given by the ``time_units`` property.
-
-        :param date: The date as a datetime.datetime value
-        """
-        return netCDF4.date2num(date, self.time_units, calendar=self.calendar)
-
-    @staticmethod
-    def load(path):
-        """
-        Load a CubeConfig from a text file.
-
-        :param path: The file's path name.
-        :return: A new CubeConfig instance
-        """
-        config = dict()
-        with open(path) as fp:
-            code = fp.read()
-            exec(code, {'datetime': __import__('datetime')}, config)
-
-        CubeConfig._ensure_compatible_config(config)
-
-        return CubeConfig(**config)
-
-    @staticmethod
-    def _ensure_compatible_config(config_dict):
-        model_version = config_dict.get('model_version', None)
-        # Here: check for compatibility with Cube.MODEL_VERSION, convert if possible, otherwise raise error.
-        if model_version is None or model_version < CUBE_MODEL_VERSION:
-            print('WARNING: outdated cube model version, current version is %s' % CUBE_MODEL_VERSION)
-
-    def store(self, path):
-        """
-        Store a CubeConfig in a text file.
-
-        :param path: The file's path name.
-        """
-        with open(path, 'w') as fp:
-            for name in self.__dict__:
-                if not (name.startswith('_') or name.endswith('_')):
-                    value = self.__dict__[name]
-                    fp.write('%s = %s\n' % (name, repr(value)))
-
-    def _validate(self):
-        if self.grid_x0 < 0:
-            raise ValueError('illegal grid_x0 value')
-
-        if self.grid_y0 < 0:
-            raise ValueError('illegal grid_y0 value')
-
-        lat1 = 90 - (self.grid_y0 + self.grid_height) * self.spatial_res
-        lat2 = 90 - self.grid_y0 * self.spatial_res
-        if lat1 >= lat2 or lat1 < -90 or lat1 > 90 or lat2 < -90 or lat2 > 90:
-            raise ValueError('illegal combination of grid_y0, grid_height, spatial_res values')
-
-        lon1 = -180 + self.grid_x0 * self.spatial_res
-        lon2 = -180 + (self.grid_x0 + self.grid_width) * self.spatial_res
-        if lon1 >= lon2 or lon1 < -180 or lon1 > 180 or lon2 < -180 or lon2 > 180:
-            raise ValueError('illegal combination of grid_x0, grid_width, spatial_res values')
+from .cube_config import CubeConfig, __version__
+from .cube_provider import CubeSourceProvider
 
 
 class Cube:
@@ -370,24 +22,24 @@ class Cube:
         self._closed = False
         self._data = None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'Cube(%s, \'%s\')' % (self._config, self._base_dir)
 
     @property
-    def base_dir(self):
+    def base_dir(self) -> str:
         """
         The cube's base directory.
         """
         return self._base_dir
 
     @property
-    def config(self):
+    def config(self) -> CubeConfig:
         """
         The cube's configuration. See CubeConfig class.
         """
         return self._config
 
-    def info(self):
+    def info(self) -> str:
         """
         Return a human-readable information string about this data cube (markdown formatted).
         """
@@ -451,7 +103,7 @@ class Cube:
             self._data = None
         self._closed = True
 
-    def update(self, provider):
+    def update(self, provider: CubeSourceProvider):
         """
         Updates the data cube with source data from the given image provider.
 
@@ -462,7 +114,7 @@ class Cube:
 
         provider.prepare()
 
-        target_start_time, target_end_time = provider.get_temporal_coverage()
+        target_start_time, target_end_time = provider.temporal_coverage
         if self._config.start_time and self._config.start_time > target_start_time:
             target_start_time = self._config.start_time
         if self._config.end_time and self._config.end_time < target_end_time:
@@ -519,54 +171,96 @@ class Cube:
                 self._init_variable_dataset(provider, dataset, var_name)
             datasets[filename] = dataset
 
-        var_start_time = dataset.variables['start_time']
-        var_start_time[time_index] = self._config.date2num(target_start_time)
+        t1 = self._config.date2num(target_start_time)
+        t2 = self._config.date2num(target_end_time)
 
-        var_end_time = dataset.variables['end_time']
-        var_end_time[time_index] = self._config.date2num(target_end_time)
+        var_time = dataset.variables['time']
+        var_time[time_index] = t1 + 0.5 * (t2 - t1)
+
+        var_time_bnds = dataset.variables['time_bnds']
+        var_time_bnds[time_index, 0] = t1
+        var_time_bnds[time_index, 1] = t2
 
         var_variable = dataset.variables[var_name]
         var_variable[time_index, :, :] = image
 
     def _init_variable_dataset(self, provider, dataset, variable_name):
+        import time
 
-        image_x0, image_y0, image_width, image_height = provider.get_spatial_coverage()
+        # todo (nf 20160512) - some of these attributes could be read from cube configuration
+        # see http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#description-of-file-contents
+        # see http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#attribute-appendix
+        dataset.Conventions = 'CF-1.6'
+        dataset.institution = 'Brockmann Consult GmbH, Germany'
+        dataset.source = 'CAB-LAB data cube generation, version %s' % __version__
+        dataset.history = time.ctime(time.time()) + ' - CAB-LAB data cube generation'
+        #
+        # check (nf 20151023) - add more global attributes from CF-conventions here,
+        #                       especially those that reference original sources and originators
+        #
+        # dataset.title = ...
+        # dataset.references = ...
+        # dataset.comment = ...
 
+        dataset.northing = '%s degrees' % self.config.northing
+        dataset.easting = '%s degrees' % self.config.easting
+        dataset.spatial_res = '%s degrees' % self.config.spatial_res
+
+        image_x0, image_y0, image_width, image_height = provider.spatial_coverage
+
+        dataset.createDimension('bnds', 2)
         dataset.createDimension('time', self._config.num_periods_per_year)
         dataset.createDimension('lat', image_height)
         dataset.createDimension('lon', image_width)
 
-        var_start_time = dataset.createVariable('start_time', 'f8', ('time',), fill_value=-9999.0)
-        var_start_time.units = self._config.time_units
-        var_start_time.calendar = self._config.calendar
-        var_start_time[:] = -9999.0
+        var_time = dataset.createVariable('time', 'f8', ('time',), fill_value=-9999.0)
+        var_time.long_name = 'time'
+        var_time.standard_name = 'time'
+        var_time.units = self._config.time_units
+        var_time.calendar = self._config.calendar
+        var_time.bounds = 'time_bnds'
+        var_time[:] = -9999.0
 
-        var_end_time = dataset.createVariable('end_time', 'f8', ('time',), fill_value=-9999.0)
-        var_end_time.units = self._config.time_units
-        var_end_time.calendar = self._config.calendar
-        var_end_time[:] = -9999.0
+        var_time_bnds = dataset.createVariable('time_bnds', 'f8', ('time', 'bnds'), fill_value=-9999.0)
+        var_time_bnds.units = self._config.time_units
+        var_time_bnds.calendar = self._config.calendar
+        var_time_bnds[:] = -9999.0
 
         var_longitude = dataset.createVariable('lon', 'f4', ('lon',))
+        var_longitude.long_name = 'longitude'
+        var_longitude.standard_name = 'longitude'
         var_longitude.units = 'degrees_east'
+        var_longitude.bounds = 'lon_bnds'
+
+        var_longitude_bnds = dataset.createVariable('lon_bnds', 'f4', ('lon', 'bnds'))
+        var_longitude_bnds.units = 'degrees_east'
 
         var_latitude = dataset.createVariable('lat', 'f4', ('lat',))
+        var_latitude.long_name = 'latitude'
+        var_latitude.standard_name = 'latitude'
         var_latitude.units = 'degrees_north'
+        var_latitude.bounds = 'lat_bnds'
+
+        var_latitude_bnds = dataset.createVariable('lat_bnds', 'f4', ('lat', 'bnds'))
+        var_latitude_bnds.units = 'degrees_north'
 
         spatial_res = self._config.spatial_res
+
         lon0 = self._config.easting + image_x0 * spatial_res
         for i in range(image_width):
-            var_longitude[i] = lon0 + i * spatial_res
+            lon = lon0 + i * spatial_res
+            var_longitude[i] = lon + 0.5 * spatial_res
+            var_longitude_bnds[i,0] = lon
+            var_longitude_bnds[i,1] = lon + spatial_res
+
         lat0 = self._config.northing + image_y0 * spatial_res
         for i in range(image_height):
-            var_latitude[i] = lat0 - i * spatial_res
+            lat = lat0 - i * spatial_res
+            var_latitude[i] = lat - 0.5 * spatial_res
+            var_latitude_bnds[i,0] = lat - spatial_res
+            var_latitude_bnds[i,1] = lat
 
-        # import time
-        # dataset.source = 'CAB-LAB Software (module ' + __name__ + ')'
-        # dataset.history = 'Created ' + time.ctime(time.time())
-        #
-        # check (nf 20151023) - add more global attributes from CF-conventions here
-        #
-        variable_descriptors = provider.get_variable_descriptors()
+        variable_descriptors = provider.variable_descriptors
         variable_attributes = variable_descriptors[variable_name]
         # Mandatory attributes
         variable_data_type = variable_attributes['data_type']
@@ -585,6 +279,7 @@ class Cube:
                 try:
                     var_variable.__setattr__(name, value)
                 except ValueError as ve:
+                    # todo (nf 20160512) - log, or print to stderr
                     print('%s = %s failed (%s)!' % (name, value, str(ve)))
         return dataset
 
@@ -647,18 +342,29 @@ class CubeData:
         """
         Get a cube variable. Same as, e.g. ``cube.data['Ozone']``.
 
-        :param var_index: The variable name or index according to the list returned by the variables property.
+        :param var_index: The variable name or index according to the list returned by the ``variable_names`` property.
         :return: a data-access object representing the variable with the dimensions (time, latitude, longitude).
         """
         if isinstance(var_index, str):
             var_index = self._var_name_to_var_index[var_index]
         return self._get_or_open_variable(var_index)
 
+    def get_dataset(self, var_index):
+        """
+        Get the dataset associated with a cube variable.
+
+        :param var_index: The variable name or index according to the list returned by the ``variable_names`` property.
+        :return: a data-access object representing the variable with the dimensions (time, latitude, longitude).
+        """
+        if isinstance(var_index, str):
+            var_index = self._var_name_to_var_index[var_index]
+        return self._datasets[var_index] if 0 <= var_index < len(self._datasets) else None
+
     def __getitem__(self, index):
         """
         Get a cube variable. Same as, e.g. ``cube.data.get_variable('Ozone')``.
 
-        :param index: The variable name or index according to the list returned by the variables property.
+        :param index: The variable name or index according to the list returned by the ``variable_names`` property.
         :return: a data-access object representing the variable with the dimensions (time, latitude, longitude).
         """
         return self.get_variable(index)
@@ -725,7 +431,8 @@ class CubeData:
         """
         self._close_datasets()
 
-    def _get_lon_range(self, longitude):
+    @staticmethod
+    def _get_lon_range(longitude):
         if longitude is None:
             return -180, 180
         try:
@@ -749,7 +456,8 @@ class CubeData:
             lon_2 += 360
         return lon_1, lon_2
 
-    def _get_lat_range(self, latitude):
+    @staticmethod
+    def _get_lat_range(latitude):
         if latitude is None:
             return -90, 90
         try:

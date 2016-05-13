@@ -1,42 +1,37 @@
-from datetime import timedelta
 import os
+from datetime import timedelta
 
-import numpy
+import gridtools.resampling as gtr
 import netCDF4
+import numpy
 
-from cablab import BaseCubeSourceProvider
-from cablab.util import NetCDFDatasetCache
-from skimage.measure import block_reduce
-import cablab.resize as resize
+from cablab import NetCDFCubeSourceProvider
 
 VAR_NAME = 'MFSC'
+FILL_VALUE = -9999
 
 
-class SnowAreaExtentProvider(BaseCubeSourceProvider):
-    def __init__(self, cube_config, dir_path):
-        super(SnowAreaExtentProvider, self).__init__(cube_config)
-        # todo (hp 20151030) - remove check once we have addressed spatial aggregation/interpolation, see issue #3
-        if cube_config.grid_width != 1440 or cube_config.grid_height != 720:
-            raise ValueError('illegal cube configuration, '
-                             'provider does not yet implement spatial aggregation/interpolation')
-        self.dir_path = dir_path
-        self.dataset_cache = NetCDFDatasetCache(VAR_NAME)
-        self.source_time_ranges = None
+class SnowAreaExtentProvider(NetCDFCubeSourceProvider):
+    def __init__(self, cube_config, name='snow_area_extent', dir=None):
+        super(SnowAreaExtentProvider, self).__init__(cube_config, name, dir)
         self.old_indices = None
 
-    def prepare(self):
-        self._init_source_time_ranges()
-
-    def get_variable_descriptors(self):
+    @property
+    def variable_descriptors(self):
         return {
-            VAR_NAME: {
+            'fractional_snow_cover': {
+                'source_name': 'MFSC',
                 'data_type': numpy.float32,
                 'fill_value': -9999.0,
                 'units': 'percent',
-                'long_name': 'Level 3B Fractional Snow Cover (%)  Aggregated Monthly',
+                # 'long_name': 'level 3b fractional snow cover (%) aggregated monthly',
             }
         }
 
+    # todo: test, then remove method and test again using base class version of method
+    # Special in this implementation:
+    #  - aggregate_image not called, see Hans' memory problem,
+    #  - performs it's own temporal aggregation which is wrong because it doesn't consider masked values
     def compute_variable_images_from_sources(self, index_to_weight):
 
         # close all datasets that wont be used anymore
@@ -46,54 +41,29 @@ class SnowAreaExtentProvider(BaseCubeSourceProvider):
             for i in unused_indices:
                 file, _ = self._get_file_and_time_index(i)
                 self.dataset_cache.close_dataset(file)
-
         self.old_indices = new_indices
 
         if len(new_indices) == 1:
             i = next(iter(new_indices))
             file, time_index = self._get_file_and_time_index(i)
-            dataset = self.dataset_cache.get_dataset(file)
-            snow_area_extent = 1.0 * dataset.variables[VAR_NAME][time_index, :, :]
-            snow_area_extent.filled(numpy.nan)
+            var_image = 1.0 * self.dataset_cache.get_dataset(file).variables[VAR_NAME][time_index, :, :]
         else:
             weight_sum = 0.0
             snow_area_extent_sum = numpy.zeros((18000, 36000), dtype=numpy.float64)
             for i in new_indices:
                 weight = index_to_weight[i]
                 file, time_index = self._get_file_and_time_index(i)
-                dataset = self.dataset_cache.get_dataset(file)
-                snow_area_extent = dataset.variables[VAR_NAME]
-                snow_area_extent_sum += weight * snow_area_extent[time_index, :, :]
+                var_image = self.dataset_cache.get_dataset(file).variables[VAR_NAME]
+                snow_area_extent_sum += weight * var_image[time_index, :, :]
                 weight_sum += weight
-            snow_area_extent = snow_area_extent_sum / weight_sum
+            # todo: produces memory error when using aggregate_image function
+            var_image = snow_area_extent_sum / weight_sum
 
-        lat_size, lon_size = snow_area_extent.shape
+        var_image = gtr.resample_2d(var_image, self.cube_config.grid_width, self.cube_config.grid_height,
+                                    us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
+        return {VAR_NAME: var_image}
 
-        latitude_downscale_factor = lat_size / self.cube_config.grid_height
-        longitude_downscale_factor = lon_size / self.cube_config.grid_width
-
-        if latitude_downscale_factor != longitude_downscale_factor or latitude_downscale_factor % 1 > 0:
-            raise ValueError('illegal downscale factor, '
-                             'the downscale factor has to be an integer value.')
-
-        snow_area_extent = resize.resize(lon_size, lat_size, snow_area_extent, self.cube_config.grid_width,
-                                         self.cube_config.grid_height)
-
-        return {VAR_NAME: snow_area_extent}
-
-    def _get_file_and_time_index(self, i):
-        return self.source_time_ranges[i][2:4]
-
-    def get_source_time_ranges(self):
-        return self.source_time_ranges
-
-    def get_spatial_coverage(self):
-        return 0, 0, 1440, 720
-
-    def close(self):
-        self.dataset_cache.close_all_datasets()
-
-    def _init_source_time_ranges(self):
+    def compute_source_time_ranges(self):
         source_time_ranges = []
         file_names = os.listdir(self.dir_path)
         for file_name in file_names:
@@ -111,4 +81,4 @@ class SnowAreaExtentProvider(BaseCubeSourceProvider):
                 else:
                     t2 = t1 + timedelta(days=31)  # assuming it's December
                 source_time_ranges.append((t1, t2, file, i))
-        self.source_time_ranges = sorted(source_time_ranges, key=lambda item: item[0])
+        return sorted(source_time_ranges, key=lambda item: item[0])

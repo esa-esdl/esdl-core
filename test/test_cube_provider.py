@@ -1,5 +1,5 @@
-from unittest import TestCase
 from datetime import datetime
+from unittest import TestCase
 
 import numpy
 
@@ -10,7 +10,7 @@ class BaseImageProviderTest(TestCase):
     def test_properties(self):
         cube_config = CubeConfig()
         provider = MyImageProvider(cube_config, [])
-        self.assertEqual('MyImageProvider', provider.name)
+        self.assertEqual('test', provider.name)
         self.assertIs(cube_config, provider.cube_config)
 
     def test_get_images(self):
@@ -21,7 +21,7 @@ class BaseImageProviderTest(TestCase):
 
         provider.prepare()
 
-        temporal_coverage = provider.get_temporal_coverage()
+        temporal_coverage = provider.temporal_coverage
         self.assertEqual((datetime(2010, 1, 1), datetime(2010, 1, 13)), temporal_coverage)
 
         # Requested range is exactly within all source ranges
@@ -61,22 +61,14 @@ class BaseImageProviderTest(TestCase):
 
 class MyImageProvider(BaseCubeSourceProvider):
     def __init__(self, cube_config, source_time_ranges):
-        super(MyImageProvider, self).__init__(cube_config)
-        self.source_time_ranges = source_time_ranges
+        super(MyImageProvider, self).__init__(cube_config, 'test')
+        self.my_source_time_ranges = source_time_ranges
         self.trace = []
         self.lai_value = 0.1
         self.fapar_value = 0.6
 
-    def prepare(self):
-        pass
-
-    def get_source_time_ranges(self):
-        return self.source_time_ranges
-
-    def get_spatial_coverage(self):
-        return 0, 0, self.cube_config.grid_width, self.cube_config.grid_height
-
-    def get_variable_descriptors(self):
+    @property
+    def variable_descriptors(self):
         return {
             'LAI': {
                 'data_type': numpy.float32,
@@ -91,6 +83,9 @@ class MyImageProvider(BaseCubeSourceProvider):
                 'long_name': 'FAPAR'
             }
         }
+
+    def compute_source_time_ranges(self):
+        return self.my_source_time_ranges
 
     def compute_variable_images_from_sources(self, index_to_weight):
         self.trace.append(index_to_weight)

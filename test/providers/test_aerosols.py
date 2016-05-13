@@ -12,9 +12,9 @@ SOURCE_DIR = Config.instance().get_cube_source_path('CCI-Aerosols\\AATSR_SU_v4.1
 class AerosolsProviderTest(unittest.TestCase):
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_source_time_ranges(self):
-        provider = AerosolsProvider(CubeConfig(end_time=datetime(2003, 1, 1)), SOURCE_DIR)
+        provider = AerosolsProvider(CubeConfig(end_time=datetime(2003, 1, 1)), dir=SOURCE_DIR)
         provider.prepare()
-        source_time_ranges = provider.get_source_time_ranges()
+        source_time_ranges = provider.source_time_ranges
         self.assertEqual(97, len(source_time_ranges))
         self.assertEqual((datetime(2002, 7, 24, 0, 0),
                           datetime(2002, 7, 25, 0, 0),
@@ -34,35 +34,64 @@ class AerosolsProviderTest(unittest.TestCase):
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_temporal_coverage(self):
-        provider = AerosolsProvider(CubeConfig(end_time=datetime(2003, 1, 1)), SOURCE_DIR)
+        provider = AerosolsProvider(CubeConfig(end_time=datetime(2003, 1, 1)), dir=SOURCE_DIR)
         provider.prepare()
         self.assertEqual((datetime(2002, 7, 24, 0, 0), datetime(2003, 1, 2, 0, 0)),
-                         provider.get_temporal_coverage())
+                         provider.temporal_coverage)
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_get_images(self):
-        provider = AerosolsProvider(CubeConfig(end_time=datetime(2003, 1, 1)), SOURCE_DIR)
+        provider = AerosolsProvider(CubeConfig(end_time=datetime(2003, 1, 1)), dir=SOURCE_DIR)
         provider.prepare()
         images = provider.compute_variable_images(datetime(2002, 7, 27), datetime(2002, 8, 4))
 
         self.assertIsNotNone(images)
 
-        self.assertTrue('AOD1610_mean' in images)
-        image = images['AOD1610_mean']
+        self.assertTrue('aerosol_optical_thickness_1610' in images)
+        image = images['aerosol_optical_thickness_1610']
         self.assertEqual((720, 1440), image.shape)
 
-        self.assertTrue('AOD550_mean' in images)
-        image = images['AOD550_mean']
+        self.assertTrue('aerosol_optical_thickness_550' in images)
+        image = images['aerosol_optical_thickness_550']
         self.assertEqual((720, 1440), image.shape)
 
-        self.assertTrue('AOD555_mean' in images)
-        image = images['AOD555_mean']
+        self.assertTrue('aerosol_optical_thickness_555' in images)
+        image = images['aerosol_optical_thickness_555']
         self.assertEqual((720, 1440), image.shape)
 
-        self.assertTrue('AOD659_mean' in images)
-        image = images['AOD659_mean']
+        self.assertTrue('aerosol_optical_thickness_659' in images)
+        image = images['aerosol_optical_thickness_659']
         self.assertEqual((720, 1440), image.shape)
 
-        self.assertTrue('AOD865_mean' in images)
-        image = images['AOD865_mean']
+        self.assertTrue('aerosol_optical_thickness_865' in images)
+        image = images['aerosol_optical_thickness_865']
         self.assertEqual((720, 1440), image.shape)
+
+    @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
+    def test_get_high_res_images(self):
+        provider = AerosolsProvider(CubeConfig(grid_width=4320, grid_height=2160, spatial_res=1 / 12,
+                                               end_time=datetime(2003, 1, 1)), dir=SOURCE_DIR)
+        provider.prepare()
+        images = provider.compute_variable_images(datetime(2002, 7, 27), datetime(2002, 8, 4))
+
+        self.assertIsNotNone(images)
+
+        self.assertTrue('aerosol_optical_thickness_1610' in images)
+        image = images['aerosol_optical_thickness_1610']
+        self.assertEqual((2160, 4320), image.shape)
+
+        self.assertTrue('aerosol_optical_thickness_550' in images)
+        image = images['aerosol_optical_thickness_550']
+        self.assertEqual((2160, 4320), image.shape)
+
+        self.assertTrue('aerosol_optical_thickness_555' in images)
+        image = images['aerosol_optical_thickness_555']
+        self.assertEqual((2160, 4320), image.shape)
+
+        self.assertTrue('aerosol_optical_thickness_659' in images)
+        image = images['aerosol_optical_thickness_659']
+        self.assertEqual((2160, 4320), image.shape)
+
+        self.assertTrue('aerosol_optical_thickness_865' in images)
+        image = images['aerosol_optical_thickness_865']
+        self.assertEqual((2160, 4320), image.shape)
