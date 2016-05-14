@@ -1,5 +1,6 @@
 import os.path
 import shutil
+from contextlib import contextmanager
 from datetime import datetime
 from unittest import TestCase
 
@@ -16,21 +17,19 @@ def _del_cube_dir():
         shutil.rmtree(CUBE_DIR, True)
 
 
-class cube_data:
-    """
-    Cube data context manager. For testing only.
-    """
-
-    def __enter__(self):
-        cube = Cube.open(CUBE_DIR)
-        self.data = CubeDataAccess(cube)
-        return self.data
-
-    def __exit__(self, type, value, traceback):
-        self.data.close()
-
-
 class CubeDataAccessTest(TestCase):
+    @contextmanager
+    def open_access(self):
+        """
+        Allow to open cube access with a ``with`` statement.
+        Note: move this code into Cube later!
+        :return: CubeDataAccess instance
+        """
+        cube = Cube.open(CUBE_DIR)
+        data = CubeDataAccess(cube)
+        yield data
+        data.close()
+
     @classmethod
     def setUpClass(cls):
         _del_cube_dir()
@@ -51,7 +50,7 @@ class CubeDataAccessTest(TestCase):
         _del_cube_dir()
 
     def test_variable_api(self):
-        with cube_data() as data:
+        with self.open_access() as data:
             self.assertEquals(['a_var', 'b_var', 'c_var'], data.variable_names)
 
             var = data.variables('a_var')
@@ -75,7 +74,7 @@ class CubeDataAccessTest(TestCase):
                 vars = data.variables(('a_var', 'c_var'))
 
     def test_get_item_api(self):
-        with cube_data() as data:
+        with self.open_access() as data:
             self.assertEqual(3, len(data))
 
             var = data[0]
@@ -102,7 +101,7 @@ class CubeDataAccessTest(TestCase):
                 vars = data['a_var', 'c_var']
 
     def test_dataset_api(self):
-        with cube_data() as data:
+        with self.open_access() as data:
             ds = data.dataset('a_var')
             self.assertIs(xr.Dataset, type(ds))
             self.assertIn('a_var', ds)
