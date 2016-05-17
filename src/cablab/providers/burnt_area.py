@@ -15,14 +15,17 @@ class BurntAreaProvider(NetCDFCubeSourceProvider):
     @property
     def variable_descriptors(self):
         return {
-            'burnt_area': {
+            'burned_area': {
                 'source_name': 'BurntArea',
                 'data_type': numpy.float32,
                 'fill_value': -9999.0,
                 'units': 'hectares',
+                # TODO I think much more useful would be burned_area_fraction, can we calculate this instead?
                 # 'long_name': 'Monthly Burnt Area',
+                'standard_name': 'burned_area',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'url': 'http://www.globalfiredata.org/',
             }
         }
 

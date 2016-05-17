@@ -14,14 +14,16 @@ class CEmissionsProvider(NetCDFCubeSourceProvider):
     @property
     def variable_descriptors(self):
         return {
-            'c_emissions': {
+            'fire_c_emissions': {
                 'source_name': 'Emission',
                 'data_type': numpy.float32,
                 'fill_value': -9999.0,
                 'units': 'g C m-2 month-1',
-                'long_name': 'CASA-GFED4 BB',
+                'long_name': 'Carbon dioxide emissions due to natural fires expressed as carbon flux.',
+                'standard_name': 'surface_upward_mass_flux_of_carbon_dioxide_expressed_as_carbon_due_to_emission_from_fires'.
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'url': 'http://www.globalfiredata.org/',
             }
         }
 

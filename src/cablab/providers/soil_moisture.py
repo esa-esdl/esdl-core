@@ -23,6 +23,7 @@ class SoilMoistureProvider(NetCDFCubeSourceProvider):
                 'long_name': 'soil moisture',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'standard_name': 'soil_moisture_content'
             }
         }
 

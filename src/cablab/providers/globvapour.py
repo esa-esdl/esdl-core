@@ -21,8 +21,10 @@ class GlobVapourProvider(NetCDFCubeSourceProvider):
                 'fill_value': -999.0,
                 'units': 'kg m-2',
                 'long_name': 'total column water vapour',
+                'standard_name': 'atmosphere_mass_content_of_water_vapor',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'url': 'http://www.globvapour.info/',
             }
         }
 

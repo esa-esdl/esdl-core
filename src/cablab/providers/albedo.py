@@ -21,17 +21,21 @@ class AlbedoProvider(NetCDFCubeSourceProvider):
                 'fill_value': numpy.nan,
                 'units': '-',
                 'long_name': 'white sky albedo for visible wavebands',
+                'standard_name': 'surface_albedo_white_sky',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'url': 'http://www.globalbedo.org/',
             },
             'black_sky_albedo': {
                 'source_name': 'DHR_VIS',
                 'data_type': numpy.float32,
                 'fill_value': numpy.nan,
                 'units': '-',
+                'standard_name': 'surface_albedo_black_sky',
                 'long_name': 'black sky albedo for visible wavebands',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'url': 'http://www.globalbedo.org/',
             }
         }
 

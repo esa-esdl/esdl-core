@@ -21,9 +21,10 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
                 'fill_value': -999.0,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 1610 nm',
-                # 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
+                'standard_name': 'atmosphere_optical_thickness_due_to_aerosol_at_1610nm',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'url':'http://www.esa-aerosol-cci.org/',
             },
             'aerosol_optical_thickness_550': {
                 'source_name': 'AOD550_mean',
@@ -31,9 +32,10 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
                 'fill_value': -999.0,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 550 nm',
-                # 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
+                'standard_name': 'atmosphere_optical_thickness_due_to_aerosol_at_550nm',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'url':'http://www.esa-aerosol-cci.org/',
             },
             'aerosol_optical_thickness_555': {
                 'source_name': 'AOD555_mean',
@@ -41,9 +43,10 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
                 'fill_value': -999.0,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 555 nm',
-                # 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
+                'standard_name': 'atmosphere_optical_thickness_due_to_aerosol_at_555nm',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'url':'http://www.esa-aerosol-cci.org/',
             },
             'aerosol_optical_thickness_659': {
                 'source_name': 'AOD659_mean',
@@ -51,9 +54,10 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
                 'fill_value': -999.0,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 659 nm',
-                # 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
+                'standard_name': 'atmosphere_optical_thickness_due_to_aerosol_at_659nm',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'url':'http://www.esa-aerosol-cci.org/',
             },
             'aerosol_optical_thickness_865': {
                 'source_name': 'AOD865_mean',
@@ -61,9 +65,10 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
                 'fill_value': -999.0,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 865 nm',
-                # 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
+                'standard_name': 'atmosphere_optical_thickness_due_to_aerosol_at_865nm',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'url':'http://www.esa-aerosol-cci.org/',
             }
         }
 

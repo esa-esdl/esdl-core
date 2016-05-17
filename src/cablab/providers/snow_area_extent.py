@@ -24,7 +24,9 @@ class SnowAreaExtentProvider(NetCDFCubeSourceProvider):
                 'data_type': numpy.float32,
                 'fill_value': -9999.0,
                 'units': 'percent',
-                # 'long_name': 'level 3b fractional snow cover (%) aggregated monthly',
+                'standard_name': 'surface_snow_area_fraction'
+                'long_name': 'Surface fraction covered by snow.',
+                'url': 'http://www.globsnow.info/',
             }
         }
 

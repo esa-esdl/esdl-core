@@ -21,6 +21,7 @@ class PrecipProvider(NetCDFCubeSourceProvider):
                 'fill_value': -9999.0,
                 'units': 'mm/day',
                 # 'long_name': 'precip - v1.0',
+                'standard_name': 'precipitation_flux',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
             }

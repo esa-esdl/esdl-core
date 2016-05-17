@@ -24,6 +24,7 @@ class OzoneProvider(NetCDFCubeSourceProvider):
                 'standard_name': 'atmosphere_mole_content_of_ozone',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'url': 'http://www.esa-ozone-cci.org/',
             }
         }
 

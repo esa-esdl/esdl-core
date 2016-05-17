@@ -21,8 +21,10 @@ class AirTemperatureProvider(NetCDFCubeSourceProvider):
                 'fill_value': -32767,
                 'units': 'K',
                 'long_name': '2 metre temperature',
+                # TODO remove offset and scale_factor
                 'scale_factor': 0.0019718202938428923,
                 'add_offset': 259.2678739531343,
+                'url':'http://www.ecmwf.int/en/research/climate-reanalysis/era-interim';
             }
         }
 
