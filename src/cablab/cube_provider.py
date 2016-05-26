@@ -291,6 +291,9 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider):
                     var_image = variable[:, :]
                 else:
                     raise TypeError("unexpected shape for variable '%s'" % var_name)
+                var_image = self.transform_source_image(var_image)
+                if var_image.shape[1]/var_image.shape[0] != 2.0:
+                    raise TypeError("wrong size ratio of image in '%s'. Expected 2, got %f" % (file, var_image.shape[1]/var_image.shape[0]))
                 source_var_images[var_image_index] = var_image
                 source_weights[var_image_index] = index_to_weight[i]
                 var_image_index += 1
@@ -313,6 +316,15 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider):
 
     # todo (nf 20160512) - move one class up and let it return a modified index_to_weight,
     # call in compute_variable_images()
+
+    def transform_source_image(self, source_image):
+        """
+        Returns the source image. Override to implement transformations if needed.
+        :param source_image: 2D image
+        :return: source_image
+        """
+        return source_image
+
     def close_unused_open_files(self, index_to_weight):
         """
         Close all datasets that wont be used anymore w.r.t. the given **index_to_weight** dictionary passed to the
