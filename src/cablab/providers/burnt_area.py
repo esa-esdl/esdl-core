@@ -20,9 +20,11 @@ class BurntAreaProvider(NetCDFCubeSourceProvider):
                 'data_type': numpy.float32,
                 'fill_value': -9999.0,
                 'units': 'hectares',
-                # TODO I think much more useful would be burned_area_fraction, can we calculate this instead?
+                # TODO I think much more useful would be burned_area_fraction, because it does note depend on grid cell size. Can we calculate this instead?
                 # 'long_name': 'Monthly Burnt Area',
                 'standard_name': 'burned_area',
+                'references' : 'Giglio, Louis, James T. Randerson, and Guido R. Werf. "Analysis of daily, monthly, and annual burned area using the fourth‐generation global fire emissions database (GFED4)." Journal of Geophysical Research: Biogeosciences 118.1 (2013): 317-328.',
+                'comment' : 'Burnt Area based on the GFED4 fire product.',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
                 'url': 'http://www.globalfiredata.org/',

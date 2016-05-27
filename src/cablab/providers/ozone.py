@@ -22,6 +22,8 @@ class OzoneProvider(NetCDFCubeSourceProvider):
                 'units': 'DU',
                 'long_name': 'mean total ozone column in dobson units',
                 'standard_name': 'atmosphere_mole_content_of_ozone',
+                'references': 'Laeng, A., et al. "The ozone climate change initiative: Comparison of four Level-2 processors for the Michelson Interferometer for Passive Atmospheric Sounding (MIPAS)." Remote Sensing of Environment 162 (2015): 316-343.',
+                'comment': 'Atmospheric ozone based on the Ozone CCI data.',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
                 'url': 'http://www.esa-ozone-cci.org/',

@@ -22,8 +22,11 @@ class PrecipProvider(NetCDFCubeSourceProvider):
                 'units': 'mm/day',
                 # 'long_name': 'precip - v1.0',
                 'standard_name': 'precipitation_flux',
+                'references': 'Adler, Robert F., et al. "The version-2 global precipitation climatology project (GPCP) monthly precipitation analysis (1979-present)." Journal of hydrometeorology 4.6 (2003): 1147-1167.',
+                'comment': 'Precipitation based on the GPCP dataset.',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'url': 'http://precip.gsfc.nasa.gov/'
             }
         }
 

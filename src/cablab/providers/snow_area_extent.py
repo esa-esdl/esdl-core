@@ -26,6 +26,8 @@ class SnowAreaExtentProvider(NetCDFCubeSourceProvider):
                 'units': 'percent',
                 'standard_name': 'surface_snow_area_fraction'
                 'long_name': 'Surface fraction covered by snow.',
+                'references': 'Luojus, Kari, et al. "ESA DUE Globsnow-Global Snow Database for Climate Research." ESA Special Publication. Vol. 686. 2010.',
+                'comment': 'Grid cell fractional snow cover based on the Globsnow CCI product.',
                 'url': 'http://www.globsnow.info/',
             }
         }
