@@ -125,6 +125,7 @@ class Cube:
         cube_temporal_res = self._config.temporal_res
         num_periods_per_year = self._config.num_periods_per_year
         datasets = dict()
+        # todo(gb) close data sets each year
         for target_year in range(target_year_1, target_year_2 + 1):
             time_min = datetime(target_year, 1, 1)
             time_max = datetime(target_year + 1, 1, 1)

@@ -4,10 +4,9 @@ import sys
 
 from pkg_resources import iter_entry_points
 
-from .cube import Cube
-from .cube_config import CubeConfig, __version__
-from .cube_provider import CubeSourceProvider
-from .util import Config
+from cablab.cube import Cube
+from cablab.cube_config import CubeConfig, __version__
+from cablab.cube_provider import CubeSourceProvider
 
 
 def _load_source_providers():
@@ -23,7 +22,6 @@ def _load_source_providers():
 
 
 SOURCE_PROVIDERS = _load_source_providers()
-
 
 def _parse_source_arg(source: str):
     from collections import OrderedDict
@@ -63,6 +61,8 @@ def main(args=None):
     parser = argparse.ArgumentParser(description='Generates a new CAB-LAB data cube or updates an existing one.')
     parser.add_argument('-l', '--list', action='store_true',
                         help="list all available source providers")
+    parser.add_argument('-G', '--dont_clear_cache', action='store_true',
+                        help="do not clear data cache before updating the cube (faster)")
     parser.add_argument('-c', '--cube-conf', metavar='CONFIG',
                         help="data cube configuration file")
     parser.add_argument('cube_dir', metavar='TARGET', nargs='?',
@@ -118,7 +118,6 @@ def main(args=None):
             cube = Cube.create(cube_dir, cube_config)
         else:
             cube = Cube.open(cube_dir)
-
         source_providers = [cls(cube.config, *args, name=name, **kwargs)
                             for name, cls, args, kwargs in source_provider_infos]
 
