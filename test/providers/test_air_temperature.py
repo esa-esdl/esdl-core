@@ -7,7 +7,6 @@ from cablab.providers.air_temperature import AirTemperatureProvider
 from cablab.util import Config
 
 SOURCE_DIR = Config.instance().get_cube_source_path("T2m-ECMWF/low/")
-print(SOURCE_DIR)
 
 class AirTemperatureProviderTest(unittest.TestCase):
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
