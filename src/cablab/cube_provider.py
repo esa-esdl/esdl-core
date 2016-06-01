@@ -293,7 +293,7 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider):
                     raise TypeError("unexpected shape for variable '%s'" % var_name)
                 var_image = self.transform_source_image(var_image)
                 if var_image.shape[1]/var_image.shape[0] != 2.0:
-                    raise TypeError("wrong size ratio of image in '%s'. Expected 2, got %f" % (file, var_image.shape[1]/var_image.shape[0]))
+                    print("Warning: wrong size ratio of image in '%s'. Expected 2, got %f" % (file, var_image.shape[1]/var_image.shape[0]))
                 source_var_images[var_image_index] = var_image
                 source_weights[var_image_index] = index_to_weight[i]
                 var_image_index += 1
