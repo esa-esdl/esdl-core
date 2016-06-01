@@ -144,7 +144,11 @@ class NetCDFDatasetCache(DatasetCache):
         super(NetCDFDatasetCache, self).__init__(name, cache_base_dir=cache_base_dir)
 
     def open_dataset(self, real_file):
-        return netCDF4.Dataset(real_file)
+        if os.path.isfile(real_file):
+            return netCDF4.Dataset(real_file)
+        else:
+            print('Warning: Input file (\'%s\') does not exist!' %
+                          real_file)
 
 
 class Config:
