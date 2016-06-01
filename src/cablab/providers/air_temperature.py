@@ -30,12 +30,13 @@ class AirTemperatureProvider(NetCDFCubeSourceProvider):
         source_time_ranges = []
         file_names = os.listdir(self.dir_path)
         for file_name in file_names:
-            source_year = int(file_name.replace('.nc', '').split('_', 1)[1])
-            if self.cube_config.start_time.year <= source_year <= self.cube_config.end_time.year:
-                file = os.path.join(self.dir_path, file_name)
-                dataset = self.dataset_cache.get_dataset(file)
-                times = dataset.variables['time']
-                dates = netCDF4.num2date(times[:], 'hours since 1900-01-01 00:00:0.0', calendar='gregorian')
-                self.dataset_cache.close_dataset(file)
-                source_time_ranges += [(dates[i], dates[i] + timedelta(hours=6), file, i) for i in range(len(dates))]
+            if '.nc' in file_name:
+                source_year = int(file_name.replace('.nc', '').split('_')[1])
+                if self.cube_config.start_time.year <= source_year <= self.cube_config.end_time.year:
+                    file = os.path.join(self.dir_path, file_name).replace("\\","/")
+                    dataset = self.dataset_cache.get_dataset(file)
+                    times = dataset.variables['time']
+                    dates = netCDF4.num2date(times[:], 'hours since 1900-01-01 00:00:0.0', calendar='gregorian')
+                    self.dataset_cache.close_dataset(file)
+                    source_time_ranges += [(dates[i], dates[i] + timedelta(hours=12), file, i) for i in range(len(dates))]
         return sorted(source_time_ranges, key=lambda item: item[0])
