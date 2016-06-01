@@ -150,7 +150,7 @@ class GleamProvider(NetCDFCubeSourceProvider):
                     file_names = os.listdir(sub_dir_path)
                     for file_name in file_names:
                         if self.var_name+'_' in file_name:
-                            file = os.path.join(self.dir_path, sub_dir, file_name)
+                            file = os.path.join(self.dir_path, sub_dir, file_name).replace("\\","/")
                             dataset = self.dataset_cache.get_dataset(file)
                             year = dataset.variables['DATE'][0, :].astype(int)
                             month = dataset.variables['DATE'][1, :].astype(int)
