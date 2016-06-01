@@ -31,7 +31,7 @@ class AirTemperatureProviderTest(unittest.TestCase):
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_temporal_coverage(self):
-        provider = AirTemperatureProvider(CubeConfig(end_time=datetime(2001, 6, 1, 0, 0)), dir=SOURCE_DIR)
+        provider = AirTemperatureProvider(CubeConfig(end_time=datetime(2001, 12, 31, 23, 0)), dir=SOURCE_DIR)
         provider.prepare()
         self.assertEqual((datetime(2001, 1, 1, 0, 0), datetime(2002, 1, 1, 0, 0)),
                          provider.temporal_coverage)
