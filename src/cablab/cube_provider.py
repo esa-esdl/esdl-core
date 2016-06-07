@@ -249,7 +249,7 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider):
            global CAB-LAB configuration (**cablab.util.Config.instance()**).
     """
 
-    def __init__(self, cube_config: CubeConfig, name: str, dir_path: str):
+    def __init__(self, cube_config: CubeConfig, name: str, dir_path: str, resampling_order: str):
         super(NetCDFCubeSourceProvider, self).__init__(cube_config, name)
         if dir_path is None:
             raise ValueError('dir_path expected')
@@ -257,6 +257,15 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider):
             self._dir_path = Config.instance().get_cube_source_path(dir_path)
         else:
             self._dir_path = dir_path
+        if resampling_order is None:
+            self._resampling_order = "time_first"
+            print('Resampling order: %s' % self._resampling_order)
+        else:
+            if (resampling_order in ("time_first","space_first")):
+                self._resampling_order = resampling_order
+                print('Resampling order: %s' % self._resampling_order)
+            else:
+                raise ValueError('Wrong resampling option %s'% resampling_order)
         self._dataset_cache = NetCDFDatasetCache(name)
         self._old_indices = None
 
@@ -292,6 +301,13 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider):
                 else:
                     raise TypeError("unexpected shape for variable '%s'" % var_name)
                 var_image = self.transform_source_image(var_image)
+                if self._resampling_order in "space_first":
+                    var_image = gtr.resample_2d(var_image,
+                                        self.cube_config.grid_width,
+                                        self.cube_config.grid_height,
+                                        ds_method=gtr.__dict__['DS_' + var_attributes.get('ds_method', 'MEAN')],
+                                        us_method=gtr.__dict__['US_' + var_attributes.get('us_method', 'NEAREST')],
+                                        fill_value=var_attributes.get('fill_value', np.nan))
                 if var_image.shape[1]/var_image.shape[0] != 2.0:
                     print("Warning: wrong size ratio of image in '%s'. Expected 2, got %f" % (file, var_image.shape[1]/var_image.shape[0]))
                 source_var_images[var_image_index] = var_image
@@ -304,7 +320,8 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider):
                 # Temporal aggregation not required
                 var_image = source_var_images[0]
             # Spatial resampling
-            var_image = gtr.resample_2d(var_image,
+            if self._resampling_order in "time_first":
+                var_image = gtr.resample_2d(var_image,
                                         self.cube_config.grid_width,
                                         self.cube_config.grid_height,
                                         ds_method=gtr.__dict__['DS_' + var_attributes.get('ds_method', 'MEAN')],
