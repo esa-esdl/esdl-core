@@ -38,7 +38,7 @@ class AirTemperatureProviderTest(unittest.TestCase):
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_get_images(self):
-        provider = AirTemperatureProvider(CubeConfig(end_time=datetime(2001, 6, 1, 0, 0)), dir=SOURCE_DIR)
+        provider = AirTemperatureProvider(CubeConfig(end_time=datetime(2001, 6, 1, 0, 0)), dir=SOURCE_DIR, resampling_order= "space_first")
         provider.prepare()
         images = provider.compute_variable_images(datetime(2001, 1, 1), datetime(2001, 1, 9))
         self.assertIsNotNone(images)
