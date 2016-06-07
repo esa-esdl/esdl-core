@@ -12,7 +12,7 @@ SOURCE_DIR = Config.instance().get_cube_source_path('SnowAreaExtent')
 class SnowAreaExtentProviderTest(unittest.TestCase):
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_source_time_ranges(self):
-        provider = SnowAreaExtentProvider(CubeConfig(), dir=SOURCE_DIR)
+        provider = SnowAreaExtentProvider(CubeConfig(), dir=SOURCE_DIR, resampling_order= "space_first")
         provider.prepare()
         source_time_ranges = provider.source_time_ranges
         self.assertEqual(120, len(source_time_ranges))
@@ -35,7 +35,7 @@ class SnowAreaExtentProviderTest(unittest.TestCase):
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_temporal_coverage(self):
-        provider = SnowAreaExtentProvider(CubeConfig(), dir=SOURCE_DIR)
+        provider = SnowAreaExtentProvider(CubeConfig(), dir=SOURCE_DIR, resampling_order= "space_first")
         provider.prepare()
         temporal_coverage = provider.temporal_coverage
         self.assertEqual((datetime(2003, 1, 1, 0, 0, 0, 33),
@@ -44,7 +44,7 @@ class SnowAreaExtentProviderTest(unittest.TestCase):
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_get_images(self):
-        provider = SnowAreaExtentProvider(CubeConfig(), dir=SOURCE_DIR)
+        provider = SnowAreaExtentProvider(CubeConfig(), dir=SOURCE_DIR, resampling_order= "space_first")
         provider.prepare()
         images = provider.compute_variable_images(datetime(2003, 1, 1), datetime(2003, 2, 11))
         self.assertIsNotNone(images)
@@ -54,7 +54,7 @@ class SnowAreaExtentProviderTest(unittest.TestCase):
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_get_images_from_single_time_period(self):
-        provider = SnowAreaExtentProvider(CubeConfig(), dir=SOURCE_DIR)
+        provider = SnowAreaExtentProvider(CubeConfig(), dir=SOURCE_DIR, resampling_order= "space_first")
         provider.prepare()
         images = provider.compute_variable_images(datetime(2003, 1, 1), datetime(2003, 1, 31))
         self.assertIsNotNone(images)
@@ -65,7 +65,7 @@ class SnowAreaExtentProviderTest(unittest.TestCase):
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_get_high_res_images_from_single_time_period(self):
         provider = SnowAreaExtentProvider(CubeConfig(grid_width=4320, grid_height=2160, spatial_res=1 / 12),
-                                          dir=SOURCE_DIR)
+                                          dir=SOURCE_DIR, resampling_order= "space_first")
         provider.prepare()
         images = provider.compute_variable_images(datetime(2003, 1, 1), datetime(2003, 1, 31))
         self.assertIsNotNone(images)
