@@ -13,8 +13,8 @@ FILL_VALUE = -9999
 
 
 class SnowAreaExtentProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name='snow_area_extent', dir=None):
-        super(SnowAreaExtentProvider, self).__init__(cube_config, name, dir)
+    def __init__(self, cube_config, name='snow_area_extent', dir=None, resampling_order=None):
+        super(SnowAreaExtentProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.old_indices = None
 
     @property
@@ -29,50 +29,50 @@ class SnowAreaExtentProvider(NetCDFCubeSourceProvider):
             }
         }
 
-    def compute_variable_images_from_sources(self, index_to_weight):
-
-        new_indices = self.close_unused_open_files(index_to_weight)
-
-        var_descriptors = self.variable_descriptors
-        target_var_images = dict()
-        for var_name, var_attributes in var_descriptors.items():
-            source_var_images = [None] * len(new_indices)
-            source_weights = [None] * len(new_indices)
-            var_image_index = 0
-            for i in new_indices:
-                file, time_index = self._get_file_and_time_index(i)
-                variable = self._dataset_cache.get_dataset(file).variables[var_attributes.get('source_name', var_name)]
-                if len(variable.shape) == 3:
-                    var_image = variable[time_index, :, :]
-                elif len(variable.shape) == 2:
-                    var_image = variable[:, :]
-                else:
-                    raise TypeError("unexpected shape for variable '%s'" % var_name)
-                var_image = self.transform_source_image(var_image)
-
-                            # Spatial resampling
-                var_image = gtr.resample_2d(var_image,
-                                        self.cube_config.grid_width,
-                                        self.cube_config.grid_height,
-                                        ds_method=gtr.__dict__['DS_' + var_attributes.get('ds_method', 'MEAN')],
-                                        us_method=gtr.__dict__['US_' + var_attributes.get('us_method', 'NEAREST')],
-                                        fill_value=var_attributes.get('fill_value', numpy.nan))
-
-                if var_image.shape[1]/var_image.shape[0] != 2.0:
-                    print("Warning: wrong size ratio of image in '%s'. Expected 2, got %f" % (file, var_image.shape[1]/var_image.shape[0]))
-                source_var_images[var_image_index] = var_image
-                source_weights[var_image_index] = index_to_weight[i]
-                var_image_index += 1
-            if len(new_indices) > 1:
-                # Temporal aggregation
-                var_image = aggregate_images(source_var_images, weights=source_weights)
-            else:
-                # Temporal aggregation not required
-                var_image = source_var_images[0]
-
-            target_var_images[var_name] = var_image
-
-        return target_var_images
+    # def compute_variable_images_from_sources(self, index_to_weight):
+    #
+    #     new_indices = self.close_unused_open_files(index_to_weight)
+    #
+    #     var_descriptors = self.variable_descriptors
+    #     target_var_images = dict()
+    #     for var_name, var_attributes in var_descriptors.items():
+    #         source_var_images = [None] * len(new_indices)
+    #         source_weights = [None] * len(new_indices)
+    #         var_image_index = 0
+    #         for i in new_indices:
+    #             file, time_index = self._get_file_and_time_index(i)
+    #             variable = self._dataset_cache.get_dataset(file).variables[var_attributes.get('source_name', var_name)]
+    #             if len(variable.shape) == 3:
+    #                 var_image = variable[time_index, :, :]
+    #             elif len(variable.shape) == 2:
+    #                 var_image = variable[:, :]
+    #             else:
+    #                 raise TypeError("unexpected shape for variable '%s'" % var_name)
+    #             var_image = self.transform_source_image(var_image)
+    #
+    #                         # Spatial resampling
+    #             var_image = gtr.resample_2d(var_image,
+    #                                     self.cube_config.grid_width,
+    #                                     self.cube_config.grid_height,
+    #                                     ds_method=gtr.__dict__['DS_' + var_attributes.get('ds_method', 'MEAN')],
+    #                                     us_method=gtr.__dict__['US_' + var_attributes.get('us_method', 'NEAREST')],
+    #                                     fill_value=var_attributes.get('fill_value', numpy.nan))
+    #
+    #             if var_image.shape[1]/var_image.shape[0] != 2.0:
+    #                 print("Warning: wrong size ratio of image in '%s'. Expected 2, got %f" % (file, var_image.shape[1]/var_image.shape[0]))
+    #             source_var_images[var_image_index] = var_image
+    #             source_weights[var_image_index] = index_to_weight[i]
+    #             var_image_index += 1
+    #         if len(new_indices) > 1:
+    #             # Temporal aggregation
+    #             var_image = aggregate_images(source_var_images, weights=source_weights)
+    #         else:
+    #             # Temporal aggregation not required
+    #             var_image = source_var_images[0]
+    #
+    #         target_var_images[var_name] = var_image
+    #
+    #     return target_var_images
     # Special in this implementation:
     #  - aggregate_image not called, see Hans' memory problem,
     #  - performs it's own temporal aggregation which is wrong because it doesn't consider masked values
@@ -105,7 +105,7 @@ class SnowAreaExtentProvider(NetCDFCubeSourceProvider):
     #
     #     var_image = gtr.resample_2d(var_image, self.cube_config.grid_width, self.cube_config.grid_height,
     #                                 us_method=gtr.US_NEAREST, fill_value=FILL_VALUE)
-        return {VAR_NAME: var_image}
+     #   return {VAR_NAME: var_image}
 
     def compute_source_time_ranges(self):
         source_time_ranges = []

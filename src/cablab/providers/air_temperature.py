@@ -8,8 +8,8 @@ from cablab import NetCDFCubeSourceProvider
 
 
 class AirTemperatureProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name='air_temperature', dir=None):
-        super(AirTemperatureProvider, self).__init__(cube_config, name, dir)
+    def __init__(self, cube_config, name='air_temperature', dir=None, resampling_order = None):
+        super(AirTemperatureProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.old_indices = None
 
     @property

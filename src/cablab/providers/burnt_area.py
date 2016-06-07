@@ -8,8 +8,8 @@ from cablab import NetCDFCubeSourceProvider
 
 
 class BurntAreaProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name='burnt_area', dir=None):
-        super(BurntAreaProvider, self).__init__(cube_config, name, dir)
+    def __init__(self, cube_config, name='burnt_area', dir=None, resampling_order = None):
+        super(BurntAreaProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.old_indices = None
 
     @property

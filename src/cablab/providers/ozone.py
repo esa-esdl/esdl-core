@@ -8,8 +8,8 @@ from cablab import NetCDFCubeSourceProvider
 
 
 class OzoneProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name='ozone', dir=None):
-        super(OzoneProvider, self).__init__(cube_config, name, dir)
+    def __init__(self, cube_config, name='ozone', dir=None, resampling_order = None):
+        super(OzoneProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.old_indices = None
 
     @property

@@ -8,8 +8,8 @@ from cablab import NetCDFCubeSourceProvider
 
 
 class PrecipProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name='precip', dir=None):
-        super(PrecipProvider, self).__init__(cube_config, name, dir)
+    def __init__(self, cube_config, name='precip', dir=None, resampling_order = None):
+        super(PrecipProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.old_indices = None
 
     @property
