@@ -26,7 +26,7 @@ class AggregationTest(TestCase):
         assert_array_equal(test_array[2], [8, 9, 10, 11], verbose=True)
         assert_array_equal(test_array[3], [12, 13, 14, 15], verbose=True)
 
-        mean_aggregated_array = gtr.resample2d(test_array, 2, 2)
+        mean_aggregated_array = gtr.resample_2d(test_array, 2, 2)
 
         self.assertEqual((2, 2), mean_aggregated_array.shape)
         assert_array_equal(mean_aggregated_array[0], [(0 + 1 + 4 + 5) / 4, (2 + 3 + 6 + 7) / 4], verbose=True)
@@ -126,7 +126,7 @@ class AggregationTest(TestCase):
         assert_array_equal(masked_array[2], [8, np.nan, np.nan, 11], verbose=True)
         assert_array_equal(masked_array[3], [12,    13,     14, 15], verbose=True)
 
-        mean_aggregated_array = gtr.resample2d(masked_array, 2, 2)
+        mean_aggregated_array = gtr.resample_2d(masked_array, 2, 2)
         self.assertEqual((2, 2), mean_aggregated_array.shape)
         assert_array_equal(mean_aggregated_array[0], [(0 + 1 + 4) / 3, (2 + 3 + 7) / 3], verbose=True)
         assert_array_equal(mean_aggregated_array[1], [(8 + 12 + 13) / 3, (11 + 14 + 15) / 3], verbose=True)
@@ -154,7 +154,7 @@ class AggregationTest(TestCase):
         assert_array_equal(masked_array[2], [10, np.nan, 12, np.nan, 14], verbose=True)
         assert_array_equal(masked_array[3], [15,     16, 17,     18, 19], verbose=True)
 
-        mean_aggregated_array = gtr.resample2d(masked_array, 2, 2)
+        mean_aggregated_array = gtr.resample_2d(masked_array, 2, 2)
         self.assertEqual((2, 2), mean_aggregated_array.shape)
         assert_array_equal(mean_aggregated_array[0], [(0 + 1 + (2 / 2) + 5 + (7 / 2)) / (3 + 2 * (1 / 2)),
                                                       ((2 / 2) + 3 + 4 + (7 / 2) + 9) / (2 * (1 / 2) + 3)],
