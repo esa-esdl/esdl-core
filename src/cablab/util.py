@@ -53,10 +53,22 @@ def aggregate_images(images, weights=None):
         image = images[i]
         reshaped_image = image.reshape((1,) + image.shape)
         if weights:
-            reshaped_image *= weights[i]
+            #reshaped_image *= weights[i]
+            numpy.multiply(reshaped_image,weights[i],out = reshaped_image, casting = 'unsafe')
         reshaped_images.append(reshaped_image)
-    image_stack = numpy.ma.concatenate(reshaped_images)
+        image_stack = numpy.ma.concatenate(reshaped_images)
     return numpy.ma.average(image_stack, axis=0)
+
+    # aggregated_images = numpy.ma.zeros(images[0].shape,dtype = numpy.float32)
+    # for i in range(len(images)):
+    #     image = images[i].astype(numpy.float32)
+    #     if weights:
+    #         numpy.multiply(image,weights[i],out = image, casting = 'same_kind')
+    #     aggregated_images += image * 1./(len(images))
+    #     numpy.add(aggregated_images, image * 1./(len(images)),out = aggregated_images)
+    # return aggregated_images
+
+
 
 
 class DatasetCache(metaclass=ABCMeta):
