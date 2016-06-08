@@ -125,12 +125,15 @@ class Cube:
         cube_temporal_res = self._config.temporal_res
         num_periods_per_year = self._config.num_periods_per_year
         datasets = dict()
-        # todo(gb) close data sets each year
         for target_year in range(target_year_1, target_year_2 + 1):
             time_min = datetime(target_year, 1, 1)
             time_max = datetime(target_year + 1, 1, 1)
             d_time = timedelta(days=cube_temporal_res)
             time_1 = time_min
+            for key in datasets:
+                if (target_year-1 == int(key[0:4])):
+                    print("Closing %s" % key)
+                    datasets[key].close()
             for time_index in range(num_periods_per_year):
                 time_2 = time_1 + d_time
                 if time_2 > time_max:
@@ -142,10 +145,6 @@ class Cube:
                     if var_name_to_image:
                         self._write_images(provider, datasets, (time_index, time_1, time_2), var_name_to_image)
                 time_1 = time_2
-
-        for key in datasets:
-            datasets[key].close()
-
         provider.close()
 
     def _write_images(self, provider, datasets, target_time, var_name_to_image):
