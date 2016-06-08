@@ -131,7 +131,7 @@ all_vars_descr = { 'E':{
 
 
 class GleamProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name='evaporation', dir=None, resampling_order = None,  var=None):
+    def __init__(self, cube_config, name='GLEAM', dir=None, resampling_order = None,  var=None):
         super(GleamProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.var_name = var
         self.old_indices = None
