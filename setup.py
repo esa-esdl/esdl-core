@@ -41,7 +41,7 @@ setup(
             'evaporative_stress = cablab.providers.gleam:GleamProvider',
             'potential_evaporation = cablab.providers.gleam:GleamProvider',
             'interception_loss = cablab.providers.gleam:GleamProvider',
-            'surface_moiture = cablab.providers.gleam:GleamProvider',
+            'surface_moisture = cablab.providers.gleam:GleamProvider',
             'bare_soil_evaporation = cablab.providers.gleam:GleamProvider',
             'snow_sublimation = cablab.providers.gleam:GleamProvider',
             'transpiration = cablab.providers.gleam:GleamProvider',
