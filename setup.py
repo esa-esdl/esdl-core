@@ -45,7 +45,8 @@ setup(
             'bare_soil_evaporation = cablab.providers.gleam:GleamProvider',
             'snow_sublimation = cablab.providers.gleam:GleamProvider',
             'transpiration = cablab.providers.gleam:GleamProvider',
-            'open_water_evaporation = cablab.providers.gleam:GleamProvider'
+            'open_water_evaporation = cablab.providers.gleam:GleamProvider',
+            'land_surface_temperature = cablab.providers.land_surface_temperature:LandSurfTemperatureProvider'
         ],
     },
     # *Minimum* requirements
