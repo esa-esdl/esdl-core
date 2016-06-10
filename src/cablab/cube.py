@@ -113,7 +113,6 @@ class Cube:
             raise IOError('cube has been closed')
 
         provider.prepare()
-
         target_start_time, target_end_time = provider.temporal_coverage
         if self._config.start_time and self._config.start_time > target_start_time:
             target_start_time = self._config.start_time
@@ -121,10 +120,11 @@ class Cube:
             target_end_time = self._config.end_time
         target_year_1 = target_start_time.year
         target_year_2 = target_end_time.year
-
         cube_temporal_res = self._config.temporal_res
         num_periods_per_year = self._config.num_periods_per_year
         datasets = dict()
+
+
         for target_year in range(target_year_1, target_year_2 + 1):
             time_min = datetime(target_year, 1, 1)
             time_max = datetime(target_year + 1, 1, 1)
@@ -132,14 +132,12 @@ class Cube:
             time_1 = time_min
             for key in datasets:
                 if (target_year-1 == int(key[0:4])):
-                    print("Closing %s" % key)
                     datasets[key].close()
             for time_index in range(num_periods_per_year):
                 time_2 = time_1 + d_time
                 if time_2 > time_max:
                     time_2 = time_max
                 weight = cablab.util.temporal_weight(time_1, time_2, target_start_time, target_end_time)
-                # print('Period: %s to %s: %f' % (time_1, time_2, weight))
                 if weight > 0.0:
                     var_name_to_image = provider.compute_variable_images(time_1, time_2)
                     if var_name_to_image:
@@ -168,23 +166,19 @@ class Cube:
                 dataset = netCDF4.Dataset(file, 'a')
             else:
                 dataset = netCDF4.Dataset(file, 'w', format=self._config.file_format)
-                self._init_variable_dataset(provider, dataset, var_name)
+                self._init_variable_dataset(provider, dataset, var_name, target_start_time.year)
             datasets[filename] = dataset
 
         t1 = self._config.date2num(target_start_time)
         t2 = self._config.date2num(target_end_time)
-
         var_time = dataset.variables['time']
-        var_time[time_index] = t1 + 0.5 * (t2 - t1)
-
-        var_time_bnds = dataset.variables['time_bnds']
-        var_time_bnds[time_index, 0] = t1
-        var_time_bnds[time_index, 1] = t2
+        if var_time[time_index] != t1 + 0.5 * (t2 - t1):
+            print("Warning: Time stamps discrepancy: %f is is not %f" %( var_time[time_index],t1 + 0.5 * (t2 - t1) ) )
 
         var_variable = dataset.variables[var_name]
         var_variable[time_index, :, :] = image
 
-    def _init_variable_dataset(self, provider, dataset, variable_name):
+    def _init_variable_dataset(self, provider, dataset, variable_name, start_year):
         import time
 
         # todo (nf 20160512) - some of these attributes could be read from cube configuration
@@ -219,12 +213,13 @@ class Cube:
         var_time.units = self._config.time_units
         var_time.calendar = self._config.calendar
         var_time.bounds = 'time_bnds'
-        var_time[:] = -9999.0
+        var_time[:] = [self._config.date2num(datetime(start_year,1,1,0,0)) + self._config.temporal_res*(i+0.5) for i in range(self._config.num_periods_per_year)]
 
         var_time_bnds = dataset.createVariable('time_bnds', 'f8', ('time', 'bnds'), fill_value=-9999.0)
         var_time_bnds.units = self._config.time_units
         var_time_bnds.calendar = self._config.calendar
-        var_time_bnds[:] = -9999.0
+        var_time_bnds[:,0] = [self._config.date2num(datetime(start_year,1,1,0,0)) + self._config.temporal_res*(i+0.) for i in range(self._config.num_periods_per_year)]
+        var_time_bnds[:,1] = [self._config.date2num(datetime(start_year,1,1,0,0)) + self._config.temporal_res*(i+1.0) for i in range(self._config.num_periods_per_year)]
 
         var_longitude = dataset.createVariable('lon', 'f4', ('lon',))
         var_longitude.long_name = 'longitude'
