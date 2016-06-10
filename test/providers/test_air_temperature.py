@@ -14,7 +14,6 @@ class AirTemperatureProviderTest(unittest.TestCase):
         provider = AirTemperatureProvider(CubeConfig(end_time=datetime(2001, 12, 31, 23, 0)), dir=SOURCE_DIR)
         provider.prepare()
         source_time_ranges = provider.source_time_ranges
-        print(source_time_ranges)
         self.assertEqual(730, len(source_time_ranges))
         self.assertEqual((datetime(2001, 1, 1, 0, 0),
                           datetime(2001, 1, 1, 12, 0),

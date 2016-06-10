@@ -37,14 +37,10 @@ class LandSurfTemperatureProvider(NetCDFCubeSourceProvider):
             if '.nc' in file_name:
                 #print (file_name)
                 source_date = datetime.datetime(int(file_name[22:26]),int(file_name[26:28]),int(file_name[28:30]),12,00)
-
                 if self.cube_config.start_time.year <= source_date.year <= self.cube_config.end_time.year:
                     file = os.path.join(self.dir_path, file_name).replace("\\","/")
                     dataset = self.dataset_cache.get_dataset(file)
                     if self.variable_descriptors[self._name]["source_name"] in dataset.variables:
-                    #times = dataset.variables['time']
-                    #dates = netCDF4.num2date(times[:], 'hours since 1900-01-01 00:00:0.0', calendar='gregorian')
-                        #print('Processing %s '% (source_date))
                         source_time_ranges.append((source_date-timedelta(hours = 12), source_date + timedelta(hours=12), file, 0))
                     self.dataset_cache.close_dataset(file)
         return sorted(source_time_ranges, key=lambda item: item[0])

@@ -14,7 +14,6 @@ class GleamProviderTest(unittest.TestCase):
         provider = GleamProvider(CubeConfig(end_time=datetime(2001, 12, 31, 23, 0)), dir=SOURCE_DIR, var = "E" )
         provider.prepare()
         source_time_ranges = provider.source_time_ranges
-        print(source_time_ranges)
         self.assertEqual(365, len(source_time_ranges))
         self.assertEqual((datetime(2001, 1, 4, 0, 0),datetime(2001, 1, 5, 0, 0),
                           os.path.join(SOURCE_DIR, '2001/E_2001_GLEAM_v3a_BETA.nc'),3), source_time_ranges[3])
