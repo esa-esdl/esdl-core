@@ -169,11 +169,12 @@ class Cube:
                 self._init_variable_dataset(provider, dataset, var_name, target_start_time.year)
             datasets[filename] = dataset
 
-        t1 = self._config.date2num(target_start_time)
         t2 = self._config.date2num(target_end_time)
         var_time = dataset.variables['time']
-        if var_time[time_index] != t1 + 0.5 * (t2 - t1):
-            print("Warning: Time stamps discrepancy: %f is is not %f" %( var_time[time_index],t1 + 0.5 * (t2 - t1) ) )
+        time_bnds = dataset.variables['time_bnds']
+        if time_bnds[time_index,1] != t2:
+            print("Warning: Time stamps discrepancy: %f is is not %f" %( time_bnds[time_index,1],t2 ))
+            print("target start: %s, target end %s" % (target_start_time, target_end_time))
 
         var_variable = dataset.variables[var_name]
         var_variable[time_index, :, :] = image
@@ -207,19 +208,26 @@ class Cube:
         dataset.createDimension('lat', image_height)
         dataset.createDimension('lon', image_width)
 
+        var_time_bnds = dataset.createVariable('time_bnds', 'f8', ('time', 'bnds'), fill_value=-9999.0)
+        var_time_bnds.units = self._config.time_units
+        var_time_bnds.calendar = self._config.calendar
+        var_time_bnds[:,0] = [self._config.date2num(datetime(start_year,1,1,0,0)) + self._config.temporal_res*(i+0.) for i in range(self._config.num_periods_per_year)]
+        upper_bounds = [self._config.date2num(datetime(start_year,1,1,0,0)) + self._config.temporal_res*(i+1.0) for i in range(self._config.num_periods_per_year)]
+        upper_bounds[-1] = self._config.date2num(datetime(start_year+1,1,1,0,0))
+        var_time_bnds[:,1] = upper_bounds
+
         var_time = dataset.createVariable('time', 'f8', ('time',), fill_value=-9999.0)
         var_time.long_name = 'time'
         var_time.standard_name = 'time'
         var_time.units = self._config.time_units
         var_time.calendar = self._config.calendar
         var_time.bounds = 'time_bnds'
-        var_time[:] = [self._config.date2num(datetime(start_year,1,1,0,0)) + self._config.temporal_res*(i+0.5) for i in range(self._config.num_periods_per_year)]
-
-        var_time_bnds = dataset.createVariable('time_bnds', 'f8', ('time', 'bnds'), fill_value=-9999.0)
-        var_time_bnds.units = self._config.time_units
-        var_time_bnds.calendar = self._config.calendar
-        var_time_bnds[:,0] = [self._config.date2num(datetime(start_year,1,1,0,0)) + self._config.temporal_res*(i+0.) for i in range(self._config.num_periods_per_year)]
-        var_time_bnds[:,1] = [self._config.date2num(datetime(start_year,1,1,0,0)) + self._config.temporal_res*(i+1.0) for i in range(self._config.num_periods_per_year)]
+        times = [self._config.date2num(datetime(start_year,1,1,0,0)) + self._config.temporal_res*(i+0.5) for i in range(self._config.num_periods_per_year)]
+        #times[-1] = var_time_bnds[-1,0] + (var_time_bnds[-1,1] - var_time_bnds[-1,0]) / 2.
+        # Thus, we keep date of the last time range always at Julian day 364, not in the center of the period.
+        # The time bounds then specify the real extent of the period.
+        # Uncomment the upper line to center it between the upper and lower bound!
+        var_time[:] = times
 
         var_longitude = dataset.createVariable('lon', 'f4', ('lon',))
         var_longitude.long_name = 'longitude'
