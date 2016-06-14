@@ -91,13 +91,5 @@ class MPIBGCProvider(NetCDFCubeSourceProvider):
                     times = dataset.variables['time']
                     dates = num2date(times[:], 'days since 1582-10-15 00:00:0.0', calendar='gregorian')
                     self.dataset_cache.close_dataset(file)
-                    source_time_ranges += [(dates[i], dates[i] + timedelta(hours=12), file, i) for i in range(len(dates))]
+                    source_time_ranges += [(dates[i], dates[i] + timedelta(days=8), file, i) for i in range(len(dates))]
         return sorted(source_time_ranges, key=lambda item: item[0])
-
-    # def transform_source_image(self, source_image):
-    #     """
-    #     Transforms the source image, here by rotating and flipping.
-    #     :param source_image: 2D image
-    #     :return: source_image
-    #     """
-    #     return numpy.fliplr(numpy.rot90(source_image, 3))
