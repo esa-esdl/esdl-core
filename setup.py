@@ -46,7 +46,12 @@ setup(
             'snow_sublimation = cablab.providers.gleam:GleamProvider',
             'transpiration = cablab.providers.gleam:GleamProvider',
             'open_water_evaporation = cablab.providers.gleam:GleamProvider',
-            'land_surface_temperature = cablab.providers.land_surface_temperature:LandSurfTemperatureProvider'
+            'land_surface_temperature = cablab.providers.land_surface_temperature:LandSurfTemperatureProvider',
+            'latent_energy = cablab.providers.mpi_bgc:MPIBGCProvider',
+            'sensible_heat = cablab.providers.mpi_bgc:MPIBGCProvider',
+            'net_ecosystem_exchange = cablab.providers.mpi_bgc:MPIBGCProvider',
+            'terrestrial_ecosystem_respiration = cablab.providers.mpi_bgc:MPIBGCProvider',
+            'gross_primary_production = cablab.providers.mpi_bgc:MPIBGCProvider'
         ],
     },
     # *Minimum* requirements
