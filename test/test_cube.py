@@ -2,7 +2,7 @@ import os
 import shutil
 from datetime import datetime
 from unittest import TestCase
-
+import netCDF4
 import numpy as np
 
 from cablab import CubeSourceProvider, CubeConfig, Cube
@@ -154,8 +154,7 @@ class CubeTest(TestCase):
         for i in range(L):
             print(i, i / P, time_var[i])
         self.assertEqual(P / 2, time_var[0])
-        self.assertTrue(np.ma.is_masked(time_var[L - 1]))
-
+        self.assertEqual(time_var[46],(datetime(2006,1,5)-datetime(2001,1,1)).days)
         self.assertIn('time_bnds', ds.variables)
         time_bnds_var = ds.variables['time_bnds']
         self.assertEquals('gregorian', time_bnds_var.calendar)
