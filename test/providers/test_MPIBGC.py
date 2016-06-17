@@ -20,7 +20,6 @@ class MPIBGCTest(unittest.TestCase):
         self.assertEqual((datetime(2001, 12, 27, 0, 0),datetime(2002, 1, 4, 0, 0),
                           os.path.join(SOURCE_DIR, 'LE/LE_2001.nc'),45), source_time_ranges[45])
 
-
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
 
     def test_temporal_coverage(self):
