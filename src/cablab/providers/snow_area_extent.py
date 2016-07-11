@@ -25,7 +25,11 @@ class SnowAreaExtentProvider(NetCDFCubeSourceProvider):
                 'data_type': numpy.float32,
                 'fill_value': -9999.0,
                 'units': 'percent',
-                # 'long_name': 'level 3b fractional snow cover (%) aggregated monthly',
+                'standard_name': 'surface_snow_area_fraction'
+                'long_name': 'Surface fraction covered by snow.',
+                'references': 'Luojus, Kari, et al. "ESA DUE Globsnow-Global Snow Database for Climate Research." ESA Special Publication. Vol. 686. 2010.',
+                'comment': 'Grid cell fractional snow cover based on the Globsnow CCI product.',
+                'url': 'http://www.globsnow.info/',
             }
         }
 

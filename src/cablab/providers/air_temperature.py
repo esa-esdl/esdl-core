@@ -16,13 +16,17 @@ class AirTemperatureProvider(NetCDFCubeSourceProvider):
     def variable_descriptors(self):
         return {
             'air_temperature_2m': {
-                'source_name': 't2m',
-                'data_type': numpy.float32,
-                'fill_value': -32767,
-                'units': 'K',
-                'long_name': '2 metre temperature',
-                'scale_factor': 0.0019718202938428923,
-                'add_offset': 259.2678739531343,
+                'source_name'   : 't2m',
+                'data_type'     : numpy.float32,
+                'fill_value'    : -32767,
+                'units'         : 'K',
+                'long_name'     : '2 metre temperature',
+                # TODO remove offset and scale_factor
+                'scale_factor'  : 0.0019718202938428923,
+                'add_offset'    : 259.2678739531343,
+                'references'    : 'Dee, D.P. et al. 2011 http://onlinelibrary.wiley.com/doi/10.1002/qj.828/abstract',
+                'comment'       : 'Air temperature at 2m from the ERAInterim reanalysis product.',
+                'url':'http://www.ecmwf.int/en/research/climate-reanalysis/era-interim';
             }
         }
 

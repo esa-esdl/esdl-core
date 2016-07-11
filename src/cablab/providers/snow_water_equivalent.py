@@ -25,6 +25,8 @@ class SnowWaterEquivalentProvider(NetCDFCubeSourceProvider):
                 'add_offset': 0.0,
                 'certain_values': "-2 == mountains, -1 == water bodies, 0 == either SWE, "
                                   "or missing data in the southern hemisphere",
+                'references': 'Luojus, Kari, et al. "ESA DUE Globsnow-Global Snow Database for Climate Research." ESA Special Publication. Vol. 686. 2010.',
+                'comment': 'Grid cell fractional snow cover based on the Globsnow CCI product.',
             }
         }
 
