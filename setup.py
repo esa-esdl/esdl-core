@@ -55,5 +55,5 @@ setup(
         ],
     },
     # *Minimum* requirements
-    install_requires=['numpy', 'netCDF4', 'gridtools'],
+    install_requires=['numpy', 'netCDF4', 'gridtools', 'xarray', 'h5netcdf'],
 )
