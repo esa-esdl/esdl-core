@@ -4,10 +4,10 @@ import sys
 
 from pkg_resources import iter_entry_points
 
+from .version import  version as __version__
 from .cube import Cube
-from .cube_config import CubeConfig, __version__
+from .cube_config import CubeConfig
 from .cube_provider import CubeSourceProvider
-from .util import Config
 
 
 def _load_source_providers():
