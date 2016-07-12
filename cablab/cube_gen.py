@@ -73,7 +73,7 @@ def main(args=None):
     parser = argparse.ArgumentParser(description='Generates a new CAB-LAB data cube or updates an existing one.')
     parser.add_argument('-l', '--list', action='store_true',
                         help="list all available source providers")
-    parser.add_argument('-G', '--dont_clear_cache', action='store_true',
+    parser.add_argument('-G', '--dont-clear-cache', action='store_true',
                         help="do not clear data cache before updating the cube (faster)")
     parser.add_argument('-c', '--cube-conf', metavar='CONFIG',
                         help="data cube configuration file")
