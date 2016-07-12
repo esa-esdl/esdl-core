@@ -6,7 +6,7 @@ from cablab import CubeConfig
 from cablab.providers import AerosolsProvider
 from cablab.util import Config
 
-SOURCE_DIR = Config.instance().get_cube_source_path('CCI-Aerosols\\AATSR_SU_v4.1\\L3_DAILY')
+SOURCE_DIR = Config.instance().get_cube_source_path('CCI-Aerosols/AATSR_SU_v4.1/L3_DAILY')
 
 
 class AerosolsProviderTest(unittest.TestCase):
