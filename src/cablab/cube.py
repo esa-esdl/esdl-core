@@ -7,7 +7,8 @@ import netCDF4
 
 import cablab
 import cablab.util
-from .cube_config import CubeConfig, __version__
+from .version import  version as __version__
+from .cube_config import CubeConfig
 from .cube_provider import CubeSourceProvider
 
 

@@ -17,15 +17,15 @@ Data Cube creation/update::
 
 """
 
-from cablab.cube import Cube
-from cablab.cube import CubeData
-from cablab.cube_config import CUBE_MODEL_VERSION
-from cablab.cube_config import CubeConfig
-from cablab.cube_config import __version__
-from cablab.cube_provider import BaseCubeSourceProvider
-from cablab.cube_provider import CubeSourceProvider
-from cablab.cube_provider import NetCDFCubeSourceProvider
-from cablab.cube_provider import TestCubeSourceProvider
+from .version import version as __version__
+from .cube import Cube
+from .cube import CubeData
+from .cube_config import CUBE_MODEL_VERSION
+from .cube_config import CubeConfig
+from .cube_provider import BaseCubeSourceProvider
+from .cube_provider import CubeSourceProvider
+from .cube_provider import NetCDFCubeSourceProvider
+from .cube_provider import TestCubeSourceProvider
 
 __author__ = 'Brockmann Consult GmbH'
 

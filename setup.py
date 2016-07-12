@@ -7,9 +7,24 @@ except ImportError:
 
 from setuptools import setup, find_packages
 
+
+def get_version():
+    version_file = 'src/cablab/version.py'
+    locals = {}
+    try:
+        execfile(version_file, None, locals)
+    except NameError:
+        with open(version_file) as fp:
+            exec(fp.read(), None, locals)
+    return locals['version']
+
+
+# Same effect as "from ect import __version__", but avoids importing ect:
+__version__ = get_version()
+
 setup(
     name="cablab-core",
-    version="0.2.0",
+    version=__version__,
     description='CAB-LAB Data Cube Software',
     license='GPL 3',
     author='CAB-LAB Development Team',
