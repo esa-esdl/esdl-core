@@ -66,9 +66,9 @@ def main(args=None):
       - resampling_order      : to specify the re-sampling order (space_first or time_first).
                                 The default is time_first.
         # Usage examples:
-    cube-gen "cablab-datacube\low-res" "burnt_area:dir=cablab-source\BurntArea"
-    cube-gen "cablab-datacube\low-res" "evaporative_stress:dir=cablab-source\evaporative_stress:var=S"
-    cube-gen "cablab-datacube\low-res" "soil_moisture:dir=cablab-source\ECV_sm:resampling_order=space_first"
+    cube-gen "cablab-datacube/low-res" "burnt_area:dir=cablab-source/BurntArea"
+    cube-gen "cablab-datacube/low-res" "evaporative_stress:dir=cablab-source/evaporative_stress:var=S"
+    cube-gen "cablab-datacube/low-res" "soil_moisture:dir=cablab-source/ECV_sm:resampling_order=space_first"
     """
     parser = argparse.ArgumentParser(description='Generates a new CAB-LAB data cube or updates an existing one.')
     parser.add_argument('-l', '--list', action='store_true',
