@@ -2,22 +2,21 @@ import datetime
 import os
 from datetime import timedelta
 import numpy
-from netCDF4 import date2num, num2date
 from cablab import NetCDFCubeSourceProvider
 
-all_vars_descr = { 'E':{
-        'evaporation': {
-            'source_name': 'E',
-            'data_type': numpy.float32,
-            'fill_value': numpy.nan,
-            'units': 'mm/day',
-            'long_name': 'Evaporation',
-            'standard_name': 'water_evaporation_flux',
-            'scale_factor': 1.0,
-            'add_offset': 0.0,
-            'url': 'http://www.gleam.eu',
-        }},
-        'S':{
+all_vars_descr = {'E': {
+    'evaporation': {
+        'source_name': 'E',
+        'data_type': numpy.float32,
+        'fill_value': numpy.nan,
+        'units': 'mm/day',
+        'long_name': 'Evaporation',
+        'standard_name': 'water_evaporation_flux',
+        'scale_factor': 1.0,
+        'add_offset': 0.0,
+        'url': 'http://www.gleam.eu',
+    }},
+    'S': {
         'evaporative_stress': {
             'source_name': 'S',
             'data_type': numpy.float32,
@@ -29,7 +28,7 @@ all_vars_descr = { 'E':{
             'add_offset': 0.0,
             'url': 'http://www.gleam.eu',
         }},
-        'Ep':{
+    'Ep': {
         'potential_evaporation': {
             'source_name': 'Ep',
             'data_type': numpy.float32,
@@ -41,7 +40,7 @@ all_vars_descr = { 'E':{
             'add_offset': 0.0,
             'url': 'http://www.gleam.eu',
         }},
-        'Ei':{
+    'Ei': {
         'interception_loss': {
             'source_name': 'Ei',
             'data_type': numpy.float32,
@@ -53,7 +52,7 @@ all_vars_descr = { 'E':{
             'add_offset': 0.0,
             'url': 'http://www.gleam.eu',
         }},
-        'SMroot':{
+    'SMroot': {
         'root_moisture': {
             'source_name': 'SMroot',
             'data_type': numpy.float32,
@@ -65,7 +64,7 @@ all_vars_descr = { 'E':{
             'add_offset': 0.0,
             'url': 'http://www.gleam.eu',
         }},
-        'SMsurf':{
+    'SMsurf': {
         'surface_moisture': {
             'source_name': 'SMsurf',
             'data_type': numpy.float32,
@@ -77,7 +76,7 @@ all_vars_descr = { 'E':{
             'add_offset': 0.0,
             'url': 'http://www.gleam.eu',
         }},
-    'Eb':{
+    'Eb': {
         'bare_soil_evaporation': {
             'source_name': 'Eb',
             'data_type': numpy.float32,
@@ -89,7 +88,7 @@ all_vars_descr = { 'E':{
             'add_offset': 0.0,
             'url': 'http://www.gleam.eu',
         }},
-    'Es':{
+    'Es': {
         'snow_sublimation': {
             'source_name': 'Es',
             'data_type': numpy.float32,
@@ -101,7 +100,7 @@ all_vars_descr = { 'E':{
             'add_offset': 0.0,
             'url': 'http://www.gleam.eu',
         }},
-    'Et':{
+    'Et': {
         'transpiration': {
             'source_name': 'Et',
             'data_type': numpy.float32,
@@ -113,7 +112,7 @@ all_vars_descr = { 'E':{
             'add_offset': 0.0,
             'url': 'http://www.gleam.eu',
         }},
-    'Ew':{
+    'Ew': {
         'open_water_evaporation': {
             'source_name': 'Ew',
             'data_type': numpy.float32,
@@ -129,9 +128,8 @@ all_vars_descr = { 'E':{
 }
 
 
-
 class GleamProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name='GLEAM', dir=None, resampling_order = None,  var=None):
+    def __init__(self, cube_config, name='GLEAM', dir=None, resampling_order=None, var=None):
         super(GleamProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.var_name = var
         self.old_indices = None
@@ -149,8 +147,8 @@ class GleamProvider(NetCDFCubeSourceProvider):
                     sub_dir_path = os.path.join(self.dir_path, sub_dir)
                     file_names = os.listdir(sub_dir_path)
                     for file_name in file_names:
-                        if self.var_name+'_' in file_name:
-                            file = os.path.join(self.dir_path, sub_dir, file_name).replace("\\","/")
+                        if self.var_name + '_' in file_name:
+                            file = os.path.join(self.dir_path, sub_dir, file_name).replace("\\", "/")
                             dataset = self.dataset_cache.get_dataset(file)
                             year = dataset.variables['DATE'][0, :].astype(int)
                             month = dataset.variables['DATE'][1, :].astype(int)

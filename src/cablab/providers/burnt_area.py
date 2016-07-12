@@ -1,14 +1,12 @@
 import os
 from datetime import datetime
-
 import netCDF4
 import numpy
-
 from cablab import NetCDFCubeSourceProvider
 
 
 class BurntAreaProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name='burnt_area', dir=None, resampling_order = None):
+    def __init__(self, cube_config, name='burnt_area', dir=None, resampling_order=None):
         super(BurntAreaProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.old_indices = None
 
@@ -20,11 +18,16 @@ class BurntAreaProvider(NetCDFCubeSourceProvider):
                 'data_type': numpy.float32,
                 'fill_value': -9999.0,
                 'units': 'hectares',
-                # TODO I think much more useful would be burned_area_fraction, because it does note depend on grid cell size. Can we calculate this instead?
+                # todo (meggart 20160712) - I think much more useful would be burned_area_fraction,
+                # because it does note depend on grid cell size. Can we calculate this instead? After discussion with
+                # Norman, it has been decided that it would make more sense to use fraction instead of the actual area.
+                # But it has to be done on the original data.
                 # 'long_name': 'Monthly Burnt Area',
                 'standard_name': 'burned_area',
-                'references' : 'Giglio, Louis, James T. Randerson, and Guido R. Werf. "Analysis of daily, monthly, and annual burned area using the fourth‐generation global fire emissions database (GFED4)." Journal of Geophysical Research: Biogeosciences 118.1 (2013): 317-328.',
-                'comment' : 'Burnt Area based on the GFED4 fire product.',
+                'references': 'Giglio, Louis, James T. Randerson, and Guido R. Werf. "Analysis of daily, monthly, '
+                              'and annual burned area using the fourth‐generation global fire emissions database '
+                              '(GFED4)." Journal of Geophysical Research: Biogeosciences 118.1 (2013): 317-328.',
+                'comment': 'Burnt Area based on the GFED4 fire product.',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
                 'url': 'http://www.globalfiredata.org/',

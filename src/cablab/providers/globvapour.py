@@ -1,14 +1,12 @@
 import os
 from datetime import datetime, timedelta
-
 import netCDF4
 import numpy
-
 from cablab import NetCDFCubeSourceProvider
 
 
 class GlobVapourProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name='globvapour', dir=None, resampling_order = None):
+    def __init__(self, cube_config, name='globvapour', dir=None, resampling_order=None):
         super(GlobVapourProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.old_indices = None
 
@@ -22,7 +20,8 @@ class GlobVapourProvider(NetCDFCubeSourceProvider):
                 'units': 'kg m-2',
                 'long_name': 'total column water vapour',
                 'standard_name': 'atmosphere_mass_content_of_water_vapor',
-                'references': 'Schneider, Nadine, et al. "ESA DUE GlobVapour water vapor products: Validation." AIP Conference Proceedings. Vol. 1531. No. 1. 2013.',
+                'references': 'Schneider, Nadine, et al. "ESA DUE GlobVapour water vapor products: Validation." '
+                              'AIP Conference Proceedings. Vol. 1531. No. 1. 2013.',
                 'comment': 'Total column water vapour based on the GlobVapour CCI product.',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,

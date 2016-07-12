@@ -1,14 +1,12 @@
 import os
 from datetime import timedelta
-
 import netCDF4
 import numpy
-
 from cablab import NetCDFCubeSourceProvider
 
 
 class SoilMoistureProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name='soil_moisture', dir=None, resampling_order = None):
+    def __init__(self, cube_config, name='soil_moisture', dir=None, resampling_order=None):
         super(SoilMoistureProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.old_indices = None
 
@@ -24,7 +22,7 @@ class SoilMoistureProvider(NetCDFCubeSourceProvider):
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
                 'standard_name': 'soil_moisture_content',
-                #TODO: can not remember ehich soilmoisture product we gave you, have to clarify... 
+                # todo (meggart 20160712) - can not remember which soilmoisture product we gave you, have to clarify...
                 'references': '',
                 'comment': '',
             }

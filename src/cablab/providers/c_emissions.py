@@ -1,13 +1,11 @@
 import os
 from datetime import timedelta, datetime
-
 import numpy
-
 from cablab import NetCDFCubeSourceProvider
 
 
 class CEmissionsProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name='c_emissions', dir=None, resampling_order = None):
+    def __init__(self, cube_config, name='c_emissions', dir=None, resampling_order=None):
         super(CEmissionsProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.old_indices = None
 
@@ -20,9 +18,13 @@ class CEmissionsProvider(NetCDFCubeSourceProvider):
                 'fill_value': -9999.0,
                 'units': 'g C m-2 month-1',
                 'long_name': 'Carbon dioxide emissions due to natural fires expressed as carbon flux.',
-                'standard_name': 'surface_upward_mass_flux_of_carbon_dioxide_expressed_as_carbon_due_to_emission_from_fires'.
-                'references' : 'Giglio, Louis, James T. Randerson, and Guido R. Werf. "Analysis of daily, monthly, and annual burned area using the fourth‐generation global fire emissions database (GFED4)." Journal of Geophysical Research: Biogeosciences 118.1 (2013): 317-328.',
-                'comment' : 'Carbon emissions by fires based on the GFED4 fire product.',
+                'standard_name': 'surface_upward_mass_flux_of_carbon_dioxide_expressed_as_carbon_due_to_emission_'
+                                 'from_fires',
+                'references': 'Giglio, Louis, James T. Randerson, and Guido R. Werf. "Analysis of daily, monthly, '
+                              'and annual burned area using the fourth‐generation global fire emissions '
+                              'database (GFED4)." Journal of Geophysical Research: Biogeosciences 118.1 '
+                              '(2013): 317-328.',
+                'comment': 'Carbon emissions by fires based on the GFED4 fire product.',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
                 'url': 'http://www.globalfiredata.org/',

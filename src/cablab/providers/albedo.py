@@ -1,14 +1,12 @@
 import datetime
 import os
-
 import numpy
 from netCDF4 import date2num, num2date
-
 from cablab import NetCDFCubeSourceProvider
 
 
 class AlbedoProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name='albedo', dir=None, resampling_order = None):
+    def __init__(self, cube_config, name='albedo', dir=None, resampling_order=None):
         super(AlbedoProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.old_indices = None
 
@@ -22,8 +20,10 @@ class AlbedoProvider(NetCDFCubeSourceProvider):
                 'units': '-',
                 'long_name': 'white sky albedo for visible wavebands',
                 'standard_name': 'surface_albedo_white_sky',
-                'references' : 'Muller, Jan-Peter, et al. "The ESA GLOBALBEDO project for mapping the Earth’s land surface albedo for 15 years from European sensors." Geophysical Research Abstracts. Vol. 13. 2012.'
-                'comment' : 'White sky albedo derived from the GlobAlbedo CCI project dataset'
+                'references': 'Muller, Jan-Peter, et al. "The ESA GLOBALBEDO project for mapping the Earth’s '
+                              'land surface albedo for 15 years from European sensors." Geophysical Research '
+                              'Abstracts. Vol. 13. 2012.',
+                'comment': 'White sky albedo derived from the GlobAlbedo CCI project dataset',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
                 'url': 'http://www.globalbedo.org/',
@@ -35,8 +35,10 @@ class AlbedoProvider(NetCDFCubeSourceProvider):
                 'units': '-',
                 'standard_name': 'surface_albedo_black_sky',
                 'long_name': 'black sky albedo for visible wavebands',
-                'references' : 'Muller, Jan-Peter, et al. "The ESA GLOBALBEDO project for mapping the Earth’s land surface albedo for 15 years from European sensors." Geophysical Research Abstracts. Vol. 13. 2012.'
-                'comment' : 'White sky albedo derived from the GlobAlbedo CCI project dataset'
+                'references': 'Muller, Jan-Peter, et al. "The ESA GLOBALBEDO project for mapping the Earth’s '
+                              'land surface albedo for 15 years from European sensors." Geophysical Research '
+                              'Abstracts. Vol. 13. 2012.',
+                'comment': 'White sky albedo derived from the GlobAlbedo CCI project dataset',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
                 'url': 'http://www.globalbedo.org/',
