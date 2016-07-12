@@ -5,7 +5,7 @@ from datetime import datetime
 import numpy as np
 
 from cablab import CubeConfig
-from cablab.providers.snow_water_equivalent import SnowWaterEquivalentProvider
+from cablab.providers import SnowWaterEquivalentProvider
 from cablab.util import Config
 
 SOURCE_DIR = Config.instance().get_cube_source_path('SWE')

@@ -2,7 +2,7 @@ import os
 import shutil
 from datetime import datetime
 from unittest import TestCase
-import netCDF4
+
 import numpy as np
 
 from cablab import CubeSourceProvider, CubeConfig, Cube

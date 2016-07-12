@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 
 
 def get_version():
-    version_file = 'src/cablab/version.py'
+    version_file = 'cablab/version.py'
     locals = {}
     try:
         execfile(version_file, None, locals)
@@ -22,6 +22,8 @@ def get_version():
 # Same effect as "from ect import __version__", but avoids importing ect:
 __version__ = get_version()
 
+packages = find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
+
 setup(
     name="cablab-core",
     version=__version__,
@@ -32,8 +34,7 @@ setup(
     maintainer='Brockmann Consult GmbH',
     maintainer_email='cablab@earthsystemdatacube.net',
     url='http://earthsystemdatacube.net/',
-    packages=find_packages('src'),
-    package_dir={'': 'src'},
+    packages=packages,
     entry_points={
         'console_scripts': [
             'cube-gen = cablab.cube_gen:main',

@@ -3,7 +3,7 @@ import unittest
 from datetime import datetime
 
 from cablab import CubeConfig
-from cablab.providers.snow_area_extent import SnowAreaExtentProvider
+from cablab.providers import SnowAreaExtentProvider
 from cablab.util import Config
 
 SOURCE_DIR = Config.instance().get_cube_source_path('SnowAreaExtent')
