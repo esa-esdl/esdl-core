@@ -21,16 +21,20 @@ from .version import version as __version__
 from .cube import Cube
 from .cube_config import CUBE_MODEL_VERSION
 from .cube_config import CubeConfig
-from .cube_provider import BaseCubeSourceProvider
 from .cube_provider import CubeSourceProvider
+from .cube_provider import BaseCubeSourceProvider
 from .cube_provider import NetCDFCubeSourceProvider
+from .cube_provider import BaseStaticCubeSourceProvider
+from .cube_provider import NetCDFStaticCubeSourceProvider
 from .cube_provider import TestCubeSourceProvider
 
 __author__ = 'Brockmann Consult GmbH'
 
 __all__ = [
     'BaseCubeSourceProvider',
+    'BaseStaticCubeSourceProvider',
     'NetCDFCubeSourceProvider',
+    'NetCDFStaticCubeSourceProvider',
     'TestCubeSourceProvider',
     'CUBE_MODEL_VERSION',
     'Cube',
