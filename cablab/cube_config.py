@@ -6,7 +6,7 @@ import netCDF4
 
 #: The current version of the data cube's configuration and data model.
 #: The model version is incremented on every change of the cube's data model.
-CUBE_MODEL_VERSION = '0.2'
+CUBE_MODEL_VERSION = '0.2-rc0+1'
 
 CUBE_CHANGELOG = """
 version 0.1
