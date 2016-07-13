@@ -1,12 +1,12 @@
 import math
 import os
-from collections import OrderedDict
 from datetime import datetime, timedelta
 
 import netCDF4
 
 import cablab
 import cablab.util
+from .cube_access import CubeDataAccess
 from .cube_config import CubeConfig, CUBE_CHANGELOG
 from .cube_provider import CubeSourceProvider
 from .version import version as __version__
@@ -44,7 +44,7 @@ class Cube:
         """
         Return a human-readable information string about this data cube (markdown formatted).
         """
-        # todo (nf 20151104) - read from data cube's dir, see issue #5
+        # TODO (forman, 20151104): read from data cube's dir, see issue #5
         return ''
 
     @property
@@ -60,7 +60,7 @@ class Cube:
         The cube's data. See **CubeData** class.
         """
         if not self._data:
-            self._data = CubeData(self)
+            self._data = CubeDataAccess(self.config, self.base_dir)
         return self._data
 
     @staticmethod
@@ -133,7 +133,7 @@ class Cube:
             d_time = timedelta(days=cube_temporal_res)
             time_1 = time_min
             for key in datasets:
-                if (target_year - 1 == int(key[0:4])):
+                if target_year - 1 == int(key[0:4]):
                     datasets[key].close()
             for time_index in range(num_periods_per_year):
                 time_2 = time_1 + d_time
@@ -172,7 +172,6 @@ class Cube:
             datasets[filename] = dataset
 
         t2 = self._config.date2num(target_end_time)
-        var_time = dataset.variables['time']
         time_bnds = dataset.variables['time_bnds']
         if time_bnds[time_index, 1] != t2:
             print("Warning: Time stamps discrepancy: %f is is not %f" % (time_bnds[time_index, 1], t2))
@@ -184,7 +183,7 @@ class Cube:
     def _init_variable_dataset(self, provider, dataset, variable_name, start_year):
         import time
 
-        # todo (nf 20160512) - some of these attributes could be read from cube configuration
+        # TODO (forman, 20160512): some of these attributes could be read from cube configuration
         # see http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#description-of-file-contents
         # see http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#attribute-appendix
         dataset.Conventions = 'CF-1.6'
@@ -290,259 +289,10 @@ class Cube:
                 try:
                     var_variable.__setattr__(name, value)
                 except ValueError as ve:
-                    # todo (nf 20160512) - log, or print to stderr
+                    # TODO (forman, 20160512): log, or print to stderr
                     print('%s = %s failed (%s)!' % (name, value, str(ve)))
         return dataset
 
     @staticmethod
     def _get_num_steps(x1, x2, dx):
         return int(math.floor((x2 - x1) / dx))
-
-
-class CubeData:
-    """
-    Represents the cube's read-only data.
-
-    :param cube: A **Cube** object.
-    """
-
-    def __init__(self, cube):
-        self._cube = cube
-        self._dataset_files = []
-        self._var_index_to_var_name = OrderedDict()
-        self._var_name_to_var_index = OrderedDict()
-        data_dir = os.path.join(cube.base_dir, 'data')
-        data_dir_entries = os.listdir(data_dir)
-        var_index = 0
-        for data_dir_entry in data_dir_entries:
-            var_dir = os.path.join(data_dir, data_dir_entry)
-            if os.path.isdir(var_dir):
-                var_name = data_dir_entry
-                var_dir_entries = os.listdir(var_dir)
-                var_dir_entries = [var_dir_entry for var_dir_entry in var_dir_entries if var_dir_entry.endswith('.nc')]
-                var_dir_entries = sorted(var_dir_entries)
-                var_dir_entries = [os.path.join(var_dir, var_dir_entry) for var_dir_entry in var_dir_entries]
-                self._var_index_to_var_name[var_index] = var_name
-                self._var_name_to_var_index[var_name] = var_index
-                self._dataset_files.append(var_dir_entries)
-                var_index += 1
-        self._datasets = [None] * len(self._dataset_files)
-        self._variables = [None] * len(self._dataset_files)
-
-    @property
-    def shape(self) -> tuple:
-        """
-        Return the shape of the data cube.
-        """
-        year_1 = self._cube.config.start_time.year
-        year_2 = self._cube.config.end_time.year
-        years = year_2 - year_1
-        if self._cube.config.end_time > datetime(self._cube.config.end_time.year, 1, 1):
-            years += 1
-        time_size = years * self._cube.config.num_periods_per_year
-        return len(self._dataset_files), time_size, self._cube.config.grid_height, self._cube.config.grid_width
-
-    @property
-    def variable_names(self) -> tuple:
-        """
-        Return a dictionary of variable names to indices.
-        """
-        return dict(self._var_name_to_var_index)
-
-    def get_variable(self, var_index):
-        """
-        Get a cube variable. Same as, e.g. ``cube.data['Ozone']``.
-
-        :param var_index: The variable name or index according to the list returned by the ``variable_names`` property.
-        :return: a data-access object representing the variable with the dimensions (time, latitude, longitude).
-        """
-        if isinstance(var_index, str):
-            var_index = self._var_name_to_var_index[var_index]
-        return self._get_or_open_variable(var_index)
-
-    def get_dataset(self, var_index):
-        """
-        Get the dataset associated with a cube variable.
-
-        :param var_index: The variable name or index according to the list returned by the ``variable_names`` property.
-        :return: a data-access object representing the variable with the dimensions (time, latitude, longitude).
-        """
-        if isinstance(var_index, str):
-            var_index = self._var_name_to_var_index[var_index]
-        return self._datasets[var_index] if 0 <= var_index < len(self._datasets) else None
-
-    def __getitem__(self, index):
-        """
-        Get a cube variable. Same as, e.g. ``cube.data.get_variable('Ozone')``.
-
-        :param index: The variable name or index according to the list returned by the ``variable_names`` property.
-        :return: a data-access object representing the variable with the dimensions (time, latitude, longitude).
-        """
-        return self.get_variable(index)
-
-    def get(self, variable=None, time=None, latitude=None, longitude=None):
-        """
-        Get the cube's data.
-
-        :param variable: an variable index or name or an iterable returning multiple of these (var1, var2, ...)
-        :param time: a single datetime.datetime object or a 2-element iterable (time_start, time_end)
-        :param latitude: a single latitude value or a 2-element iterable (latitude_start, latitude_end)
-        :param longitude: a single longitude value or a 2-element iterable (longitude_start, longitude_end)
-        :return: a dictionary mapping variable names --> data arrays of dimension (time, latitude, longitude)
-        """
-
-        var_indexes = self._get_var_indices(variable)
-        time_1, time_2 = self._get_time_range(time)
-        lat_1, lat_2 = self._get_lat_range(latitude)
-        lon_1, lon_2 = self._get_lon_range(longitude)
-
-        config = self._cube.config
-        time_index_1 = int(math.floor(((time_1 - config.ref_time) / timedelta(days=config.temporal_res))))
-        time_index_2 = int(math.floor(((time_2 - config.ref_time) / timedelta(days=config.temporal_res))))
-        grid_y1 = int(round((90.0 - lat_2) / config.spatial_res)) - config.grid_y0
-        grid_y2 = int(round((90.0 - lat_1) / config.spatial_res)) - config.grid_y0
-        grid_x1 = int(round((180.0 + lon_1) / config.spatial_res)) - config.grid_x0
-        grid_x2 = int(round((180.0 + lon_2) / config.spatial_res)) - config.grid_x0
-
-        if grid_y2 > grid_y1 and 90.0 - (grid_y2 + config.grid_y0) * config.spatial_res == lat_1:
-            grid_y2 -= 1
-        if grid_x2 > grid_x1 and -180.0 + (grid_x2 + config.grid_x0) * config.spatial_res == lon_2:
-            grid_x2 -= 1
-
-        global_grid_width = int(round(360.0 / config.spatial_res))
-        dateline_intersection = grid_x2 >= global_grid_width
-
-        if dateline_intersection:
-            grid_x11 = grid_x1
-            grid_x12 = global_grid_width - 1
-            grid_x21 = 0
-            grid_x22 = grid_x2
-            # todo (nf 20151102) - Handle data requests intersecting the dateline, see issue #15
-            print('dateline intersection! grid_x: %d-%d, %d-%d' % (grid_x11, grid_x12, grid_x21, grid_x22))
-            raise ValueError('illegal longitude: %s: dateline intersection not yet implemented' % longitude)
-
-        # todo (nf 20151102) - Fill in NaN, where a variable does not provide any data, see issue #17
-        result = []
-        # shape = time_index_2 - time_index_1 + 1, \
-        #         grid_y2 - grid_y1 + 1, \
-        #         grid_x2 - grid_x1 + 1
-        for var_index in var_indexes:
-            variable = self._get_or_open_variable(var_index)
-            # result += [numpy.full(shape, numpy.NaN, dtype=numpy.float32)]
-            # print('variable.shape =', variable.shape)
-            array = variable[slice(time_index_1, time_index_2 + 1) if (time_index_1 < time_index_2) else time_index_1,
-                             slice(grid_y1, grid_y2 + 1) if (grid_y1 < grid_y2) else grid_y1,
-                             slice(grid_x1, grid_x2 + 1) if (grid_x1 < grid_x2) else grid_x1]
-            result += [array]
-        return result
-
-    def close(self):
-        """
-        Closes this **CubeData** by closing all open datasets.
-        """
-        self._close_datasets()
-
-    @staticmethod
-    def _get_lon_range(longitude):
-        if longitude is None:
-            return -180, 180
-        try:
-            # Try using longitude as longitude pair
-            lon_1, lon_2 = longitude
-        except TypeError:
-            # Longitude scalar
-            lon_1 = longitude
-            lon_2 = longitude
-        # Adjust longitude to -180..+180
-        if lon_1 < -180:
-            lon_1 %= 180
-        if lon_1 > 180:
-            lon_1 %= -180
-        if lon_2 < -180:
-            lon_2 %= 180
-        if lon_2 > 180:
-            lon_2 %= -180
-        # If lon_1 > lon_2 --> dateline intersection, add 360 so that lon_1 < lon_2
-        if lon_1 > lon_2:
-            lon_2 += 360
-        return lon_1, lon_2
-
-    @staticmethod
-    def _get_lat_range(latitude):
-        if latitude is None:
-            return -90, 90
-        try:
-            # Try using latitude as latitude pair
-            lat_1, lat_2 = latitude
-        except TypeError:
-            # Latitude scalar
-            lat_1 = latitude
-            lat_2 = latitude
-        if lat_1 < -90 or lat_1 > 90 or lat_2 < -90 or lat_2 > 90 or lat_1 > lat_2:
-            raise ValueError('invalid latitude argument: %s' % latitude)
-        return lat_1, lat_2
-
-    def _get_time_range(self, time):
-        if time is None:
-            return self._cube.config.start_time, self._cube.config.end_time
-        try:
-            # Try using time as time pair
-            time_1, time_2 = time
-        except TypeError:
-            # Time scalar
-            time_1 = time
-            time_2 = time
-        if time_1 > time_2:
-            raise ValueError('invalid time argument: %s' % time)
-        return time_1, time_2
-
-    def _get_var_indices(self, variable):
-        if variable is None:
-            return self._var_index_to_var_name.keys()
-        try:
-            # Try using variable as string name
-            var_index = self._var_name_to_var_index[variable]
-            return [var_index]
-        except (KeyError, TypeError):
-            try:
-                # Try using variable as integer index
-                _ = self._var_index_to_var_name[variable]
-                return [variable]
-            except (KeyError, TypeError):
-                # Try using variable as iterable of name and/or indexes
-                var_indexes = []
-                for v in variable:
-                    try:
-                        # Try using v as string name
-                        var_index = self._var_name_to_var_index[v]
-                        var_indexes += [var_index]
-                    except (KeyError, TypeError):
-                        try:
-                            # Try using v as integer index
-                            _ = self._var_index_to_var_name[v]
-                            var_index = v
-                            var_indexes += [var_index]
-                        except (KeyError, TypeError):
-                            raise ValueError('illegal variable argument: %s' % variable)
-                return var_indexes
-
-    def _get_or_open_variable(self, var_index):
-        if self._variables[var_index]:
-            return self._variables[var_index]
-        return self._open_dataset(var_index)
-
-    def _open_dataset(self, var_index):
-        files = self._dataset_files[var_index]
-        var_name = self._var_index_to_var_name[var_index]
-        dataset = netCDF4.MFDataset(files, aggdim='time')
-        variable = dataset.variables[var_name]
-        self._datasets[var_index] = dataset
-        self._variables[var_index] = variable
-        return variable
-
-    def _close_datasets(self):
-        for i in range(len(self._datasets)):
-            dataset = self._datasets[i]
-            dataset.close()
-            self._datasets[i] = None
-            self._variables[i] = None

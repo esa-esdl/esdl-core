@@ -1,7 +1,7 @@
 import math
 import os
 from collections import OrderedDict
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import xarray as xr
 
@@ -16,19 +16,25 @@ class _Variable:
 
 class CubeDataAccess:
     """
-    Represents the cube's data.
+    Represents the cube's data (access).
 
-    :param cube: A **Cube** object.
+    :param cube_config: A :py:class`CubeConfig` object.
+    :param cube_base_dir: Base path to cube.
     """
 
-    def __init__(self, cube):
+    def __init__(self, cube_config, cube_base_dir):
 
-        self._cube = cube
+        try:
+            import dask
+        except ImportError:
+            print('WARNING: missing Python package "dask", expect runtime performance issues')
+
+        self._cube_config = cube_config
 
         self._variable_dict = OrderedDict()
         self._variable_list = []
 
-        data_dir = os.path.join(cube.base_dir, 'data')
+        data_dir = os.path.join(cube_base_dir, 'data')
         data_dir_entries = os.listdir(data_dir)
         var_index = 0
         for data_dir_entry in data_dir_entries:
@@ -40,14 +46,40 @@ class CubeDataAccess:
                 self._variable_list.append(variable)
                 var_index += 1
 
+    def __getitem__(self, key):
+        """
+        Same as ``variable(key=key)``.
+        """
+        return self._variable(key, False)
+
+    def __iter__(self):
+        return iter(self._variable_list)
+
+    def __len__(self):
+        return len(self._variable_list)
+
     @property
-    def variable_names(self) -> tuple:
+    def shape(self):
+        """
+        Return the shape of the data cube.
+        """
+        cube_config = self._cube_config
+        year_1 = cube_config.start_time.year
+        year_2 = cube_config.end_time.year
+        years = year_2 - year_1
+        if cube_config.end_time > datetime(cube_config.end_time.year, 1, 1):
+            years += 1
+        time_size = years * cube_config.num_periods_per_year
+        return len(self._variable_list), time_size, cube_config.grid_height, cube_config.grid_width
+
+    @property
+    def variable_names(self) -> list:
         """
         Return a sequence of variable names.
         """
         return [variable.name for variable in self._variable_list]
 
-    def variables(self, key=None):
+    def variable(self, key=None):
         """
         Get one or more cube variables as ``xarray.DataArray`` instances. Same as, e.g. ``cube.data['ozone']``.
 
@@ -59,7 +91,9 @@ class CubeDataAccess:
         :return: a ``xarray.DataArray`` instance or a sequence of such representing the variable(s) with the
                 dimensions (time, latitude, longitude).
         """
+        return self._variable(key if key else self.variable_names, True)
 
+    def _variable(self, key, method_call):
         if isinstance(key, int):
             key = self._variable_list[key]
             dataset = self._get_or_open_dataset(key)
@@ -68,7 +102,7 @@ class CubeDataAccess:
             key = self._variable_dict[key]
             dataset = self._get_or_open_dataset(key)
             return dataset.variables[key.name]
-        elif not isinstance(key, tuple):
+        elif method_call or not isinstance(key, tuple):
             indices = self._get_var_indices(key)
             data_arrays = []
             for i in indices:
@@ -97,7 +131,7 @@ class CubeDataAccess:
         elif isinstance(key, str):
             key = self._variable_dict[key]
             return self._get_or_open_dataset(key)
-        elif not isinstance(key, tuple):
+        else:
             indices = self._get_var_indices(key)
             data_arrays = {}
             for i in indices:
@@ -105,26 +139,14 @@ class CubeDataAccess:
                 dataset = self._get_or_open_dataset(key)
                 data_arrays[key.name] = dataset.variables[key.name]
             return xr.Dataset(data_arrays)
-        else:
-            raise IndexError('key cannot be a tuple')
 
-    def __getitem__(self, key):
-        """
-        Same as ``variable(key=key)``.
-        """
-        return self.variables(key=key)
-
-    def __iter__(self):
-        return iter(self._variable_list)
-
-    def __len__(self):
-        return len(self._variable_list)
-
+    # TODO (forman, 20160713): Remove method, add time, lat, lon to variable() and dataset()
+    # TODO (forman, 20160713): Use xarray API to achieve the same result
     def get(self, variable=None, time=None, latitude=None, longitude=None):
         """
         Get the cube's data.
 
-        :param variable: an variable index or name or an iterable returning multiple of these (var1, var2, ...)
+        :param variable: an variable index or name or a sequence of variable indexes or names
         :param time: a single datetime.datetime object or a 2-element iterable (time_start, time_end)
         :param latitude: a single latitude value or a 2-element iterable (latitude_start, latitude_end)
         :param longitude: a single longitude value or a 2-element iterable (longitude_start, longitude_end)
@@ -167,7 +189,7 @@ class CubeDataAccess:
         #         grid_y2 - grid_y1 + 1, \
         #         grid_x2 - grid_x1 + 1
         for var_index in var_indexes:
-            variable = self.variables(var_index)
+            variable = self.variable(var_index)
             # result += [numpy.full(shape, numpy.NaN, dtype=numpy.float32)]
             # print('variable.shape =', variable.shape)
             array = variable[slice(time_index_1, time_index_2 + 1) if (time_index_1 < time_index_2) else time_index_1,

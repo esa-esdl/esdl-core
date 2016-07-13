@@ -14,7 +14,7 @@ CUBE_DIR = 'testcube'
 
 def _del_cube_dir():
     while os.path.exists(CUBE_DIR):
-        shutil.rmtree(CUBE_DIR, True)
+        shutil.rmtree(CUBE_DIR, False)
 
 
 class CubeDataAccessTest(TestCase):
@@ -26,7 +26,7 @@ class CubeDataAccessTest(TestCase):
         :return: CubeDataAccess instance
         """
         cube = Cube.open(CUBE_DIR)
-        data = CubeDataAccess(cube)
+        data = cube.data
         yield data
         data.close()
 
@@ -53,25 +53,27 @@ class CubeDataAccessTest(TestCase):
         with self.open_access() as data:
             self.assertEquals(['a_var', 'b_var', 'c_var'], data.variable_names)
 
-            var = data.variables('a_var')
+            var = data.variable('a_var')
             self.assertIs(xr.Variable, type(var))
 
-            vars = data.variables([0, 2, 1])
+            vars = data.variable([0, 2, 1])
             self.assertIs(list, type(vars))
             self.assertEqual(3, len(vars))
             self.assertEqual(xr.Variable, type(vars[0]))
             self.assertEqual(xr.Variable, type(vars[1]))
             self.assertEqual(xr.Variable, type(vars[2]))
 
-            vars = data.variables(['a_var', 'c_var'])
+            vars = data.variable(['a_var', 'c_var'])
             self.assertIs(list, type(vars))
             self.assertEqual(2, len(vars))
             self.assertEqual(xr.Variable, type(vars[0]))
             self.assertEqual(xr.Variable, type(vars[1]))
 
-            with self.assertRaises(IndexError):
-                # do not allow tuples as index (because data is 1-D, not N-D, with respect to contained variables)
-                vars = data.variables(('a_var', 'c_var'))
+            vars = data.variable(('a_var', 'c_var',))
+            self.assertIs(list, type(vars))
+            self.assertEqual(2, len(vars))
+            self.assertEqual(xr.Variable, type(vars[0]))
+            self.assertEqual(xr.Variable, type(vars[1]))
 
     def test_get_item_api(self):
         with self.open_access() as data:

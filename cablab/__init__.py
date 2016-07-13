@@ -19,7 +19,6 @@ Data Cube creation/update::
 
 from .version import version as __version__
 from .cube import Cube
-from .cube import CubeData
 from .cube_config import CUBE_MODEL_VERSION
 from .cube_config import CubeConfig
 from .cube_provider import BaseCubeSourceProvider
@@ -36,7 +35,6 @@ __all__ = [
     'CUBE_MODEL_VERSION',
     'Cube',
     'CubeConfig',
-    'CubeData',
     'CubeSourceProvider',
     'SOURCE_PROVIDERS',
 ]
