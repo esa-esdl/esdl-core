@@ -9,7 +9,7 @@ import cablab
 import cablab.util
 from .cube_config import CubeConfig, CUBE_CHANGELOG
 from .cube_provider import CubeSourceProvider
-from .version import  version as __version__
+from .version import version as __version__
 
 
 class Cube:
@@ -127,14 +127,13 @@ class Cube:
         num_periods_per_year = self._config.num_periods_per_year
         datasets = dict()
 
-
         for target_year in range(target_year_1, target_year_2 + 1):
             time_min = datetime(target_year, 1, 1)
             time_max = datetime(target_year + 1, 1, 1)
             d_time = timedelta(days=cube_temporal_res)
             time_1 = time_min
             for key in datasets:
-                if (target_year-1 == int(key[0:4])):
+                if (target_year - 1 == int(key[0:4])):
                     datasets[key].close()
             for time_index in range(num_periods_per_year):
                 time_2 = time_1 + d_time
@@ -175,8 +174,8 @@ class Cube:
         t2 = self._config.date2num(target_end_time)
         var_time = dataset.variables['time']
         time_bnds = dataset.variables['time_bnds']
-        if time_bnds[time_index,1] != t2:
-            print("Warning: Time stamps discrepancy: %f is is not %f" %( time_bnds[time_index,1],t2 ))
+        if time_bnds[time_index, 1] != t2:
+            print("Warning: Time stamps discrepancy: %f is is not %f" % (time_bnds[time_index, 1], t2))
             print("target start: %s, target end %s" % (target_start_time, target_end_time))
 
         var_variable = dataset.variables[var_name]
@@ -206,18 +205,23 @@ class Cube:
 
         image_x0, image_y0, image_width, image_height = provider.spatial_coverage
 
+        num_periods_per_year = self._config.num_periods_per_year
         dataset.createDimension('bnds', 2)
-        dataset.createDimension('time', self._config.num_periods_per_year)
+        dataset.createDimension('time', num_periods_per_year)
         dataset.createDimension('lat', image_height)
         dataset.createDimension('lon', image_width)
 
+        temporal_res = self._config.temporal_res
+        start_date = datetime(start_year, 1, 1, 0, 0)
+        start_num = self._config.date2num(start_date)
         var_time_bnds = dataset.createVariable('time_bnds', 'f8', ('time', 'bnds'), fill_value=-9999.0)
         var_time_bnds.units = self._config.time_units
         var_time_bnds.calendar = self._config.calendar
-        var_time_bnds[:,0] = [self._config.date2num(datetime(start_year,1,1,0,0)) + self._config.temporal_res*(i+0.) for i in range(self._config.num_periods_per_year)]
-        upper_bounds = [self._config.date2num(datetime(start_year,1,1,0,0)) + self._config.temporal_res*(i+1.0) for i in range(self._config.num_periods_per_year)]
-        upper_bounds[-1] = self._config.date2num(datetime(start_year+1,1,1,0,0))
-        var_time_bnds[:,1] = upper_bounds
+        lower_bounds = [start_num + temporal_res * (i + 0.0) for i in range(num_periods_per_year)]
+        upper_bounds = [start_num + temporal_res * (i + 1.0) for i in range(num_periods_per_year)]
+        upper_bounds[-1] = self._config.date2num(datetime(start_year + 1, 1, 1, 0, 0))
+        var_time_bnds[:, 0] = lower_bounds
+        var_time_bnds[:, 1] = upper_bounds
 
         var_time = dataset.createVariable('time', 'f8', ('time',), fill_value=-9999.0)
         var_time.long_name = 'time'
@@ -225,8 +229,9 @@ class Cube:
         var_time.units = self._config.time_units
         var_time.calendar = self._config.calendar
         var_time.bounds = 'time_bnds'
-        times = [self._config.date2num(datetime(start_year,1,1,0,0)) + self._config.temporal_res*(i+0.5) for i in range(self._config.num_periods_per_year)]
-        #times[-1] = var_time_bnds[-1,0] + (var_time_bnds[-1,1] - var_time_bnds[-1,0]) / 2.
+
+        times = [start_num + temporal_res * (i + 0.5) for i in range(num_periods_per_year)]
+        # times[-1] = var_time_bnds[-1,0] + (var_time_bnds[-1,1] - var_time_bnds[-1,0]) / 2.
         # Thus, we keep date of the last time range always at Julian day 364, not in the center of the period.
         # The time bounds then specify the real extent of the period.
         # Uncomment the upper line to center it between the upper and lower bound!
@@ -256,15 +261,15 @@ class Cube:
         for i in range(image_width):
             lon = lon0 + i * spatial_res
             var_longitude[i] = lon + 0.5 * spatial_res
-            var_longitude_bnds[i,0] = lon
-            var_longitude_bnds[i,1] = lon + spatial_res
+            var_longitude_bnds[i, 0] = lon
+            var_longitude_bnds[i, 1] = lon + spatial_res
 
         lat0 = self._config.northing + image_y0 * spatial_res
         for i in range(image_height):
             lat = lat0 - i * spatial_res
             var_latitude[i] = lat - 0.5 * spatial_res
-            var_latitude_bnds[i,0] = lat - spatial_res
-            var_latitude_bnds[i,1] = lat
+            var_latitude_bnds[i, 0] = lat - spatial_res
+            var_latitude_bnds[i, 1] = lat
 
         variable_descriptors = provider.variable_descriptors
         variable_attributes = variable_descriptors[variable_name]
