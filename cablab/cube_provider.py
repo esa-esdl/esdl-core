@@ -2,10 +2,10 @@ import os.path
 import time
 from abc import ABCMeta, abstractmethod, abstractproperty
 from datetime import datetime
-from typing import Tuple, Dict, Any
 
 import gridtools.resampling as gtr
 import numpy as np
+from typing import Tuple, Dict, Any
 
 from .cube_config import CubeConfig
 from .util import Config, NetCDFDatasetCache, aggregate_images, temporal_weight
@@ -261,11 +261,11 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider):
             self._resampling_order = "time_first"
             print('Resampling order: %s' % self._resampling_order)
         else:
-            if (resampling_order in ("time_first","space_first")):
+            if (resampling_order in ("time_first", "space_first")):
                 self._resampling_order = resampling_order
                 print('Resampling order: %s' % self._resampling_order)
             else:
-                raise ValueError('Wrong resampling option %s'% resampling_order)
+                raise ValueError('Wrong resampling option %s' % resampling_order)
         self._dataset_cache = NetCDFDatasetCache(name)
         self._old_indices = None
 
@@ -301,15 +301,16 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider):
                 else:
                     raise TypeError("unexpected shape for variable '%s'" % var_name)
                 var_image = self.transform_source_image(var_image)
-                if self._resampling_order in "space_first":
+                if self._resampling_order == 'space_first':
                     var_image = gtr.resample_2d(var_image,
-                                        self.cube_config.grid_width,
-                                        self.cube_config.grid_height,
-                                        ds_method=gtr.__dict__['DS_' + var_attributes.get('ds_method', 'MEAN')],
-                                        us_method=gtr.__dict__['US_' + var_attributes.get('us_method', 'NEAREST')],
-                                        fill_value=var_attributes.get('fill_value', np.nan))
-                if var_image.shape[1]/var_image.shape[0] != 2.0:
-                    print("Warning: wrong size ratio of image in '%s'. Expected 2, got %f" % (file, var_image.shape[1]/var_image.shape[0]))
+                                                self.cube_config.grid_width,
+                                                self.cube_config.grid_height,
+                                                ds_method=self._get_ds_method(var_attributes),
+                                                us_method=self._get_us_method(var_attributes),
+                                                fill_value=var_attributes.get('fill_value', np.nan))
+                if var_image.shape[1] / var_image.shape[0] != 2.0:
+                    print("Warning: wrong size ratio of image in '%s'. Expected 2, got %f" % (
+                        file, var_image.shape[1] / var_image.shape[0]))
                 source_var_images[var_image_index] = var_image
                 source_weights[var_image_index] = index_to_weight[i]
                 var_image_index += 1
@@ -320,16 +321,22 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider):
                 # Temporal aggregation not required
                 var_image = source_var_images[0]
             # Spatial resampling
-            if self._resampling_order in "time_first":
+            if self._resampling_order == 'time_first':
                 var_image = gtr.resample_2d(var_image,
-                                        self.cube_config.grid_width,
-                                        self.cube_config.grid_height,
-                                        ds_method=gtr.__dict__['DS_' + var_attributes.get('ds_method', 'MEAN')],
-                                        us_method=gtr.__dict__['US_' + var_attributes.get('us_method', 'NEAREST')],
-                                        fill_value=var_attributes.get('fill_value', np.nan))
+                                            self.cube_config.grid_width,
+                                            self.cube_config.grid_height,
+                                            ds_method=self._get_ds_method(var_attributes),
+                                            us_method=self._get_us_method(var_attributes),
+                                            fill_value=var_attributes.get('fill_value', np.nan))
             target_var_images[var_name] = var_image
 
         return target_var_images
+
+    def _get_us_method(self, var_attributes):
+        return gtr.__dict__['US_' + var_attributes.get('us_method', 'NEAREST')]
+
+    def _get_ds_method(self, var_attributes):
+        return gtr.__dict__['DS_' + var_attributes.get('ds_method', 'MEAN')]
 
     # todo (nf 20160512) - move one class up and let it return a modified index_to_weight,
     # call in compute_variable_images()
