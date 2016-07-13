@@ -61,6 +61,6 @@ target/
 
 # Ignored CAB-LAB (Data Cube) files
 *.nc
-cube.config
+testcube
 cablab-config.py
 

@@ -23,6 +23,7 @@ class CubeTest(TestCase):
     def test_update(self):
         cube = Cube.create(CUBE_DIR, CubeConfig())
         self.assertTrue(os.path.exists(CUBE_DIR))
+        self.assertTrue(os.path.exists(CUBE_DIR + '/CHANGELOG'))
 
         provider = CubeSourceProviderMock(cube.config, start_time=datetime(2001, 1, 1), end_time=datetime(2001, 2, 1))
         cube.update(provider)

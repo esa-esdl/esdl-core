@@ -7,7 +7,7 @@ import netCDF4
 
 import cablab
 import cablab.util
-from .cube_config import CubeConfig
+from .cube_config import CubeConfig, CUBE_CHANGELOG
 from .cube_provider import CubeSourceProvider
 from .version import  version as __version__
 
@@ -93,6 +93,8 @@ class Cube:
             raise IOError('data cube base directory exists: %s' % base_dir)
         os.mkdir(base_dir)
         config.store(os.path.join(base_dir, 'cube.config'))
+        with open(os.path.join(base_dir, 'CHANGELOG'), 'w') as fp:
+            fp.write(CUBE_CHANGELOG)
         return Cube(base_dir, config)
 
     def close(self):

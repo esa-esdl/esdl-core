@@ -4,8 +4,22 @@ from typing import Tuple
 
 import netCDF4
 
-# The current version of the data cube's configuration and data model.
-CUBE_MODEL_VERSION = '0.1'
+#: The current version of the data cube's configuration and data model.
+#: The model version is incremented on every change of the cube's data model.
+CUBE_MODEL_VERSION = '0.2'
+
+CUBE_CHANGELOG = """
+version 0.1
+-----------
+* initial version
+
+version 0.2
+-----------
+The netCDF file schema has been updated according to the following issues:
+* CF-compliant time information: https://github.com/CAB-LAB/cablab-core/issues/30
+* CF-compliant variable names (ongoing): https://github.com/CAB-LAB/cablab-core/issues/32
+* CF-compliant geospatial information: https://github.com/CAB-LAB/cablab-core/issues/35
+"""
 
 
 class CubeConfig:
@@ -44,6 +58,7 @@ class CubeConfig:
                  variables=None,
                  file_format='NETCDF4_CLASSIC',
                  compression=False,
+                 chunk_sizes=None,
                  model_version=CUBE_MODEL_VERSION):
         self.model_version = model_version
         self.spatial_res = spatial_res
