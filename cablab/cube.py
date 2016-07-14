@@ -172,11 +172,11 @@ class Cube:
             datasets[filename] = dataset
 
         t2 = self._config.date2num(target_end_time)
-        var_time = dataset.variables['time']
-        time_bnds = dataset.variables['time_bnds']
-        if time_bnds[time_index, 1] != t2:
-            print("Warning: Time stamps discrepancy: %f is is not %f" % (time_bnds[time_index, 1], t2))
-            print("target start: %s, target end %s" % (target_start_time, target_end_time))
+        if not self.config.static_data:
+            time_bnds = dataset.variables['time_bnds']
+            if time_bnds[time_index, 1] != t2:
+                print("Warning: Time stamps discrepancy: %f is is not %f" % (time_bnds[time_index, 1], t2))
+                print("target start: %s, target end %s" % (target_start_time, target_end_time))
 
         var_variable = dataset.variables[var_name]
         var_variable[time_index, :, :] = image
@@ -205,71 +205,96 @@ class Cube:
 
         image_x0, image_y0, image_width, image_height = provider.spatial_coverage
 
-        num_periods_per_year = self._config.num_periods_per_year
-        dataset.createDimension('bnds', 2)
-        dataset.createDimension('time', num_periods_per_year)
         dataset.createDimension('lat', image_height)
         dataset.createDimension('lon', image_width)
-
-        temporal_res = self._config.temporal_res
-        start_date = datetime(start_year, 1, 1, 0, 0)
-        start_num = self._config.date2num(start_date)
-        var_time_bnds = dataset.createVariable('time_bnds', 'f8', ('time', 'bnds'), fill_value=-9999.0)
-        var_time_bnds.units = self._config.time_units
-        var_time_bnds.calendar = self._config.calendar
-        lower_bounds = [start_num + temporal_res * (i + 0.0) for i in range(num_periods_per_year)]
-        upper_bounds = [start_num + temporal_res * (i + 1.0) for i in range(num_periods_per_year)]
-        upper_bounds[-1] = self._config.date2num(datetime(start_year + 1, 1, 1, 0, 0))
-        var_time_bnds[:, 0] = lower_bounds
-        var_time_bnds[:, 1] = upper_bounds
-
-        var_time = dataset.createVariable('time', 'f8', ('time',), fill_value=-9999.0)
-        var_time.long_name = 'time'
-        var_time.standard_name = 'time'
-        var_time.units = self._config.time_units
-        var_time.calendar = self._config.calendar
-        var_time.bounds = 'time_bnds'
-
-        times = [start_num + temporal_res * (i + 0.5) for i in range(num_periods_per_year)]
-        # times[-1] = var_time_bnds[-1,0] + (var_time_bnds[-1,1] - var_time_bnds[-1,0]) / 2.
-        # Thus, we keep date of the last time range always at Julian day 364, not in the center of the period.
-        # The time bounds then specify the real extent of the period.
-        # Uncomment the upper line to center it between the upper and lower bound!
-        var_time[:] = times
 
         var_longitude = dataset.createVariable('lon', 'f4', ('lon',))
         var_longitude.long_name = 'longitude'
         var_longitude.standard_name = 'longitude'
         var_longitude.units = 'degrees_east'
-        var_longitude.bounds = 'lon_bnds'
-
-        var_longitude_bnds = dataset.createVariable('lon_bnds', 'f4', ('lon', 'bnds'))
-        var_longitude_bnds.units = 'degrees_east'
 
         var_latitude = dataset.createVariable('lat', 'f4', ('lat',))
         var_latitude.long_name = 'latitude'
         var_latitude.standard_name = 'latitude'
         var_latitude.units = 'degrees_north'
-        var_latitude.bounds = 'lat_bnds'
 
-        var_latitude_bnds = dataset.createVariable('lat_bnds', 'f4', ('lat', 'bnds'))
-        var_latitude_bnds.units = 'degrees_north'
+        if self.config.static_data:
+            dataset.createDimension('time', 1)
+            var_time = dataset.createVariable('time', 'f8', ('time',), fill_value=-9999.0)
+            var_time.long_name = 'time'
+            var_time.standard_name = 'time'
+            var_time.units = self._config.time_units
+            var_time.calendar = self._config.calendar
+            var_time[0] = self._config.date2num(datetime(2001, 1, 1, 0, 0))
 
-        spatial_res = self._config.spatial_res
+            spatial_res = self._config.spatial_res
 
-        lon0 = self._config.easting + image_x0 * spatial_res
-        for i in range(image_width):
-            lon = lon0 + i * spatial_res
-            var_longitude[i] = lon + 0.5 * spatial_res
-            var_longitude_bnds[i, 0] = lon
-            var_longitude_bnds[i, 1] = lon + spatial_res
+            lon0 = self._config.easting + image_x0 * spatial_res
+            for i in range(image_width):
+                lon = lon0 + i * spatial_res
+                var_longitude[i] = lon + 0.5 * spatial_res
 
-        lat0 = self._config.northing + image_y0 * spatial_res
-        for i in range(image_height):
-            lat = lat0 - i * spatial_res
-            var_latitude[i] = lat - 0.5 * spatial_res
-            var_latitude_bnds[i, 0] = lat - spatial_res
-            var_latitude_bnds[i, 1] = lat
+            lat0 = self._config.northing + image_y0 * spatial_res
+            for i in range(image_height):
+                lat = lat0 - i * spatial_res
+                var_latitude[i] = lat - 0.5 * spatial_res
+
+        else:
+            num_periods_per_year = self._config.num_periods_per_year
+            dataset.createDimension('bnds', 2)
+            dataset.createDimension('time', num_periods_per_year)
+
+            temporal_res = self._config.temporal_res
+            start_date = datetime(start_year, 1, 1, 0, 0)
+            start_num = self._config.date2num(start_date)
+            var_time_bnds = dataset.createVariable('time_bnds', 'f8', ('time', 'bnds'), fill_value=-9999.0)
+            var_time_bnds.units = self._config.time_units
+            var_time_bnds.calendar = self._config.calendar
+            lower_bounds = [start_num + temporal_res * (i + 0.0) for i in range(num_periods_per_year)]
+            upper_bounds = [start_num + temporal_res * (i + 1.0) for i in range(num_periods_per_year)]
+            upper_bounds[-1] = self._config.date2num(datetime(start_year + 1, 1, 1, 0, 0))
+            var_time_bnds[:, 0] = lower_bounds
+            var_time_bnds[:, 1] = upper_bounds
+
+            var_time = dataset.createVariable('time', 'f8', ('time',), fill_value=-9999.0)
+            var_time.long_name = 'time'
+            var_time.standard_name = 'time'
+            var_time.units = self._config.time_units
+            var_time.calendar = self._config.calendar
+            var_time.bounds = 'time_bnds'
+
+            times = [start_num + temporal_res * (i + 0.5) for i in range(num_periods_per_year)]
+            # times[-1] = var_time_bnds[-1,0] + (var_time_bnds[-1,1] - var_time_bnds[-1,0]) / 2.
+            # Thus, we keep date of the last time range always at Julian day 364, not in the center of the period.
+            # The time bounds then specify the real extent of the period.
+            # Uncomment the upper line to center it between the upper and lower bound!
+            var_time[:] = times
+
+            var_longitude.bounds = 'lon_bnds'
+
+            var_longitude_bnds = dataset.createVariable('lon_bnds', 'f4', ('lon', 'bnds'))
+            var_longitude_bnds.units = 'degrees_east'
+
+            var_latitude.bounds = 'lat_bnds'
+
+            var_latitude_bnds = dataset.createVariable('lat_bnds', 'f4', ('lat', 'bnds'))
+            var_latitude_bnds.units = 'degrees_north'
+
+            spatial_res = self._config.spatial_res
+
+            lon0 = self._config.easting + image_x0 * spatial_res
+            for i in range(image_width):
+                lon = lon0 + i * spatial_res
+                var_longitude[i] = lon + 0.5 * spatial_res
+                var_longitude_bnds[i, 0] = lon
+                var_longitude_bnds[i, 1] = lon + spatial_res
+
+            lat0 = self._config.northing + image_y0 * spatial_res
+            for i in range(image_height):
+                lat = lat0 - i * spatial_res
+                var_latitude[i] = lat - 0.5 * spatial_res
+                var_latitude_bnds[i, 0] = lat - spatial_res
+                var_latitude_bnds[i, 1] = lat
 
         variable_descriptors = provider.variable_descriptors
         variable_attributes = variable_descriptors[variable_name]
