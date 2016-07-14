@@ -4,14 +4,19 @@ from collections import OrderedDict
 from datetime import datetime, timedelta
 
 import xarray as xr
+from xarray import Dataset
 
 
-class _Variable:
+class _CubeVar:
     def __init__(self, index, name, dir_path):
         self.index = index
         self.name = name
         self.dir_path = dir_path
         self.dataset = None
+
+
+#: The names in this list are not *data* variables but *coordinate* variables.
+EXTRA_COORDS_VAR_NAMES = ['time_bnds', 'lat_bnds', 'lon_bnds']
 
 
 class CubeDataAccess:
@@ -27,12 +32,12 @@ class CubeDataAccess:
         try:
             import dask
         except ImportError:
-            print('WARNING: missing Python package "dask", expect runtime performance issues')
+            print('WARNING: missing Python package "dask", expect runtime performance issues!')
 
         self._cube_config = cube_config
 
-        self._variable_dict = OrderedDict()
-        self._variable_list = []
+        self._cube_var_dict = OrderedDict()
+        self._cube_var_list = []
 
         data_dir = os.path.join(cube_base_dir, 'data')
         data_dir_entries = os.listdir(data_dir)
@@ -41,9 +46,9 @@ class CubeDataAccess:
             var_dir = os.path.join(data_dir, data_dir_entry)
             if os.path.isdir(var_dir):
                 var_name = data_dir_entry
-                variable = _Variable(var_index, var_name, var_dir)
-                self._variable_dict[var_name] = variable
-                self._variable_list.append(variable)
+                cube_var = _CubeVar(var_index, var_name, var_dir)
+                self._cube_var_dict[var_name] = cube_var
+                self._cube_var_list.append(cube_var)
                 var_index += 1
 
     def __getitem__(self, key):
@@ -53,10 +58,10 @@ class CubeDataAccess:
         return self._variable(key, False)
 
     def __iter__(self):
-        return iter(self._variable_list)
+        return iter(self._cube_var_list)
 
     def __len__(self):
-        return len(self._variable_list)
+        return len(self._cube_var_list)
 
     @property
     def shape(self):
@@ -70,14 +75,14 @@ class CubeDataAccess:
         if cube_config.end_time > datetime(cube_config.end_time.year, 1, 1):
             years += 1
         time_size = years * cube_config.num_periods_per_year
-        return len(self._variable_list), time_size, cube_config.grid_height, cube_config.grid_width
+        return len(self._cube_var_list), time_size, cube_config.grid_height, cube_config.grid_width
 
     @property
     def variable_names(self) -> list:
         """
         Return a sequence of variable names.
         """
-        return [variable.name for variable in self._variable_list]
+        return [cube_var.name for cube_var in self._cube_var_list]
 
     def variable(self, key=None):
         """
@@ -91,22 +96,22 @@ class CubeDataAccess:
         :return: a ``xarray.DataArray`` instance or a sequence of such representing the variable(s) with the
                 dimensions (time, latitude, longitude).
         """
-        return self._variable(key if key else self.variable_names, True)
+        return self._variable(key if key is not None else self.variable_names, True)
 
     def _variable(self, key, method_call):
         if isinstance(key, int):
-            key = self._variable_list[key]
+            key = self._cube_var_list[key]
             dataset = self._get_or_open_dataset(key)
             return dataset.variables[key.name]
         elif isinstance(key, str):
-            key = self._variable_dict[key]
+            key = self._cube_var_dict[key]
             dataset = self._get_or_open_dataset(key)
             return dataset.variables[key.name]
         elif method_call or not isinstance(key, tuple):
             indices = self._get_var_indices(key)
             data_arrays = []
             for i in indices:
-                key = self._variable_list[i]
+                key = self._cube_var_list[i]
                 dataset = self._get_or_open_dataset(key)
                 data_arrays.append(dataset.variables[key.name])
             return data_arrays
@@ -126,16 +131,16 @@ class CubeDataAccess:
         """
 
         if isinstance(key, int):
-            key = self._variable_list[key]
+            key = self._cube_var_list[key]
             return self._get_or_open_dataset(key)
         elif isinstance(key, str):
-            key = self._variable_dict[key]
+            key = self._cube_var_dict[key]
             return self._get_or_open_dataset(key)
         else:
             indices = self._get_var_indices(key)
             data_arrays = {}
             for i in indices:
-                key = self._variable_list[i]
+                key = self._cube_var_list[i]
                 dataset = self._get_or_open_dataset(key)
                 data_arrays[key.name] = dataset.variables[key.name]
             return xr.Dataset(data_arrays)
@@ -158,7 +163,7 @@ class CubeDataAccess:
         lat_1, lat_2 = self._get_lat_range(latitude)
         lon_1, lon_2 = self._get_lon_range(longitude)
 
-        config = self._cube.config
+        config = self._cube_config
         time_index_1 = int(math.floor(((time_1 - config.ref_time) / timedelta(days=config.temporal_res))))
         time_index_2 = int(math.floor(((time_2 - config.ref_time) / timedelta(days=config.temporal_res))))
         grid_y1 = int(round((90.0 - lat_2) / config.spatial_res)) - config.grid_y0
@@ -258,15 +263,15 @@ class CubeDataAccess:
 
     def _get_var_indices(self, variable):
         if variable is None:
-            return range(len(self._variable_list))
+            return range(len(self._cube_var_list))
         try:
             # Try using variable as string name
-            var_index = self._variable_dict[variable].index
+            var_index = self._cube_var_dict[variable].index
             return [var_index]
         except (KeyError, TypeError):
             try:
                 # Try using variable as integer index
-                _ = self._variable_list[variable]
+                _ = self._cube_var_list[variable]
                 return [variable]
             except (KeyError, TypeError):
                 # Try using variable as iterable of name and/or indexes
@@ -274,31 +279,40 @@ class CubeDataAccess:
                 for v in variable:
                     try:
                         # Try using v as string name
-                        var_index = self._variable_dict[v].index
+                        var_index = self._cube_var_dict[v].index
                         var_indexes += [var_index]
                     except (KeyError, TypeError):
                         try:
                             # Try using v as integer index
-                            _ = self._variable_list[v]
+                            _ = self._cube_var_list[v]
                             var_index = v
                             var_indexes += [var_index]
                         except (KeyError, TypeError):
                             raise ValueError('illegal variable argument: %s' % variable)
                 return var_indexes
 
-    def _get_or_open_dataset(self, variable):
-        if not variable.dataset:
-            self._open_dataset(variable)
-        return variable.dataset
+    def _get_or_open_dataset(self, cube_var):
+        if not cube_var.dataset:
+            self._open_dataset(cube_var)
+        return cube_var.dataset
 
     def _open_dataset(self, variable):
         file_pattern = os.path.join(variable.dir_path, '*.nc')
         variable.dataset = xr.open_mfdataset(file_pattern,
                                              concat_dim='time',
+                                             preprocess=self._preprocess_dataset,
                                              engine='h5netcdf')
 
+    def _preprocess_dataset(self, ds: Dataset):
+        # Convert specific data variables to coordinate variables
+        for var_name in EXTRA_COORDS_VAR_NAMES:
+            if var_name in ds.data_vars:
+                ds.set_coords(var_name, inplace=True)
+        # print(ds)
+        return ds
+
     def _close_datasets(self):
-        for variable in self._variable_list:
-            if variable.dataset:
-                variable.dataset.close()
-                variable.dataset = None
+        for cube_var in self._cube_var_list:
+            if cube_var.dataset:
+                cube_var.dataset.close()
+                cube_var.dataset = None

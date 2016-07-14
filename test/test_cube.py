@@ -64,7 +64,7 @@ class CubeTest(TestCase):
         self.assertTrue(os.path.exists(CUBE_DIR + "/data/LAI/2007_LAI.nc"))
         self.assertTrue(os.path.exists(CUBE_DIR + "/data/FAPAR/2006_FAPAR.nc"))
         self.assertTrue(os.path.exists(CUBE_DIR + "/data/FAPAR/2007_FAPAR.nc"))
-
+        from xarray import Variable
         try:
             data = cube2.data
             self.assertIsNotNone(data)
@@ -77,12 +77,12 @@ class CubeTest(TestCase):
             self.assertIsNotNone(lai_var)
             self.assertIs(lai_var, data['LAI'])
             self.assertIs(lai_var, data[1])
+            self.assertIsInstance(lai_var, Variable)
             self.assertIs(data.variable(1), data[1])
-            array = data['LAI'][:, :, :]
-            self.assertEqual((138, 720, 1440), array.shape)
-            scalar = data['LAI'][3, 320, 720]
-            self.assertEqual(np.float32, type(scalar))
-            self.assertEqual(np.array([0.14], dtype=np.float32), scalar)
+            array = lai_var[:, :, :]
+            self.assertEqual(array.shape, (138, 720, 1440))
+            scalar = lai_var[3, 320, 720]
+            self.assertEqual(scalar.values, np.array(0.14, dtype=np.float32))
 
             fapar_var = data.variable('FAPAR')
             self.assert_cf_conformant_time_info(data, 'FAPAR')
@@ -90,52 +90,50 @@ class CubeTest(TestCase):
             self.assertIsNotNone(fapar_var)
             self.assertIs(fapar_var, data['FAPAR'])
             self.assertIs(fapar_var, data[0])
-            self.assertIs(data.get_variable(0), data[0])
-            array = data['FAPAR'][:, :, :]
-            self.assertEqual((138, 720, 1440), array.shape)
-            scalar = data['FAPAR'][3, 320, 720]
-            self.assertEqual(np.array([0.62], dtype=np.float32), scalar)
+            self.assertIs(data.variable(0), data[0])
+            array = fapar_var[:, :, :]
+            self.assertEqual(array.shape, (138, 720, 1440))
+            scalar = fapar_var[3, 320, 720]
+            self.assertEqual(scalar.values, np.array(0.62, dtype=np.float32))
 
             result = data.get('FAPAR',
                               [datetime(2001, 1, 1), datetime(2001, 2, 1)],
                               [-90, 90],
                               [-180, +180])
-            self.assertEqual(1, len(result))
-            self.assertEqual((4, 720, 1440), result[0].shape)
+            self.assertEqual(len(result), 1)
+            self.assertEqual(result[0].shape, (4, 720, 1440))
 
             result = data.get(['FAPAR', 'LAI'],
                               [datetime(2001, 1, 1), datetime(2001, 2, 1)],
                               [50.0, 60.0],
                               [10.0, 30.0])
             self.assertEqual(2, len(result))
-            self.assertEqual((4, 40, 80), result[0].shape)
-            self.assertEqual((4, 40, 80), result[1].shape)
+            self.assertEqual(result[0].shape, (4, 40, 80))
+            self.assertEqual(result[1].shape, (4, 40, 80))
 
-            result = data.get(1,
-                              datetime(2001, 1, 20),
-                              0,
-                              0)
-            self.assertEqual(1, len(result))
-            self.assertEqual((), result[0].shape)
-            self.assertEqual(np.array([0.13], dtype=np.float32), result[0])
+            result, = data.get(1,
+                               datetime(2001, 1, 20),
+                               0,
+                               0)
+            self.assertEqual(result.shape, ())
+            self.assertEqual(result.values, np.array(0.13, dtype=np.float32))
 
-            result = data.get(0,
-                              datetime(2001, 1, 20),
-                              -12.6,
-                              5.9)
-            self.assertEqual(1, len(result))
-            self.assertEqual((), result[0].shape)
-            self.assertEqual(np.array([0.61500001], dtype=np.float32), result[0])
+            result, = data.get(0,
+                               datetime(2001, 1, 20),
+                               -12.6,
+                               5.9)
+            self.assertEqual(result.shape, ())
+            self.assertEqual(result, np.array(0.615, dtype=np.float32))
 
             result = data.get((1, 0),
                               datetime(2001, 1, 20),
                               53.4,
                               13.1)
-            self.assertEqual(2, len(result))
-            self.assertEqual((), result[0].shape)
-            self.assertEqual((), result[1].shape)
-            self.assertEqual(np.array([0.13], dtype=np.float32), result[0])
-            self.assertEqual(np.array([0.61500001], dtype=np.float32), result[1])
+            self.assertEqual(len(result), 2)
+            self.assertEqual(result[0].shape, ())
+            self.assertEqual(result[1].shape, ())
+            self.assertEqual(result[0].values, np.array(0.13, dtype=np.float32))
+            self.assertEqual(result[1].values, np.array(0.615, dtype=np.float32))
         finally:
             cube2.close()
 
@@ -150,17 +148,17 @@ class CubeTest(TestCase):
         self.assertEqual(time_var.attrs['long_name'], 'time')
         self.assertEqual(time_var.attrs['standard_name'], 'time')
         self.assertEqual(time_var.attrs['bounds'], 'time_bnds')
-        #self.assertEqual(time_var.attrs['calendar'], 'gregorian')
-        #self.assertEqual(time_var.attrs['units'], 'days since 2001-01-01 00:00')
+        # self.assertEqual(time_var.attrs['calendar'], 'gregorian')
+        # self.assertEqual(time_var.attrs['units'], 'days since 2001-01-01 00:00')
         self.assertEqual(time_var.shape, (L,))
-        #for i in range(L):
+        # for i in range(L):
         #    print(i, i / P, time_var[i])
         self.assertEqual(time_var.values[0], np.datetime64('2001-01-05T01:00:00.000000000+0100'))
         self.assertEqual(time_var.values[46], np.datetime64('2006-01-05T01:00:00.000000000+0100'))
         self.assertIn('time_bnds', ds.variables)
         time_bnds_var = ds.variables['time_bnds']
-        #self.assertEqual(time_bnds_var.calendar, 'gregorian')
-        #self.assertEqual(time_bnds_var.units, 'days since 2001-01-01 00:00')
+        # self.assertEqual(time_bnds_var.calendar, 'gregorian')
+        # self.assertEqual(time_bnds_var.units, 'days since 2001-01-01 00:00')
         self.assertEqual(time_bnds_var.shape, (L, 2), )
         self.assertEqual(time_bnds_var.values[0, 0], np.datetime64('2001-01-01T01:00:00.000000000+0100'))
         self.assertEqual(time_bnds_var.values[0, 1], np.datetime64('2001-01-09T01:00:00.000000000+0100'))
