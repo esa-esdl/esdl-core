@@ -12,6 +12,12 @@ Components
 * ``cablab.util`` - Common utility functions (protected)
 
 
+-------------
+Documentation
+-------------
+
+Find the CAB-LAB documentation `here <http://cablab.readthedocs.io/en/latest/>`_.
+
 ---------------
 Developer Guide
 ---------------
