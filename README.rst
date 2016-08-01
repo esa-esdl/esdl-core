@@ -12,6 +12,12 @@ Components
 * ``cablab.util`` - Common utility functions (protected)
 
 
+-------------
+Documentation
+-------------
+
+Find the CAB-LAB documentation `here <http://cablab.readthedocs.io/en/latest/>`_.
+
 ---------------
 Developer Guide
 ---------------
@@ -76,13 +82,13 @@ following entry::
 
 
 To generate a default data cube with a 0.25 degree resolution and variables 'BurntArea', 'C_Emmisions', Ozone', 
-'Precip' call the ``cablab-cli`` tool::
+'Precip' call the ``cube-gen`` tool::
 
-    > cablab-cli testcube burnt_area:BurntArea c_emissions:Emissions ozone:Ozone-CCI/Total_Columns/L3/MERGED precip:CPC_precip
+    > cube-gen testcube burnt_area:dir=BurntAreaDir c_emissions:dir=EmissionsDir ozone:Ozone-CCI/Total_Columns/L3/MERGED precip:dir=CPC_precip
 
 It's usage is::
 
-    > cablab-cli <cube-dir> [<provider-key>:<source-path> ...]
+    > cube-gen <cube-dir> [<provider-key>:dir=<source-path> ...]
 
 ------------
 Dependencies
@@ -98,9 +104,7 @@ Production and test code dependencies
 
 * netCDF4  >= 1.2
 * numpy >= 1.9
-* scikit_image >= 0.11
-* scipy >= 0.16
-* matplotlib >= 1.4
+* gridtools
 
 
 

@@ -1,15 +1,12 @@
 import os
 from datetime import timedelta
-
-import netCDF4
 import numpy
 import datetime
-
 from cablab import NetCDFCubeSourceProvider
 
 
 class LandSurfTemperatureProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name='land_surface_temperature', dir=None, resampling_order = None):
+    def __init__(self, cube_config, name='land_surface_temperature', dir=None, resampling_order=None):
         super(LandSurfTemperatureProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.old_indices = None
 
@@ -35,13 +32,15 @@ class LandSurfTemperatureProvider(NetCDFCubeSourceProvider):
         file_names = os.listdir(self.dir_path)
         for file_name in file_names:
             if '.nc' in file_name:
-                #print (file_name)
-                source_date = datetime.datetime(int(file_name[22:26]),int(file_name[26:28]),int(file_name[28:30]),12,00)
+                # print (file_name)
+                source_date = datetime.datetime(int(file_name[22:26]), int(file_name[26:28]), int(file_name[28:30]), 12,
+                                                00)
                 if self.cube_config.start_time.year <= source_date.year <= self.cube_config.end_time.year:
-                    file = os.path.join(self.dir_path, file_name).replace("\\","/")
+                    file = os.path.join(self.dir_path, file_name).replace("\\", "/")
                     dataset = self.dataset_cache.get_dataset(file)
                     if self.variable_descriptors[self._name]["source_name"] in dataset.variables:
-                        source_time_ranges.append((source_date-timedelta(hours = 12), source_date + timedelta(hours=12), file, 0))
+                        source_time_ranges.append(
+                            (source_date - timedelta(hours=12), source_date + timedelta(hours=12), file, 0))
                     self.dataset_cache.close_dataset(file)
         return sorted(source_time_ranges, key=lambda item: item[0])
 

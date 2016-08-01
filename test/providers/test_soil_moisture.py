@@ -3,7 +3,7 @@ import unittest
 from datetime import datetime
 
 from cablab import CubeConfig
-from cablab.providers.soil_moisture import SoilMoistureProvider
+from cablab.providers import SoilMoistureProvider
 from cablab.util import Config
 
 SOURCE_DIR = Config.instance().get_cube_source_path('ECV_sm')

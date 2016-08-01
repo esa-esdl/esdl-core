@@ -1,14 +1,12 @@
 import datetime
 import os
 from datetime import timedelta
-
 import numpy
-
 from cablab import NetCDFCubeSourceProvider
 
 
 class AerosolsProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name='aerosols', dir=None, resampling_order = None):
+    def __init__(self, cube_config, name='aerosols', dir=None, resampling_order=None):
         super(AerosolsProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.old_indices = None
 
@@ -21,9 +19,12 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
                 'fill_value': -999.0,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 1610 nm',
-                # 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
+                'standard_name': 'atmosphere_optical_thickness_due_to_aerosol_at_1610nm',
+                'references': 'Holzer-Popp, T., de Leeuw, G., Griesfeller, J., Martynenko, D., Klueser, L., Bevan, S., et al. (2013). Aerosol retrieval experiments in the ESA Aerosol_cci project. Atmospheric Measurement Techniques, 6, 1919-1957. doi:10.5194/amt-6-1919-2013. ',
+                'comment': 'Aerosol optical thickness derived from the dataset produced by the Aerosol CCI project.',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'url': 'http://www.esa-aerosol-cci.org/',
             },
             'aerosol_optical_thickness_550': {
                 'source_name': 'AOD550_mean',
@@ -31,9 +32,12 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
                 'fill_value': -999.0,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 550 nm',
-                # 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
+                'standard_name': 'atmosphere_optical_thickness_due_to_aerosol_at_550nm',
+                'references': 'Holzer-Popp, T., de Leeuw, G., Griesfeller, J., Martynenko, D., Klueser, L., Bevan, S., et al. (2013). Aerosol retrieval experiments in the ESA Aerosol_cci project. Atmospheric Measurement Techniques, 6, 1919-1957. doi:10.5194/amt-6-1919-2013. ',
+                'comment': 'Aerosol optical thickness derived from the dataset produced by the Aerosol CCI project.',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'url': 'http://www.esa-aerosol-cci.org/',
             },
             'aerosol_optical_thickness_555': {
                 'source_name': 'AOD555_mean',
@@ -41,9 +45,12 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
                 'fill_value': -999.0,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 555 nm',
-                # 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
+                'standard_name': 'atmosphere_optical_thickness_due_to_aerosol_at_555nm',
+                'references': 'Holzer-Popp, T., de Leeuw, G., Griesfeller, J., Martynenko, D., Klueser, L., Bevan, S., et al. (2013). Aerosol retrieval experiments in the ESA Aerosol_cci project. Atmospheric Measurement Techniques, 6, 1919-1957. doi:10.5194/amt-6-1919-2013. ',
+                'comment': 'Aerosol optical thickness derived from the dataset produced by the Aerosol CCI project.',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'url': 'http://www.esa-aerosol-cci.org/',
             },
             'aerosol_optical_thickness_659': {
                 'source_name': 'AOD659_mean',
@@ -51,9 +58,12 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
                 'fill_value': -999.0,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 659 nm',
-                # 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
+                'standard_name': 'atmosphere_optical_thickness_due_to_aerosol_at_659nm',
+                'references': 'Holzer-Popp, T., de Leeuw, G., Griesfeller, J., Martynenko, D., Klueser, L., Bevan, S., et al. (2013). Aerosol retrieval experiments in the ESA Aerosol_cci project. Atmospheric Measurement Techniques, 6, 1919-1957. doi:10.5194/amt-6-1919-2013. ',
+                'comment': 'Aerosol optical thickness derived from the dataset produced by the Aerosol CCI project.',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'url': 'http://www.esa-aerosol-cci.org/',
             },
             'aerosol_optical_thickness_865': {
                 'source_name': 'AOD865_mean',
@@ -61,9 +71,12 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
                 'fill_value': -999.0,
                 'units': '1',
                 'long_name': 'aerosol optical thickness at 865 nm',
-                # 'standard_name': 'atmosphere_optical_thickness_due_to_aerosol',
+                'standard_name': 'atmosphere_optical_thickness_due_to_aerosol_at_865nm',
+                'references': 'Holzer-Popp, T., de Leeuw, G., Griesfeller, J., Martynenko, D., Klueser, L., Bevan, S., et al. (2013). Aerosol retrieval experiments in the ESA Aerosol_cci project. Atmospheric Measurement Techniques, 6, 1919-1957. doi:10.5194/amt-6-1919-2013. ',
+                'comment': 'Aerosol optical thickness derived from the dataset produced by the Aerosol CCI project.',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'url': 'http://www.esa-aerosol-cci.org/',
             }
         }
 

@@ -6,7 +6,7 @@ from cablab import CubeConfig
 from cablab.providers.albedo import AlbedoProvider
 from cablab.util import Config
 
-SOURCE_DIR = Config.instance().get_cube_source_path('globalbedo_CF_compliant\\05deg\\8daily')
+SOURCE_DIR = Config.instance().get_cube_source_path('globalbedo_CF_compliant/05deg/8daily')
 
 
 class AlbedoProviderTest(unittest.TestCase):

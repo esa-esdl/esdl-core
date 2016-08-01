@@ -3,7 +3,7 @@ import unittest
 from datetime import datetime
 
 from cablab import CubeConfig
-from cablab.providers.land_surface_temperature import LandSurfTemperatureProvider
+from cablab.providers import LandSurfTemperatureProvider
 from cablab.util import Config
 
 SOURCE_DIR = Config.instance().get_cube_source_path("globtemperature/ftp2.globtemperature.info/AATSR/L3/")

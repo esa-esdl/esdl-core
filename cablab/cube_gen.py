@@ -4,9 +4,10 @@ import sys
 
 from pkg_resources import iter_entry_points
 
-from cablab.cube import Cube
-from cablab.cube_config import CubeConfig, __version__
-from cablab.cube_provider import CubeSourceProvider
+from .version import  version as __version__
+from .cube import Cube
+from .cube_config import CubeConfig
+from .cube_provider import CubeSourceProvider
 
 
 def _load_source_providers():
@@ -22,6 +23,7 @@ def _load_source_providers():
 
 
 SOURCE_PROVIDERS = _load_source_providers()
+
 
 def _parse_source_arg(source: str):
     from collections import OrderedDict
@@ -55,20 +57,30 @@ def main(args=None):
 
     print('CAB-LAB command-line interface, version %s' % __version__)
 
-    #
-    # Configure and run argument parser
-    #
+    """
+    Configure and run argument parser
+
+    More arguments can also be added to the SOURCE parameter. Existing arguments:
+      - dir                   : to specify the source directory (required)
+      - var                   : to specify the desired variable name (for gleam and mpibgc providers)
+      - resampling_order      : to specify the re-sampling order (space_first or time_first).
+                                The default is time_first.
+        # Usage examples:
+    cube-gen "cablab-datacube/low-res" "burnt_area:dir=cablab-source/BurntArea"
+    cube-gen "cablab-datacube/low-res" "evaporative_stress:dir=cablab-source/evaporative_stress:var=S"
+    cube-gen "cablab-datacube/low-res" "soil_moisture:dir=cablab-source/ECV_sm:resampling_order=space_first"
+    """
     parser = argparse.ArgumentParser(description='Generates a new CAB-LAB data cube or updates an existing one.')
     parser.add_argument('-l', '--list', action='store_true',
                         help="list all available source providers")
-    parser.add_argument('-G', '--dont_clear_cache', action='store_true',
+    parser.add_argument('-G', '--dont-clear-cache', action='store_true',
                         help="do not clear data cache before updating the cube (faster)")
     parser.add_argument('-c', '--cube-conf', metavar='CONFIG',
                         help="data cube configuration file")
     parser.add_argument('cube_dir', metavar='TARGET', nargs='?',
                         help="data cube root directory")
     parser.add_argument('cube_sources', metavar='SOURCE', nargs='*',
-                        help='<provider name>:<directory>, use -l to list source provider names')
+                        help='<provider name>:dir=<directory>, use -l to list source provider names')
     args_obj = parser.parse_args(args)
 
     #
@@ -118,6 +130,7 @@ def main(args=None):
             cube = Cube.create(cube_dir, cube_config)
         else:
             cube = Cube.open(cube_dir)
+
         source_providers = [cls(cube.config, *args, name=name, **kwargs)
                             for name, cls, args, kwargs in source_provider_infos]
 

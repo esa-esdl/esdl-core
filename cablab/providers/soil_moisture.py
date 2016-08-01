@@ -1,14 +1,12 @@
 import os
 from datetime import timedelta
-
 import netCDF4
 import numpy
-
 from cablab import NetCDFCubeSourceProvider
 
 
 class SoilMoistureProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name='soil_moisture', dir=None, resampling_order = None):
+    def __init__(self, cube_config, name='soil_moisture', dir=None, resampling_order=None):
         super(SoilMoistureProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.old_indices = None
 
@@ -23,6 +21,16 @@ class SoilMoistureProvider(NetCDFCubeSourceProvider):
                 'long_name': 'soil moisture',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
+                'standard_name': 'soil_moisture_content',
+                'references': 'Liu, Y.Y., Parinussa, R.M., Dorigo, W.A., De Jeu, '
+                'R.A.M., Wagner, W., McCabe, M.F., Evans, J.P., and van Dijk, A.I.J.M. '
+                '(2012): Trend-preserving blending of passive and active microwave soil '
+                'moisture retrievals; Liu, Y.Y., Parinussa, R.M., Dorigo, W.A., De Jeu, '
+                'R.A.M., Wagner, W., van Dijk, A.I.J.M., McCabe, M.F., & Evans, J.P. '
+                '(2011): Developing an improved soil moisture dataset by blending passive '
+                'and active microwave satellite based retrievals. Hydrology and Earth System Sciences, 15, 425-436.',
+                'url': 'http://www.esa-soilmoisture-cci.org',
+                'comment': 'Soil moisture based on the SOilmoisture CCI project',
             }
         }
 

@@ -1,14 +1,12 @@
 import os
 from datetime import timedelta
-
 import netCDF4
 import numpy
-
 from cablab import NetCDFCubeSourceProvider
 
 
 class AirTemperatureProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name='air_temperature', dir=None, resampling_order = None):
+    def __init__(self, cube_config, name='air_temperature', dir=None, resampling_order=None):
         super(AirTemperatureProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.old_indices = None
 
@@ -21,8 +19,12 @@ class AirTemperatureProvider(NetCDFCubeSourceProvider):
                 'fill_value': -32767,
                 'units': 'K',
                 'long_name': '2 metre temperature',
+                # todo (meggart 20160712) - remove offset and scale_factor (issue #43)
                 'scale_factor': 0.0019718202938428923,
                 'add_offset': 259.2678739531343,
+                'references': 'Dee, D.P. et al. 2011 http://onlinelibrary.wiley.com/doi/10.1002/qj.828/abstract',
+                'comment': 'Air temperature at 2m from the ERAInterim reanalysis product.',
+                'url': 'http://www.ecmwf.int/en/research/climate-reanalysis/era-interim'
             }
         }
 
@@ -33,10 +35,11 @@ class AirTemperatureProvider(NetCDFCubeSourceProvider):
             if '.nc' in file_name:
                 source_year = int(file_name.replace('.nc', '').split('_')[1])
                 if self.cube_config.start_time.year <= source_year <= self.cube_config.end_time.year:
-                    file = os.path.join(self.dir_path, file_name).replace("\\","/")
+                    file = os.path.join(self.dir_path, file_name).replace("\\", "/")
                     dataset = self.dataset_cache.get_dataset(file)
                     times = dataset.variables['time']
                     dates = netCDF4.num2date(times[:], 'hours since 1900-01-01 00:00:0.0', calendar='gregorian')
                     self.dataset_cache.close_dataset(file)
-                    source_time_ranges += [(dates[i], dates[i] + timedelta(hours=12), file, i) for i in range(len(dates))]
+                    source_time_ranges += [(dates[i], dates[i] + timedelta(hours=12), file, i) for i in
+                                           range(len(dates))]
         return sorted(source_time_ranges, key=lambda item: item[0])

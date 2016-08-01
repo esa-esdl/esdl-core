@@ -3,7 +3,7 @@ import unittest
 from datetime import datetime
 
 from cablab import CubeConfig
-from cablab.providers.air_temperature import AirTemperatureProvider
+from cablab.providers import AirTemperatureProvider
 from cablab.util import Config
 
 SOURCE_DIR = Config.instance().get_cube_source_path("T2m-ECMWF/low/")

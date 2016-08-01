@@ -7,9 +7,26 @@ except ImportError:
 
 from setuptools import setup, find_packages
 
+
+def get_version():
+    version_file = 'cablab/version.py'
+    locals = {}
+    try:
+        execfile(version_file, None, locals)
+    except NameError:
+        with open(version_file) as fp:
+            exec(fp.read(), None, locals)
+    return locals['version']
+
+
+# Same effect as "from ect import __version__", but avoids importing ect:
+__version__ = get_version()
+
+packages = find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
+
 setup(
     name="cablab-core",
-    version="0.2.0",
+    version=__version__,
     description='CAB-LAB Data Cube Software',
     license='GPL 3',
     author='CAB-LAB Development Team',
@@ -17,8 +34,7 @@ setup(
     maintainer='Brockmann Consult GmbH',
     maintainer_email='cablab@earthsystemdatacube.net',
     url='http://earthsystemdatacube.net/',
-    packages=find_packages('src'),
-    package_dir={'': 'src'},
+    packages=packages,
     entry_points={
         'console_scripts': [
             'cube-gen = cablab.cube_gen:main',
@@ -55,5 +71,5 @@ setup(
         ],
     },
     # *Minimum* requirements
-    install_requires=['numpy', 'netCDF4', 'gridtools'],
+    install_requires=['numpy', 'netCDF4', 'gridtools', 'xarray', 'h5netcdf'],
 )
