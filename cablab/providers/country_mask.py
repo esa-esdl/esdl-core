@@ -1,4 +1,5 @@
 import numpy
+
 from cablab import NetCDFStaticCubeSourceProvider
 
 
@@ -12,10 +13,9 @@ class CountryMaskProvider(NetCDFStaticCubeSourceProvider):
             'country_mask': {
                 'source_name': 'layer',
                 'data_type': numpy.float32,
-                'fill_value': -9999.0,
-                'units': 'hectares',
+                'fill_value': -3.4E38,
+                'units': '-',
                 'standard_name': 'country_mask',
-                'comment': 'Burnt Area based on the GFED4 fire product.',
                 'scale_factor': 1.0,
                 'add_offset': 0.0,
             }
