@@ -59,6 +59,7 @@ class CubeConfig:
                  file_format='NETCDF4_CLASSIC',
                  compression=False,
                  chunk_sizes=None,
+                 static_data=False,
                  model_version=CUBE_MODEL_VERSION):
         self.model_version = model_version
         self.spatial_res = spatial_res
@@ -74,6 +75,7 @@ class CubeConfig:
         self.variables = variables
         self.file_format = file_format
         self.compression = compression
+        self.static_data = static_data
         self._validate()
 
     def __repr__(self):

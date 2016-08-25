@@ -375,6 +375,7 @@ class NetCDFStaticCubeSourceProvider(BaseStaticCubeSourceProvider, metaclass=ABC
             self._dir_path = Config.instance().get_cube_source_path(dir_path)
         else:
             self._dir_path = dir_path
+        self.cube_config.static_data = True
 
     @property
     def dir_path(self):
