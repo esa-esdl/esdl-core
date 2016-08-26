@@ -3,31 +3,38 @@ import unittest
 from datetime import datetime
 
 from cablab import CubeConfig
-from cablab.providers import OzoneProvider
+from cablab.providers.ozone import OzoneProvider
+from test.providers.provider_test_utils import ProviderTestBase
 from cablab.util import Config
 
 SOURCE_DIR = Config.instance().get_cube_source_path('Ozone-CCI/Total_Columns\\L3\\MERGED')
 
 
-class OzoneProviderTest(unittest.TestCase):
+class OzoneProviderTest(ProviderTestBase):
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_source_time_ranges(self):
         provider = OzoneProvider(CubeConfig(), dir=SOURCE_DIR)
         provider.prepare()
         source_time_ranges = provider.source_time_ranges
         self.assertEqual(185, len(source_time_ranges))
-        self.assertEqual((datetime(1996, 3, 10, 0, 0),
-                          datetime(1996, 3, 31, 0, 0),
-                          os.path.join(SOURCE_DIR, 'ESACCI-OZONE-L3S-TC-MERGED-DLR_1M-19960310-fv0100.nc'), None)
-                         , source_time_ranges[0])
-        self.assertEqual((datetime(1996, 9, 1, 0, 0),
-                          datetime(1996, 9, 30, 0, 0),
-                          os.path.join(SOURCE_DIR, 'ESACCI-OZONE-L3S-TC-MERGED-DLR_1M-19960901-fv0100.nc'), None)
-                         , source_time_ranges[6])
-        self.assertEqual((datetime(2011, 6, 1, 0, 0),
-                          datetime(2011, 6, 30, 0, 0),
-                          os.path.join(SOURCE_DIR, 'ESACCI-OZONE-L3S-TC-MERGED-DLR_1M-20110601-fv0100.nc'), None)
-                         , source_time_ranges[184])
+        self.assert_source_time_ranges(source_time_ranges[0],
+                                       datetime(1996, 3, 10, 0, 0),
+                                       datetime(1996, 3, 31, 0, 0),
+                                       self.get_source_dir_list(SOURCE_DIR) + [
+                                           'ESACCI-OZONE-L3S-TC-MERGED-DLR_1M-19960310-fv0100.nc'],
+                                       None)
+        self.assert_source_time_ranges(source_time_ranges[6],
+                                       datetime(1996, 9, 1, 0, 0),
+                                       datetime(1996, 9, 30, 0, 0),
+                                       self.get_source_dir_list(SOURCE_DIR) + [
+                                           'ESACCI-OZONE-L3S-TC-MERGED-DLR_1M-19960901-fv0100.nc'],
+                                       None)
+        self.assert_source_time_ranges(source_time_ranges[184],
+                                       datetime(2011, 6, 1, 0, 0),
+                                       datetime(2011, 6, 30, 0, 0),
+                                       self.get_source_dir_list(SOURCE_DIR) + [
+                                           'ESACCI-OZONE-L3S-TC-MERGED-DLR_1M-20110601-fv0100.nc'],
+                                       None)
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_temporal_coverage(self):

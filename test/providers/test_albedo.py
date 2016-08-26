@@ -4,30 +4,34 @@ from datetime import datetime
 
 from cablab import CubeConfig
 from cablab.providers.albedo import AlbedoProvider
+from test.providers.provider_test_utils import ProviderTestBase
 from cablab.util import Config
 
 SOURCE_DIR = Config.instance().get_cube_source_path('globalbedo_CF_compliant/05deg/8daily')
 
 
-class AlbedoProviderTest(unittest.TestCase):
+class AlbedoProviderTest(ProviderTestBase):
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_source_time_ranges(self):
         provider = AlbedoProvider(CubeConfig(), dir=SOURCE_DIR)
         provider.prepare()
         source_time_ranges = provider.source_time_ranges
         self.assertEqual(461, len(source_time_ranges))
-        self.assertEqual((datetime(2001, 1, 1, 0),
-                          datetime(2001, 1, 9, 0),
-                          os.path.join(SOURCE_DIR, 'GlobAlbedo.merge.albedo.05.2001001.nc'),
-                          0), source_time_ranges[0])
-        self.assertEqual((datetime(2001, 1, 9, 0),
-                          datetime(2001, 1, 17, 0),
-                          os.path.join(SOURCE_DIR, 'GlobAlbedo.merge.albedo.05.2001009.nc'),
-                          0), source_time_ranges[1])
-        self.assertEqual((datetime(2001, 3, 22, 0),
-                          datetime(2001, 3, 30, 0),
-                          os.path.join(SOURCE_DIR, 'GlobAlbedo.merge.albedo.05.2001081.nc'),
-                          0), source_time_ranges[10])
+        self.assert_source_time_ranges(source_time_ranges[0],
+                                       datetime(2001, 1, 1, 0),
+                                       datetime(2001, 1, 9, 0),
+                                       self.get_source_dir_list(SOURCE_DIR) + ['GlobAlbedo.merge.albedo.05.2001001.nc'],
+                                       0)
+        self.assert_source_time_ranges(source_time_ranges[1],
+                                       datetime(2001, 1, 9, 0),
+                                       datetime(2001, 1, 17, 0),
+                                       self.get_source_dir_list(SOURCE_DIR) + ['GlobAlbedo.merge.albedo.05.2001009.nc'],
+                                       0)
+        self.assert_source_time_ranges(source_time_ranges[10],
+                                       datetime(2001, 3, 22, 0),
+                                       datetime(2001, 3, 30, 0),
+                                       self.get_source_dir_list(SOURCE_DIR) + ['GlobAlbedo.merge.albedo.05.2001081.nc'],
+                                       0)
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_temporal_coverage(self):

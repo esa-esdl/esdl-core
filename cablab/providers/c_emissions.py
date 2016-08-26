@@ -12,7 +12,7 @@ class CEmissionsProvider(NetCDFCubeSourceProvider):
     @property
     def variable_descriptors(self):
         return {
-            'fire_c_emissions': {
+            'c_emissions': {
                 'source_name': 'Emission',
                 'data_type': numpy.float32,
                 'fill_value': -9999.0,

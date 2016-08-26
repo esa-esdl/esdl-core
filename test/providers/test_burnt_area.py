@@ -3,35 +3,40 @@ import unittest
 from datetime import datetime
 
 from cablab import CubeConfig
-from cablab.providers import BurntAreaProvider
+from cablab.providers.burnt_area import BurntAreaProvider
+from test.providers.provider_test_utils import ProviderTestBase
 from cablab.util import Config
 
 SOURCE_DIR = Config.instance().get_cube_source_path('BurntArea')
 
 
-class BurntAreaProviderTest(unittest.TestCase):
+class BurntAreaProviderTest(ProviderTestBase):
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_source_time_ranges(self):
         provider = BurntAreaProvider(CubeConfig(), dir=SOURCE_DIR)
         provider.prepare()
         source_time_ranges = provider.source_time_ranges
         self.assertEqual(225, len(source_time_ranges))
-        self.assertEqual((datetime(1995, 1, 6, 0, 0),
-                          datetime(1995, 2, 6, 0, 0),
-                          os.path.join(SOURCE_DIR, 'BurntArea.GFED4.1995.nc.gz'),
-                          0), source_time_ranges[0])
-        self.assertEqual((datetime(1995, 2, 6, 0, 0),
-                          datetime(1995, 3, 6, 0, 0),
-                          os.path.join(SOURCE_DIR, 'BurntArea.GFED4.1995.nc.gz'),
-                          1), source_time_ranges[1])
-        self.assertEqual((datetime(1995, 7, 6, 0, 0),
-                          datetime(1995, 8, 6, 0, 0),
-                          os.path.join(SOURCE_DIR, 'BurntArea.GFED4.1995.nc.gz'),
-                          6), source_time_ranges[6])
-        self.assertEqual((datetime(2014, 2, 1, 0, 0),
-                          datetime(2014, 3, 1, 0, 0),
-                          os.path.join(SOURCE_DIR, 'BurntArea.GFED4.2014.nc.gz'),
-                          1), source_time_ranges[224])
+        self.assert_source_time_ranges(source_time_ranges[0],
+                                       datetime(1995, 1, 6, 0, 0),
+                                       datetime(1995, 2, 6, 0, 0),
+                                       self.get_source_dir_list(SOURCE_DIR) + ['BurntArea.GFED4.1995.nc.gz'],
+                                       0)
+        self.assert_source_time_ranges(source_time_ranges[1],
+                                       datetime(1995, 2, 6, 0, 0),
+                                       datetime(1995, 3, 6, 0, 0),
+                                       self.get_source_dir_list(SOURCE_DIR) + ['BurntArea.GFED4.1995.nc.gz'],
+                                       1)
+        self.assert_source_time_ranges(source_time_ranges[6],
+                                       datetime(1995, 7, 6, 0, 0),
+                                       datetime(1995, 8, 6, 0, 0),
+                                       self.get_source_dir_list(SOURCE_DIR) + ['BurntArea.GFED4.1995.nc.gz'],
+                                       6)
+        self.assert_source_time_ranges(source_time_ranges[224],
+                                       datetime(2014, 2, 1, 0, 0),
+                                       datetime(2014, 3, 1, 0, 0),
+                                       self.get_source_dir_list(SOURCE_DIR) + ['BurntArea.GFED4.2014.nc.gz'],
+                                       1)
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_temporal_coverage(self):

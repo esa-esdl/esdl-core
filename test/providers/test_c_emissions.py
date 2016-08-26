@@ -3,31 +3,35 @@ import unittest
 from datetime import datetime
 
 from cablab import CubeConfig
-from cablab.providers import CEmissionsProvider
+from cablab.providers.c_emissions import CEmissionsProvider
+from test.providers.provider_test_utils import ProviderTestBase
 from cablab.util import Config
 
 SOURCE_DIR = Config.instance().get_cube_source_path('Fire_C_Emissions')
 
 
-class CEmissionsProviderTest(unittest.TestCase):
+class CEmissionsProviderTest(ProviderTestBase):
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_source_time_ranges(self):
         provider = CEmissionsProvider(CubeConfig(), dir=SOURCE_DIR)
         provider.prepare()
         source_time_ranges = provider.source_time_ranges
         self.assertEqual(120, len(source_time_ranges))
-        self.assertEqual((datetime(2001, 1, 1, 0, 0),
-                          datetime(2001, 2, 1, 0, 0),
-                          os.path.join(SOURCE_DIR, 'fire_C_Emissions.nc'),
-                          0), source_time_ranges[0])
-        self.assertEqual((datetime(2001, 12, 1, 0, 0),
-                          datetime(2002, 1, 1, 0, 0),
-                          os.path.join(SOURCE_DIR, 'fire_C_Emissions.nc'),
-                          11), source_time_ranges[11])
-        self.assertEqual((datetime(2010, 12, 1, 0, 0),
-                          datetime(2011, 1, 1, 0, 0),
-                          os.path.join(SOURCE_DIR, 'fire_C_Emissions.nc'),
-                          119), source_time_ranges[119])
+        self.assert_source_time_ranges(source_time_ranges[0],
+                                       datetime(2001, 1, 1, 0, 0),
+                                       datetime(2001, 2, 1, 0, 0),
+                                       self.get_source_dir_list(SOURCE_DIR) + ['fire_C_Emissions.nc'],
+                                       0)
+        self.assert_source_time_ranges(source_time_ranges[11],
+                                       datetime(2001, 12, 1, 0, 0),
+                                       datetime(2002, 1, 1, 0, 0),
+                                       self.get_source_dir_list(SOURCE_DIR) + ['fire_C_Emissions.nc'],
+                                       11)
+        self.assert_source_time_ranges(source_time_ranges[119],
+                                       datetime(2010, 12, 1, 0, 0),
+                                       datetime(2011, 1, 1, 0, 0),
+                                       self.get_source_dir_list(SOURCE_DIR) + ['fire_C_Emissions.nc'],
+                                       119)
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_temporal_coverage(self):

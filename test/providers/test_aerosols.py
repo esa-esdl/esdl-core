@@ -3,12 +3,13 @@ import unittest
 from datetime import datetime
 from cablab import CubeConfig
 from cablab.providers.aerosols import AerosolsProvider
+from test.providers.provider_test_utils import ProviderTestBase
 from cablab.util import Config
 
 SOURCE_DIR = Config.instance().get_cube_source_path('CCI-Aerosols/AATSR_SU_v4.1/L3_DAILY')
 
 
-class AerosolsProviderTest(unittest.TestCase):
+class AerosolsProviderTest(ProviderTestBase):
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_source_time_ranges(self):
         provider = AerosolsProvider(CubeConfig(end_time=datetime(2003, 1, 1)), dir=SOURCE_DIR)
@@ -18,32 +19,21 @@ class AerosolsProviderTest(unittest.TestCase):
         self.assert_source_time_ranges(source_time_ranges[0],
                                        datetime(2002, 7, 24, 0, 0),
                                        datetime(2002, 7, 25, 0, 0),
-                                       self.get_source_dir_list() +
+                                       self.get_source_dir_list(SOURCE_DIR) +
                                        ['2002', '20020724-ESACCI-L3C_AEROSOL-AOD-AATSR_ENVISAT-SU_DAILY-fv4.1.nc'],
                                        0)
         self.assert_source_time_ranges(source_time_ranges[6],
                                        datetime(2002, 8, 6, 0, 0),
                                        datetime(2002, 8, 7, 0, 0),
-                                       self.get_source_dir_list() +
+                                       self.get_source_dir_list(SOURCE_DIR) +
                                        ['2002', '20020806-ESACCI-L3C_AEROSOL-AOD-AATSR_ENVISAT-SU_DAILY-fv4.1.nc'],
                                        0)
         self.assert_source_time_ranges(source_time_ranges[96],
                                        datetime(2003, 1, 1, 0, 0),
                                        datetime(2003, 1, 2, 0, 0),
-                                       self.get_source_dir_list() +
+                                       self.get_source_dir_list(SOURCE_DIR) +
                                        ['2003', '20030101-ESACCI-L3C_AEROSOL-AOD-AATSR_ENVISAT-SU_DAILY-fv4.1.nc'],
                                        0)
-
-    def get_source_dir_list(self):
-        return SOURCE_DIR.replace('\\', '/').split('/')
-
-    def assert_source_time_ranges(self, source_time_ranges, expected_start_date,
-                                  expected_end_date, expected_paths, expected_index):
-        self.assertEqual(expected_start_date, source_time_ranges[0])
-        self.assertEqual(expected_end_date, source_time_ranges[1])
-        for path in expected_paths:
-            self.assertIn(path, source_time_ranges[2].replace('\\', '/'))
-        self.assertEqual(expected_index, source_time_ranges[3])
 
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_temporal_coverage(self):

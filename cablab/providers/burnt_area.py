@@ -13,7 +13,7 @@ class BurntAreaProvider(NetCDFCubeSourceProvider):
     @property
     def variable_descriptors(self):
         return {
-            'burned_area': {
+            'burnt_area': {
                 'source_name': 'BurntArea',
                 'data_type': numpy.float32,
                 'fill_value': -9999.0,
@@ -23,7 +23,7 @@ class BurntAreaProvider(NetCDFCubeSourceProvider):
                 # Norman, it has been decided that it would make more sense to use fraction instead of the actual area.
                 # But it has to be done on the original data.
                 # 'long_name': 'Monthly Burnt Area',
-                'standard_name': 'burned_area',
+                'standard_name': 'burnt_area',
                 'references': 'Giglio, Louis, James T. Randerson, and Guido R. Werf. "Analysis of daily, monthly, '
                               'and annual burned area using the fourth‐generation global fire emissions database '
                               '(GFED4)." Journal of Geophysical Research: Biogeosciences 118.1 (2013): 317-328.',
