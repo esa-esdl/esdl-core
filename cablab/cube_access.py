@@ -249,7 +249,7 @@ class CubeDataAccess:
 
     def _get_time_range(self, time):
         if time is None:
-            return self._cube.config.start_time, self._cube.config.end_time
+            return self._cube_config.start_time, self._cube_config.end_time
         try:
             # Try using time as time pair
             time_1, time_2 = time
