@@ -1,7 +1,9 @@
 import os
 from datetime import timedelta
+
 import numpy
 from netCDF4 import num2date
+
 from cablab import NetCDFCubeSourceProvider
 
 all_vars_descr = {'GPPall': {
@@ -12,8 +14,6 @@ all_vars_descr = {'GPPall': {
         'units': 'someunit',
         'long_name': 'Gross Primary Productivity',
         'standard_name': 'gross_primary_production',
-        'scale_factor': 1.0,
-        'add_offset': 0.0,
         'url': 'https://www.bgc-jena.mpg.de',
     }},
 
@@ -25,8 +25,6 @@ all_vars_descr = {'GPPall': {
             'units': 'someunit',
             'long_name': 'Terrestrial Ecosystem Respiration',
             'standard_name': 'put_name_here',
-            'scale_factor': 1.0,
-            'add_offset': 0.0,
             'url': 'https://www.bgc-jena.mpg.de',
         }},
     'NEE': {
@@ -37,8 +35,6 @@ all_vars_descr = {'GPPall': {
             'units': 'someunit',
             'long_name': 'Net Ecosystem Exchange',
             'standard_name': 'put_name_here',
-            'scale_factor': 1.0,
-            'add_offset': 0.0,
             'url': 'https://www.bgc-jena.mpg.de',
         }},
     'LE': {
@@ -49,8 +45,6 @@ all_vars_descr = {'GPPall': {
             'units': 'someunit',
             'long_name': 'Latent Energy',
             'standard_name': 'put_name_here',
-            'scale_factor': 1.0,
-            'add_offset': 0.0,
             'url': 'https://www.bgc-jena.mpg.de',
         }},
     'H': {
@@ -61,8 +55,6 @@ all_vars_descr = {'GPPall': {
             'units': 'someunit',
             'long_name': 'Sensible Heat',
             'standard_name': 'put_name_here',
-            'scale_factor': 1.0,
-            'add_offset': 0.0,
             'url': 'https://www.bgc-jena.mpg.de',
         }},
 }

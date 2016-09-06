@@ -184,11 +184,11 @@ class CubeDataAccess:
             grid_x12 = global_grid_width - 1
             grid_x21 = 0
             grid_x22 = grid_x2
-            # todo (nf 20151102) - Handle data requests intersecting the dateline, see issue #15
+            # TODO (forman, 20151102) - Handle data requests intersecting the dateline, see issue #15
             print('dateline intersection! grid_x: %d-%d, %d-%d' % (grid_x11, grid_x12, grid_x21, grid_x22))
             raise ValueError('illegal longitude: %s: dateline intersection not yet implemented' % longitude)
 
-        # todo (nf 20151102) - Fill in NaN, where a variable does not provide any data, see issue #17
+        # TODO (forman, 20151102) - Fill in NaN, where a variable does not provide any data, see issue #17
         result = []
         # shape = time_index_2 - time_index_1 + 1, \
         #         grid_y2 - grid_y1 + 1, \

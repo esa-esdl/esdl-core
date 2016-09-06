@@ -1,7 +1,9 @@
 import os
 from datetime import datetime, timedelta
+
 import netCDF4
 import numpy
+
 from cablab import NetCDFCubeSourceProvider
 
 
@@ -19,8 +21,6 @@ class SnowWaterEquivalentProvider(NetCDFCubeSourceProvider):
                 'fill_value': -9999.0,
                 'units': 'mm',
                 'long_name': 'daily snow water equivalent',
-                'scale_factor': 1.0,
-                'add_offset': 0.0,
                 'certain_values': "-2 == mountains, -1 == water bodies, 0 == either SWE, "
                                   "or missing data in the southern hemisphere",
                 'references': 'Luojus, Kari, et al. "ESA DUE Globsnow-Global Snow Database for Climate Research." '

@@ -1,7 +1,9 @@
 import datetime
 import os
 from datetime import timedelta
+
 import numpy
+
 from cablab import NetCDFCubeSourceProvider
 
 all_vars_descr = {'E': {
@@ -12,8 +14,6 @@ all_vars_descr = {'E': {
         'units': 'mm/day',
         'long_name': 'Evaporation',
         'standard_name': 'water_evaporation_flux',
-        'scale_factor': 1.0,
-        'add_offset': 0.0,
         'url': 'http://www.gleam.eu',
     }},
     'S': {
@@ -24,8 +24,6 @@ all_vars_descr = {'E': {
             'units': '',
             'long_name': 'Evaporative Stress Factor',
             'standard_name': 'evaporative_stress_factor',
-            'scale_factor': 1.0,
-            'add_offset': 0.0,
             'url': 'http://www.gleam.eu',
         }},
     'Ep': {
@@ -36,8 +34,6 @@ all_vars_descr = {'E': {
             'units': 'mm/day',
             'long_name': 'Potential Evaporation',
             'standard_name': 'potential_water_evaporation_flux',
-            'scale_factor': 1.0,
-            'add_offset': 0.0,
             'url': 'http://www.gleam.eu',
         }},
     'Ei': {
@@ -48,8 +44,6 @@ all_vars_descr = {'E': {
             'units': 'mm/day',
             'long_name': 'Interception Loss',
             'standard_name': 'interception_loss',
-            'scale_factor': 1.0,
-            'add_offset': 0.0,
             'url': 'http://www.gleam.eu',
         }},
     'SMroot': {
@@ -60,8 +54,6 @@ all_vars_descr = {'E': {
             'units': 'm3/m3',
             'long_name': 'Root-Zone Soil Moisture',
             'standard_name': 'soil_moisture_content',
-            'scale_factor': 1.0,
-            'add_offset': 0.0,
             'url': 'http://www.gleam.eu',
         }},
     'SMsurf': {
@@ -72,8 +64,6 @@ all_vars_descr = {'E': {
             'units': 'mm3/mm3',
             'long_name': 'Surface Soil Moisture',
             'standard_name': 'soil_moisture_content',
-            'scale_factor': 1.0,
-            'add_offset': 0.0,
             'url': 'http://www.gleam.eu',
         }},
     'Eb': {
@@ -84,8 +74,6 @@ all_vars_descr = {'E': {
             'units': 'mm/day',
             'long_name': 'Bare Soil Evaporation',
             'standard_name': 'bare_soil_water_evaporation_flux',
-            'scale_factor': 1.0,
-            'add_offset': 0.0,
             'url': 'http://www.gleam.eu',
         }},
     'Es': {
@@ -96,8 +84,6 @@ all_vars_descr = {'E': {
             'units': 'mm/day',
             'long_name': 'Snow Sublimation',
             'standard_name': 'snow_sublimation_flux',
-            'scale_factor': 1.0,
-            'add_offset': 0.0,
             'url': 'http://www.gleam.eu',
         }},
     'Et': {
@@ -108,8 +94,6 @@ all_vars_descr = {'E': {
             'units': 'mm/day',
             'long_name': 'Transpiration',
             'standard_name': 'transpiration_flux',
-            'scale_factor': 1.0,
-            'add_offset': 0.0,
             'url': 'http://www.gleam.eu',
         }},
     'Ew': {
@@ -120,8 +104,6 @@ all_vars_descr = {'E': {
             'units': 'mm/day',
             'long_name': 'Open-water Evaporation',
             'standard_name': 'water_evaporation_flux',
-            'scale_factor': 1.0,
-            'add_offset': 0.0,
             'url': 'http://www.gleam.eu',
         }},
 

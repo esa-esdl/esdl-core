@@ -1,7 +1,9 @@
 import datetime
 import os
+
 import numpy
 from netCDF4 import date2num, num2date
+
 from cablab import NetCDFCubeSourceProvider
 
 
@@ -24,8 +26,6 @@ class AlbedoProvider(NetCDFCubeSourceProvider):
                               'land surface albedo for 15 years from European sensors." Geophysical Research '
                               'Abstracts. Vol. 13. 2012.',
                 'comment': 'White sky albedo derived from the GlobAlbedo CCI project dataset',
-                'scale_factor': 1.0,
-                'add_offset': 0.0,
                 'url': 'http://www.globalbedo.org/',
             },
             'black_sky_albedo': {
@@ -39,8 +39,6 @@ class AlbedoProvider(NetCDFCubeSourceProvider):
                               'land surface albedo for 15 years from European sensors." Geophysical Research '
                               'Abstracts. Vol. 13. 2012.',
                 'comment': 'White sky albedo derived from the GlobAlbedo CCI project dataset',
-                'scale_factor': 1.0,
-                'add_offset': 0.0,
                 'url': 'http://www.globalbedo.org/',
             }
         }

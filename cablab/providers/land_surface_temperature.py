@@ -1,7 +1,9 @@
+import datetime
 import os
 from datetime import timedelta
+
 import numpy
-import datetime
+
 from cablab import NetCDFCubeSourceProvider
 
 
@@ -22,8 +24,6 @@ class LandSurfTemperatureProvider(NetCDFCubeSourceProvider):
                 'long_name': 'land surface temperature',
                 'comment': 'Advanced Along Track Scanning Radiometer pixel land surface temperature product',
                 'url': 'http://data.globtemperature.info/',
-                'scale_factor': 0.01,
-                'add_offset': 273.15,
             }
         }
 

@@ -16,7 +16,5 @@ class CountryMaskProvider(NetCDFStaticCubeSourceProvider):
                 'fill_value': -3.4E38,
                 'units': '-',
                 'standard_name': 'country_mask',
-                'scale_factor': 1.0,
-                'add_offset': 0.0,
             }
         }

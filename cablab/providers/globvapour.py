@@ -1,7 +1,9 @@
 import os
 from datetime import datetime, timedelta
+
 import netCDF4
 import numpy
+
 from cablab import NetCDFCubeSourceProvider
 
 
@@ -23,8 +25,6 @@ class GlobVapourProvider(NetCDFCubeSourceProvider):
                 'references': 'Schneider, Nadine, et al. "ESA DUE GlobVapour water vapor products: Validation." '
                               'AIP Conference Proceedings. Vol. 1531. No. 1. 2013.',
                 'comment': 'Total column water vapour based on the GlobVapour CCI product.',
-                'scale_factor': 1.0,
-                'add_offset': 0.0,
                 'url': 'http://www.globvapour.info/',
             }
         }

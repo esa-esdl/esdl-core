@@ -1,7 +1,9 @@
 import os
 from datetime import timedelta
+
 import netCDF4
 import numpy
+
 from cablab import NetCDFCubeSourceProvider
 
 
@@ -24,8 +26,6 @@ class PrecipProvider(NetCDFCubeSourceProvider):
                               'monthly precipitation analysis (1979-present)." Journal of hydrometeorology 4.6 '
                               '(2003): 1147-1167.',
                 'comment': 'Precipitation based on the GPCP dataset.',
-                'scale_factor': 1.0,
-                'add_offset': 0.0,
                 'url': 'http://precip.gsfc.nasa.gov/'
             }
         }

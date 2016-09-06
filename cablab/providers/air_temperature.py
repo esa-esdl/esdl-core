@@ -1,7 +1,9 @@
 import os
 from datetime import timedelta
+
 import netCDF4
 import numpy
+
 from cablab import NetCDFCubeSourceProvider
 
 
@@ -19,9 +21,6 @@ class AirTemperatureProvider(NetCDFCubeSourceProvider):
                 'fill_value': -32767,
                 'units': 'K',
                 'long_name': '2 metre temperature',
-                # todo (meggart 20160712) - remove offset and scale_factor (issue #43)
-                'scale_factor': 0.0019718202938428923,
-                'add_offset': 259.2678739531343,
                 'references': 'Dee, D.P. et al. 2011 http://onlinelibrary.wiley.com/doi/10.1002/qj.828/abstract',
                 'comment': 'Air temperature at 2m from the ERAInterim reanalysis product.',
                 'url': 'http://www.ecmwf.int/en/research/climate-reanalysis/era-interim'

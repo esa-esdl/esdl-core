@@ -1,6 +1,8 @@
 import os
 from datetime import timedelta, datetime
+
 import numpy
+
 from cablab import NetCDFCubeSourceProvider
 
 
@@ -25,8 +27,6 @@ class CEmissionsProvider(NetCDFCubeSourceProvider):
                               'database (GFED4)." Journal of Geophysical Research: Biogeosciences 118.1 '
                               '(2013): 317-328.',
                 'comment': 'Carbon emissions by fires based on the GFED4 fire product.',
-                'scale_factor': 1.0,
-                'add_offset': 0.0,
                 'url': 'http://www.globalfiredata.org/',
             }
         }
