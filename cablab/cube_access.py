@@ -166,14 +166,14 @@ class CubeDataAccess:
         config = self._cube_config
         time_index_1 = int(math.floor(((time_1 - config.ref_time) / timedelta(days=config.temporal_res))))
         time_index_2 = int(math.floor(((time_2 - config.ref_time) / timedelta(days=config.temporal_res))))
-        grid_y1 = int(round((90.0 - lat_2) / config.spatial_res)) - config.grid_y0
-        grid_y2 = int(round((90.0 - lat_1) / config.spatial_res)) - config.grid_y0
-        grid_x1 = int(round((180.0 + lon_1) / config.spatial_res)) - config.grid_x0
-        grid_x2 = int(round((180.0 + lon_2) / config.spatial_res)) - config.grid_x0
+        grid_y1 = int(round((90.0 - lat_2) / (180 / config.grid_height))) - config.grid_y0
+        grid_y2 = int(round((90.0 - lat_1) / (180 / config.grid_height))) - config.grid_y0
+        grid_x1 = int(round((180.0 + lon_1) / (360 / config.grid_width))) - config.grid_x0
+        grid_x2 = int(round((180.0 + lon_2) / (360 / config.grid_width))) - config.grid_x0
 
-        if grid_y2 > grid_y1 and 90.0 - (grid_y2 + config.grid_y0) * config.spatial_res == lat_1:
+        if grid_y2 > grid_y1 and 90.0 - (grid_y2 + config.grid_y0) * (180 / config.grid_height) == lat_1:
             grid_y2 -= 1
-        if grid_x2 > grid_x1 and -180.0 + (grid_x2 + config.grid_x0) * config.spatial_res == lon_2:
+        if grid_x2 > grid_x1 and -180.0 + (grid_x2 + config.grid_x0) * (360 / config.grid_width) == lon_2:
             grid_x2 -= 1
 
         global_grid_width = int(round(360.0 / config.spatial_res))
