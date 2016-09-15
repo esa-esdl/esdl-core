@@ -31,7 +31,7 @@ class WaterMaskProviderTest(unittest.TestCase):
     @unittest.skipIf(not os.path.exists(SOURCE_DIR), 'test data not found: ' + SOURCE_DIR)
     def test_get_high_res_images(self):
         provider = WaterMaskProvider(CubeConfig(grid_width=4320, grid_height=2160, spatial_res=1 / 12,
-                                                  end_time=datetime(2003, 1, 1)), dir=SOURCE_DIR)
+                                                end_time=datetime(2003, 1, 1)), dir=SOURCE_DIR)
         provider.prepare()
         images = provider.compute_variable_images(datetime(2002, 7, 27), datetime(2002, 8, 4))
 

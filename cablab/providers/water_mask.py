@@ -49,31 +49,20 @@ class WaterMaskProvider(BaseStaticCubeSourceProvider):
 
     def get_dataset_image(self, dataset, var_name):
         variable = dataset.variables[var_name]
-        if len(variable.shape) == 3:
-            var_image = variable[0, :, :]
-        elif len(variable.shape) == 2:
-            var_image = np.empty((self.cube_config.grid_height, self.cube_config.grid_width))
-            chunk_size = 180
+        var_image = np.empty((self.cube_config.grid_height, self.cube_config.grid_width))
+        x_max = 259200
+        y_max = 129600
+        chunk_size = int(x_max / self.cube_config.grid_width)
+        x_index = 1
+        y_index = 1
+        while (y_index * chunk_size) < y_max:
+            while (x_index * chunk_size) < x_max:
+                chunked = variable[(y_index - 1) * chunk_size:(y_index * chunk_size),
+                          (x_index - 1) * chunk_size:(x_index * chunk_size)]
+                var_image[y_index, x_index] = gtr.resample_2d(chunked.astype(int), 1, 1)
+                x_index += 1
+            y_index += 1
             x_index = 1
-            y_index = 1
-            x_start = 0
-            y_start = 0
-            x_max = 259200
-            y_max = 129600
-            while (y_index * chunk_size) < y_max:
-                while (x_index * chunk_size) < x_max:
-                    chunked = variable[y_start + ((y_index - 1) * chunk_size):(y_index * chunk_size),
-                              x_start + ((x_index - 1) * chunk_size):(x_index * chunk_size)]
-                    print((x_start + ((x_index - 1) * chunk_size), (x_index * chunk_size)))
-                    print((y_start, (y_index * chunk_size)))
-                    print((y_index, x_index))
-                    var_image[y_index, x_index] = gtr.resample_2d(chunked.astype(float), 1, 1)
-                    # gtr.resample_2d(chunked.astype(float), 180, 180)
-                    x_index += 1
-                y_index += 1
-                x_index = 1
-        else:
-            raise ValueError("unexpected shape for variable '%s'" % var_name)
         return var_image
 
     def close_dataset(self, dataset):
