@@ -1,4 +1,6 @@
 name: cablab
+channels:
+- forman
 dependencies:
 - _nb_ext_conf=0.3.0=py35_0
 - anaconda-client=1.5.1=py35_0
@@ -12,7 +14,7 @@ dependencies:
 - decorator=4.0.9=py35_0
 - entrypoints=0.2=py35_1
 - flask=0.11.1=py35_0
-- forman::gridtools=0.3.0=py35_0
+- gridtools=0.3.0=py35_0
 - h5py=2.6.0=np110py35_0
 - heapdict=1.0.0=py35_1
 - ipykernel=4.3.1=py35_0
