@@ -3,7 +3,8 @@ channels:
 - forman
 - ioos
 dependencies:
-- h5py=2.6.0=np111py35_0
+#- h5py=2.6.0=np111py35_0
+- gridtools=0.3.0=py35_0
 - h5netcdf=0.2.2=py35_0
 - llvmlite=0.13.0=py35_0
 - netcdf4=1.2.4=np111py35_0
