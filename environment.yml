@@ -3,16 +3,11 @@ channels:
 - forman
 - ioos
 dependencies:
-- curl=7.45.0=vc14_1
 - h5py=2.6.0=np111py35_0
-- hdf5=1.8.15.1=vc14_4
 - h5netcdf=0.2.2=py35_0
-- libnetcdf=4.3.3.1=vc14_5
 - llvmlite=0.13.0=py35_0
-- mkl=11.3.3=1
 - netcdf4=1.2.4=np111py35_0
 - numba=0.28.1=np111py35_0
-- numpy=1.11.1=py35_1
 - pandas=0.18.1=np111py35_0
 - pip=8.1.2=py35_0
 - python=3.5.2=0
@@ -22,6 +17,5 @@ dependencies:
 - six=1.10.0=py35_0
 - wheel=0.29.0=py35_0
 - xarray=0.8.2=py35_0
-- zlib=1.2.8=vc14_3
 - pip:
   - h5netcdf==0.2.2
