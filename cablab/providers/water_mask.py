@@ -55,11 +55,11 @@ class WaterMaskProvider(BaseStaticCubeSourceProvider):
         chunk_size = int(x_max / self.cube_config.grid_width)
         x_index = 1
         y_index = 1
-        while (y_index * chunk_size) < y_max:
-            while (x_index * chunk_size) < x_max:
+        while (y_index * chunk_size) <= y_max:
+            while (x_index * chunk_size) <= x_max:
                 chunked = variable[(y_index - 1) * chunk_size:(y_index * chunk_size),
                           (x_index - 1) * chunk_size:(x_index * chunk_size)]
-                var_image[y_index, x_index] = gtr.resample_2d(chunked.astype(int), 1, 1)
+                var_image[y_index - 1, x_index - 1] = gtr.resample_2d(chunked.astype(int), 1, 1)
                 x_index += 1
             y_index += 1
             x_index = 1
