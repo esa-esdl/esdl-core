@@ -42,3 +42,6 @@ class AirTemperatureProvider(NetCDFCubeSourceProvider):
                     source_time_ranges += [(dates[i], dates[i] + timedelta(hours=12), file, i) for i in
                                            range(len(dates))]
         return sorted(source_time_ranges, key=lambda item: item[0])
+
+    def transform_source_image(self, source_image):
+        return numpy.roll(source_image, 720, axis=1)
