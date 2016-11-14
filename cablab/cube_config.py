@@ -23,6 +23,11 @@ The netCDF file schema has been updated according to the following issues:
 version 0.2.1
 -------------
 * Remove add_offset and scale_factor from cube data: https://github.com/CAB-LAB/cablab-core/issues/43
+
+version 0.2.2
+-------------
+* Fixed lon- and pixel- shifted issues in air temperature data
+* Changed the downsampling method for country mask variable to MODE
 """
 
 
