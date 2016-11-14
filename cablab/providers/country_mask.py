@@ -14,6 +14,7 @@ class CountryMaskProvider(NetCDFStaticCubeSourceProvider):
                 'source_name': 'layer',
                 'data_type': numpy.float32,
                 'fill_value': -3.4E38,
+                'ds_method': 'MODE',
                 'units': '-',
                 'standard_name': 'country_mask',
             }
