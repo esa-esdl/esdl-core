@@ -17,8 +17,8 @@ class OzoneProvider(NetCDFCubeSourceProvider):
         return {
             'ozone': {
                 'source_name': 'atmosphere_mole_content_of_ozone',
-                'data_type': numpy.float32,
-                'fill_value': numpy.NaN,
+                'data_type': numpy.double,
+                'fill_value': numpy.nan,
                 'units': 'DU',
                 'long_name': 'mean total ozone column in dobson units',
                 'standard_name': 'atmosphere_mole_content_of_ozone',
@@ -51,4 +51,7 @@ class OzoneProvider(NetCDFCubeSourceProvider):
         :param source_image: 2D image
         :return: source_image
         """
+        # TODO (hans-permana, 20161219): the following line is a workaround to an issue where the nan values are
+        # always read as -9.9. Find out why these values are automatically converted and create a better fix.
+        source_image[source_image == -9.9] = numpy.nan
         return numpy.roll(numpy.flipud(source_image), 180, axis=1)
