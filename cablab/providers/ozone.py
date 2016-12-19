@@ -44,3 +44,11 @@ class OzoneProvider(NetCDFCubeSourceProvider):
                                        file,
                                        None))
         return sorted(source_time_ranges, key=lambda item: item[0])
+
+    def transform_source_image(self, source_image):
+        """
+        Transforms the source image, here by rotating and flipping.
+        :param source_image: 2D image
+        :return: source_image
+        """
+        return numpy.roll(numpy.flipud(source_image), 180, axis=1)
