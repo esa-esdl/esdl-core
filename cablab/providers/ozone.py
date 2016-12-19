@@ -47,7 +47,7 @@ class OzoneProvider(NetCDFCubeSourceProvider):
 
     def transform_source_image(self, source_image):
         """
-        Transforms the source image, here by rotating and flipping.
+        Transforms the source image, here by flipping and then shifting horizontally.
         :param source_image: 2D image
         :return: source_image
         """
