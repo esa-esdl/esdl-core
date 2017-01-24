@@ -4,7 +4,7 @@ import sys
 
 from pkg_resources import iter_entry_points
 
-from .version import  version as __version__
+from .version import version as __version__
 from .cube import Cube
 from .cube_config import CubeConfig
 from .cube_provider import CubeSourceProvider
@@ -48,7 +48,6 @@ def _parse_source_arg(source: str):
             error_msg = 'illegal empty SOURCE'
             break
     return name, args, kwargs, error_msg
-
 
 
 def main(args=None):

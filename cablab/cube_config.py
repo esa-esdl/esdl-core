@@ -6,7 +6,7 @@ import netCDF4
 
 #: The current version of the data cube's configuration and data model.
 #: The model version is incremented on every change of the cube's data model.
-CUBE_MODEL_VERSION = '0.2.2'
+CUBE_MODEL_VERSION = '0.2.3'
 
 CUBE_CHANGELOG = """
 version 0.1
@@ -28,6 +28,11 @@ version 0.2.2
 -------------
 * Fixed lon- and pixel- shifted issues in air temperature data
 * Changed the downsampling method for country mask variable to MODE
+
+version 0.2.3
+-------------
+* Fixed flipped and shifted issue in ozone data https://github.com/CAB-LAB/cablab-core/issues/52
+* Fixed the missing value issue in ozone data https://github.com/CAB-LAB/cablab-core/issues/51
 """
 
 
