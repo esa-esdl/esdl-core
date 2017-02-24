@@ -17,7 +17,7 @@ class OzoneProvider(NetCDFCubeSourceProvider):
         return {
             'ozone': {
                 'source_name': 'atmosphere_mole_content_of_ozone',
-                'data_type': numpy.double,
+                'data_type': numpy.float32,
                 'fill_value': numpy.nan,
                 'units': 'DU',
                 'long_name': 'mean total ozone column in dobson units',
