@@ -2,9 +2,9 @@ import os
 from datetime import timedelta
 
 import numpy
-from netCDF4 import num2date
-
 from cablab import NetCDFCubeSourceProvider
+from dateutil.relativedelta import relativedelta
+from netCDF4 import num2date
 
 all_vars_descr = {'GPPall': {
     'gross_primary_productivity': {
@@ -13,7 +13,8 @@ all_vars_descr = {'GPPall': {
         'fill_value': numpy.nan,
         'units': 'gC m-2 day-1',
         'long_name': 'Gross Primary Productivity',
-        'references': 'Tramontana, Gianluca, et al. "Predicting carbon dioxide and energy fluxes across global FLUXNET sites with regression algorithms." (2016).',
+        'references': 'Tramontana, Gianluca, et al. "Predicting carbon dioxide and energy fluxes across global '
+                      'FLUXNET sites with regression algorithms." (2016).',
         'standard_name': 'gross_primary_productivity_of_carbon',
         'url': 'http://www.fluxcom.org/',
     }},
@@ -25,7 +26,8 @@ all_vars_descr = {'GPPall': {
             'fill_value': numpy.nan,
             'units': 'gC m-2 day-1',
             'long_name': 'Terrestrial Ecosystem Respiration',
-            'references': 'Tramontana, Gianluca, et al. "Predicting carbon dioxide and energy fluxes across global FLUXNET sites with regression algorithms." (2016).',
+            'references': 'Tramontana, Gianluca, et al. "Predicting carbon dioxide and energy fluxes across global '
+                          'FLUXNET sites with regression algorithms." (2016).',
             'standard_name': 'ecosystem_respiration_carbon_flux',
             'url': 'http://www.fluxcom.org/',
         }},
@@ -36,7 +38,8 @@ all_vars_descr = {'GPPall': {
             'fill_value': numpy.nan,
             'units': 'gC m-2 day-1',
             'long_name': 'Net Ecosystem Exchange',
-            'references': 'Tramontana, Gianluca, et al. "Predicting carbon dioxide and energy fluxes across global FLUXNET sites with regression algorithms." (2016).',
+            'references': 'Tramontana, Gianluca, et al. "Predicting carbon dioxide and energy fluxes across global '
+                          'FLUXNET sites with regression algorithms." (2016).',
             'standard_name': 'net_primary_productivity_of_carbon',
             'url': 'http://www.fluxcom.org/',
         }},
@@ -47,7 +50,8 @@ all_vars_descr = {'GPPall': {
             'fill_value': numpy.nan,
             'units': 'W m-2',
             'long_name': 'Latent Energy',
-            'references': 'Tramontana, Gianluca, et al. "Predicting carbon dioxide and energy fluxes across global FLUXNET sites with regression algorithms." (2016).',
+            'references': 'Tramontana, Gianluca, et al. "Predicting carbon dioxide and energy fluxes across global '
+                          'FLUXNET sites with regression algorithms." (2016).',
             'standard_name': 'surface_upward_latent_heat_flux',
             'url': 'http://www.fluxcom.org/',
         }},
@@ -58,7 +62,8 @@ all_vars_descr = {'GPPall': {
             'fill_value': numpy.nan,
             'units': 'W m-2',
             'long_name': 'Sensible Heat',
-            'references': 'Tramontana, Gianluca, et al. "Predicting carbon dioxide and energy fluxes across global FLUXNET sites with regression algorithms." (2016).',
+            'references': 'Tramontana, Gianluca, et al. "Predicting carbon dioxide and energy fluxes across global '
+                          'FLUXNET sites with regression algorithms." (2016).',
             'standard_name': 'surface_upward_sensible_heat_flux',
             'url': 'http://www.fluxcom.org/',
         }},
@@ -87,5 +92,10 @@ class MPIBGCProvider(NetCDFCubeSourceProvider):
                     times = dataset.variables['time']
                     dates = num2date(times[:], 'days since 1582-10-15 00:00:0.0', calendar='gregorian')
                     self.dataset_cache.close_dataset(file)
-                    source_time_ranges += [(dates[i], dates[i] + timedelta(days=8), file, i) for i in range(len(dates))]
+                    for i in range(len(dates)):
+                        # the following checks if the end period overlaps with the next year. If so, change the
+                        # timedelta so that the period stops at the last day of the year
+                        days_increment = 8 if (dates[i] + timedelta(days=8)).year == source_year else \
+                            (dates[i] + timedelta(days=8) - relativedelta(years=1)).day
+                        source_time_ranges.append((dates[i], dates[i] + timedelta(days=days_increment), file, i))
         return sorted(source_time_ranges, key=lambda item: item[0])
