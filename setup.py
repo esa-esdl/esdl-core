@@ -69,6 +69,7 @@ setup(
             'terrestrial_ecosystem_respiration = cablab.providers.mpi_bgc:MPIBGCProvider',
             'gross_primary_production = cablab.providers.mpi_bgc:MPIBGCProvider',
             'country_mask = cablab.providers.country_mask:CountryMaskProvider',
+            'srex_mask = cablab.providers.srex_mask:SrexMaskProvider',
             'water_mask = cablab.providers.water_mask:WaterMaskProvider',
         ],
     },
