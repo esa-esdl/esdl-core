@@ -90,6 +90,14 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
                             source_time_ranges.append((time, time + timedelta(days=1), file, 0))
         return sorted(source_time_ranges, key=lambda item: item[0])
 
+    def transform_source_image(self, source_image):
+        """
+        Transforms the source image, here by flipping and then shifting horizontally.
+        :param source_image: 2D image
+        :return: source_image
+        """
+        return numpy.flipud(source_image)
+
     @staticmethod
     def day2date(times):
 

@@ -38,6 +38,7 @@ version 0.2.4
 -------------
 * Changed the data type of Ozone from double to float https://github.com/CAB-LAB/cablab-core/issues/54
 * Fixed the inconsistencies on the values on the first time step of the second year onwards of the MPI data https://github.com/CAB-LAB/cablab-core/issues/55
+* Fixed flipped aerosols data https://github.com/CAB-LAB/cablab-core/issues/57
 """
 
 
