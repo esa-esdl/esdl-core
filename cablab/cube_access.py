@@ -142,7 +142,8 @@ class CubeDataAccess:
             for i in indices:
                 key = self._cube_var_list[i]
                 dataset = self._get_or_open_dataset(key)
-                data_arrays[key.name] = dataset.variables[key.name]
+                # data_arrays[key.name] = dataset.variables[key.name]
+                data_arrays = xr.merge([data_arrays, dataset])
             return xr.Dataset(data_arrays)
 
     # TODO (forman, 20160713): Remove method, add time, lat, lon to variable() and dataset()
