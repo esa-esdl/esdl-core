@@ -132,6 +132,7 @@ class Cube:
             time_max = datetime(target_year + 1, 1, 1)
             d_time = timedelta(days=cube_temporal_res)
             time_1 = time_min
+            # Close all open datasets of last year (which have been processed)
             for key in datasets:
                 if target_year - 1 == int(key[0:4]):
                     datasets[key].close()
