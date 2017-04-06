@@ -4,6 +4,9 @@ import numpy
 
 from cablab.util import aggregate_images
 from cablab.util import temporal_weight
+from cablab.util import resolve_temporal_range_index
+
+from datetime import datetime
 
 
 class UtilTest(unittest.TestCase):
@@ -47,3 +50,34 @@ class UtilTest(unittest.TestCase):
         self.assertAlmostEqual(im[0][1], (0.5 * 2.1 + 0.25 * 4.3) / 2, places=4)
         self.assertIs(im[1][0], numpy.ma.masked)
         self.assertAlmostEqual(im[1][1], (0.5 * 4.1 + 1.0 * 5.2 + 0.25 * 6.3) / 3, places=3)
+
+    def test_resolve_temporal_range_index(self):
+        time1_index, time2_index = resolve_temporal_range_index(2001, 2011, 8,
+                                                                datetime(2001, 1, 1),
+                                                                datetime(2001, 12, 31))
+        self.assertEqual(time1_index, 0)
+        self.assertEqual(time2_index, 45)
+
+        time1_index, time2_index = resolve_temporal_range_index(2001, 2011, 8,
+                                                                datetime(2002, 1, 1),
+                                                                datetime(2011, 12, 31))
+        self.assertEqual(time1_index, 46)
+        self.assertEqual(time2_index, 505)
+
+        time1_index, time2_index = resolve_temporal_range_index(2001, 2011, 8,
+                                                                datetime(2002, 6, 1),
+                                                                datetime(2005, 6, 1))
+        self.assertEqual(time1_index, 64)
+        self.assertEqual(time2_index, 202)
+
+        time1_index, time2_index = resolve_temporal_range_index(2001, 2011, 8,
+                                                                datetime(2000, 1, 1),
+                                                                datetime(2005, 12, 31))
+        self.assertEqual(time1_index, 0)
+        self.assertEqual(time2_index, 229)
+
+        time1_index, time2_index = resolve_temporal_range_index(2001, 2011, 8,
+                                                                datetime(2000, 1, 1),
+                                                                datetime(2020, 12, 31))
+        self.assertEqual(time1_index, 0)
+        self.assertEqual(time2_index, 505)

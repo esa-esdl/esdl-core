@@ -3,8 +3,10 @@ Various utility constants, functions and classes.
 Developer note: make sure this module does not import any other cablab module!
 """
 import gzip
+import math
 import os
 from abc import abstractmethod, ABCMeta
+from datetime import datetime, timedelta
 
 import netCDF4
 import numpy
@@ -53,8 +55,8 @@ def aggregate_images(images, weights=None):
         image = images[i]
         reshaped_image = image.reshape((1,) + image.shape)
         if weights:
-            #reshaped_image *= weights[i]
-            numpy.multiply(reshaped_image,weights[i],out = reshaped_image, casting = 'unsafe')
+            # reshaped_image *= weights[i]
+            numpy.multiply(reshaped_image, weights[i], out=reshaped_image, casting='unsafe')
         reshaped_images.append(reshaped_image)
         image_stack = numpy.ma.concatenate(reshaped_images)
     return numpy.ma.average(image_stack, axis=0)
@@ -69,6 +71,52 @@ def aggregate_images(images, weights=None):
     # return aggregated_images
 
 
+def resolve_temporal_range_index(target_start_year: int,
+                                 target_end_year: int,
+                                 temporal_res: int,
+                                 source_start_time: datetime,
+                                 source_end_time: datetime):
+    """
+    Resolve the time index of the given date range inside the given year range with the given temporal resolution.
+    One sample application is to resolve the start end end time index of a certain dataset relative to the cube range.
+    This is in the end useful for creating a harmonised xarray dataset.
+
+    :param target_start_year: the start year
+    :param target_end_year: the end year
+    :param temporal_res: the temporal resolution (in day(s))
+    :param source_start_time: the datetime to find the start time index
+    :param source_end_time: the datetime to find the end time index
+    :return: a tuple of start time index and end time index
+    """
+    time_steps = _get_time_steps(target_end_year, target_start_year, temporal_res)
+    start_time_index = 0
+    end_time_index = len(time_steps) - 1
+    for time_index in range(len(time_steps)):
+        time_1, time_2 = time_steps[time_index]
+        if time_1 <= source_start_time <= time_2:
+            start_time_index = time_index
+        if time_1 <= source_end_time <= time_2:
+            end_time_index = time_index
+        if start_time_index != 0 and end_time_index != len(time_steps) - 1:
+            break
+    return start_time_index, end_time_index
+
+
+def _get_time_steps(target_end_year, target_start_year, temporal_res):
+    time_steps = []
+    for target_year in range(target_start_year, target_end_year + 1):
+        time_min = datetime(target_year, 1, 1)
+        time_max = datetime(target_year + 1, 1, 1)
+        time_1 = time_min
+        num_periods_per_year = math.ceil(365.0 / temporal_res)
+        for time_index in range(num_periods_per_year):
+            d_time = timedelta(days=temporal_res)
+            time_2 = time_1 + d_time
+            if time_2 > time_max:
+                time_2 = time_max
+            time_steps.append((time_1, time_2))
+            time_1 = time_2
+    return time_steps
 
 
 class DatasetCache(metaclass=ABCMeta):
@@ -160,7 +208,7 @@ class NetCDFDatasetCache(DatasetCache):
             return netCDF4.Dataset(real_file)
         else:
             print('Warning: Input file (\'%s\') does not exist!' %
-                          real_file)
+                  real_file)
 
 
 class Config:
