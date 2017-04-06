@@ -5,16 +5,16 @@ CAB-LAB User Guide
 Contents:
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :numbered:
 
    intro
-   cube_explanation
-   cube_scenarios
-   cube_usage
-   dat_usage
+   esdc_descr
+   esdc_access
+   esdc_prod
+   dat_julia
+   dat_python
    collaboration
-   api_reference
    annex
 
 

@@ -56,10 +56,9 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'CAB-LAB'
-copyright = '2016, Brockmann Consult GmbH'
+copyright = '2017, The CAB-LAB Team'
 author1 = 'Brockmann Consult GmbH'
 author2 = 'MPI for Biogeochemistry Jena'
-author3 = 'Stockholm Resilience Centre'
 cablab_logo = "pix/CablabLogo2.png"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -120,7 +119,7 @@ todo_include_todos = False
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'sphinxdoc'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -132,7 +131,7 @@ html_theme = 'sphinxdoc'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = "Cab-Lab Product Handbook"
+html_title = "Cab-Lab User Guide"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
@@ -265,7 +264,7 @@ latex_domain_indices = False
 # (source start file, name, description, authors, manual section).
 man_pages = [
     (master_doc, 'cab-lab', 'CAB-LAB Documentation',
-     [author1, author2, author3], 1)
+     [author1, author2], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -279,7 +278,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   (master_doc, 'CAB-LAB', 'CAB-LAB Documentation',
-   [author1, author2, author3], 'CAB-LAB', 'One line description of project.',
+   [author1, author2], 'CAB-LAB', 'Production and Exploitation of an Earth System Data Cube.',
    'Miscellaneous'),
 ]
 

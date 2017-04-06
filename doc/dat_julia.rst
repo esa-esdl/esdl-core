@@ -1,23 +1,12 @@
-=========================================================
-How can I analyze the Data in the Earth System Data Cube?
-=========================================================
+=============
+DAT for Julia
+=============
 
-The Data Analytics Toolkit
-==========================
+Overview
+========
 
-.. Responsible: BC
-
-
-In addition to the Data Access API, which enables the user to conveniently access data from an
-Earth System Data Cube (ESDC),
-we provide a Data Analytics Toolkit (DAT) to facilitate analysis and
-visualization of the ESDC. The DAT is hosted in `CABLAB's github repository <https://github.com/CAB-LAB/CABLAB.jl>`_
+The Data Analytics Toolkit (DAT) for Julia is hosted in `CABLAB's github repository <https://github.com/CAB-LAB/CABLAB.jl>`_
 and is developed in close interaction with the scientific community.
-The CABLAB team is leading the development of the DAT for Python and Julia.
-
-
-Julia implementation of the DAT
--------------------------------
 
 The current implementation of the Julia DAT consists of 3 parts:
 
@@ -96,7 +85,8 @@ with the appropriate axes.
 
 
 Use Cases and Examples
-----------------------
+======================
+
 In the following the potentials of the DAT are demonstrated by two more complex examples, the user stories.
 
 .. include:: story1.rst
@@ -107,7 +97,7 @@ In the following the potentials of the DAT are demonstrated by two more complex 
 
 
 Constraints and Limitations
----------------------------
+===========================
 
 The current implementation of the DAT is subject to several limitations, some of which will be mitigated in future releases of the software.
 Most importantly, the DAT methods currently only work on data loaded into memory. Hence, the user has to explicitly load a part of the ESDC into memory prior

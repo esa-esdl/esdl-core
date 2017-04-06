@@ -1,6 +1,6 @@
-=============================
-How to empower Collaboration?
-=============================
+=============
+Collaboration
+=============
 
 Collaboration is at the heart of science!
 
