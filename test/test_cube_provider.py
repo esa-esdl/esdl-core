@@ -107,7 +107,7 @@ class BaseStaticCubeSourceProviderTest(TestCase):
         provider = MyStaticCubeSourceProvider(cube_config)
         self.assertEqual(provider.name, 'test_static')
         self.assertIs(provider.cube_config, cube_config)
-        self.assertEqual(provider.temporal_coverage, (datetime(2001, 1, 1), datetime(2011, 1, 1)))
+        self.assertEqual(provider.temporal_coverage, (datetime(2001, 1, 1), datetime(2012, 1, 1)))
         self.assertEqual(provider.spatial_coverage, (0, 0, 1440, 720))
 
     def test_get_images(self):

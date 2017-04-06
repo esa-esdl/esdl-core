@@ -68,7 +68,7 @@ class CubeTest(TestCase):
         try:
             data = cube2.data
             self.assertIsNotNone(data)
-            self.assertEqual((2, 10 * 46, 720, 1440), data.shape)
+            self.assertEqual((2, 11 * 46, 720, 1440), data.shape)
             self.assertEquals(['FAPAR', 'LAI'], data.variable_names)
 
             lai_var = data.variable('LAI')
