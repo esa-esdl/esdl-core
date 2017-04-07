@@ -248,8 +248,86 @@ Cube Data
 
 .. todo:: FG compile latest list of source data used
 
++--------------------+----------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------+
+| Project name       | Dataset name                     | URL                                                             | Citation                                                                         |
++====================+==================================+=================================================================+==================================================================================+
+| ESA Aerosol CCI    | aerosol_optical_thickness_1610   | http://www.esa-aerosol-cci.org/                                 | Holzer-Popp, T., de Leeuw, G., Griesfeller, J.,                                  |
++                    +----------------------------------+                                                                 | Martynenko, D., Klueser, L., Bevan, S., et al. (2013).                           |
+|                    | aerosol_optical_thickness_865    |                                                                 | Aerosol retrieval experiments in the ESA Aerosol_cci                             |
++                    +----------------------------------+                                                                 | project. Atmospheric Measurement Techniques, 6,                                  |
+|                    | aerosol_optical_thickness_659    |                                                                 | 1919-1957. doi:10.5194/amt-6-1919-2013.                                          |
++                    +----------------------------------+                                                                 |                                                                                  |
+|                    | aerosol_optical_thickness_555    |                                                                 |                                                                                  |
++                    +----------------------------------+                                                                 |                                                                                  |
+|                    | aerosol_optical_thickness_550    |                                                                 |                                                                                  |
++--------------------+----------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------+
+| GLEAM              | bare_soil_evaporation            | http://www.gleam.eu/                                            | Martens, B., Miralles, D.G., Lievens, H., van der                                |
++                    +----------------------------------+                                                                 | Schalie, R., de Jeu, R.A.M., Fernández-Prieto, D.,                               |
+|                    | evaporation                      |                                                                 | Beck, H.E., Dorigo, W.A., and Verhoest, N.E.C.:                                  |
++                    +----------------------------------+                                                                 | GLEAM v3.0: satellite-based land evaporation and                                 |
+|                    | evaporative_stress               |                                                                 | root-zone soil moisture, Geoscientific Model                                     |
++                    +----------------------------------+                                                                 | Development Discussions, doi: 10.5194/gmd-2016-162,                              |
+|                    | interception_loss                |                                                                 | 2016                                                                             |
++                    +----------------------------------+                                                                 |                                                                                  |
+|                    | open_water_evaporation           |                                                                 |                                                                                  |
++                    +----------------------------------+                                                                 |                                                                                  |
+|                    | potential_evaporation            |                                                                 |                                                                                  |
++                    +----------------------------------+                                                                 |                                                                                  |
+|                    | root_moisture                    |                                                                 |                                                                                  |
++                    +----------------------------------+                                                                 |                                                                                  |
+|                    | snow_sublimation                 |                                                                 |                                                                                  |
++                    +----------------------------------+                                                                 |                                                                                  |
+|                    | surface_moisture                 |                                                                 |                                                                                  |
++                    +----------------------------------+                                                                 |                                                                                  |
+|                    | transpiration                    |                                                                 |                                                                                  |
++--------------------+----------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------+
+| ERAInterim         | air_temperature_2m               | http://www.ecmwf.int/en/research/climate-reanalysis/era-interim | Dee, D.P. et al. 2011 http://onlinelibrary.wiley.com/doi/10.1002/qj.828/abstract |
++--------------------+----------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------+
+| GlobAlbedo         | black_sky_albedo                 | http://www.globalbedo.org/                                      | Muller, Jan-Peter, et al. "The ESA GLOBALBEDO project for mapping the Earth’s    |
+|                    +----------------------------------+                                                                 | land surface albedo for 15 years from European sensors." Geophysical Research    |
+|                    | white_sky_albedo                 |                                                                 | Abstracts. Vol. 13. 2012.                                                        |
++--------------------+----------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------+
+| GFED4              | burnt_area                       | http://www.globalfiredata.org/                                  | iglio, Louis, James T. Randerson, and Guido R. Werf. "Analysis of daily, monthly |
+|                    +----------------------------------+                                                                 | and annual burned area using the fourth‐generation global fire emissions databas |
+|                    | c_emission                       |                                                                 | (GFED4)." Journal of Geophysical Research: Biogeosciences 118.1 (2013): 317-328. |
++--------------------+----------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------+
+| GlobSnow           | fractional_snow_cover            | http://www.globsnow.info/                                       | Luojus, Kari, et al. "ESA DUE Globsnow-Global Snow Database for Climate Research |
+|                    +----------------------------------+                                                                 | ." ESA Special Publication. Vol. 686. 2010.                                      |
+|                    | snow_water_equivalent            |                                                                 |                                                                                  |
++--------------------+----------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------+
+| FLUXCOM            | gross_primary_productivity       | http://fluxcom.org/                                             | Tramontana, Gianluca, et al. "Predicting carbon dioxide and energy fluxes across |
+|                    +----------------------------------+                                                                 | global FLUXNET sites with regression algorithms." (2016).                        |
+|                    | terrestrial_ecosystem_repiration |                                                                 |                                                                                  |
+|                    +----------------------------------+                                                                 |                                                                                  |
+|                    | latent_heat                      |                                                                 |                                                                                  |
+|                    +----------------------------------+                                                                 |                                                                                  |
+|                    | evapotranspiration               |                                                                 |                                                                                  |
+|                    +----------------------------------+                                                                 |                                                                                  |
+|                    | net_ecosystem_exchange           |                                                                 |                                                                                  |
++--------------------+----------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------+
+| GlobTemperature    | land_surafce_temperature         | http://data.globtemperature.info/                               | Freitas, S. C. et al 2010: Quantifying the Uncertainty of Land Surface           |
+|                    |                                  |                                                                 | Temperature Retrievals From SEVIRI/Meteosat, IEEE Trans. Geosci. Remote Sens.    |
+|                    |                                  |                                                                 | Trigo, I. F., et al., 2011: The Satellite Application Facility on Land Surface   |
+|                    |                                  |                                                                 | Analysis. Int. J. Remote Sens., 32, 2725-2744, doi: 10.1080/01431161003743199.   |
++--------------------+----------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------+
+| Ozone CCI          | ozone                            | http://www.esa-ozone-cci.org/                                   |  Laeng, A., et al. "The ozone climate change initiative: Comparison of four      |
+|                    |                                  |                                                                 | Level-2 processors for the Michelson Interferometer for Passive Atmospheric      |
+|                    |                                  |                                                                 |  Sounding (MIPAS)." Remote Sensing of Environment 162 (2015): 316-343.           |
++--------------------+----------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------+
+| GPCP               | precipitation                    | http://precip.gsfc.nasa.gov/                                    | Adler, Robert F., et al. "The version-2 global precipitation climatology project |
+|                    |                                  |                                                                 |  (GPCP) monthly precipitation analysis (1979-present)." Journal of               |
+|                    |                                  |                                                                 | hydrometeorology 4.6 (2003): 1147-1167.                                          |
++--------------------+----------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------+
+| SoilMoisture CCI   | soil_moisture                    | http://www.esa-soilmoisture-cci.org/                            | Y.Y., Parinussa, R.M., Dorigo, W.A., De Jeu, R.A.M., Wagner, W., McCabe, M.F.,   |
+|                    |                                  |                                                                 | Evans, J.P., and van Dijk, A.I.J.M. (2012): Trend-preserving blending of passive |
+|                    |                                  |                                                                 | and active microwave soil moisture retrievals                                    |
++--------------------+----------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------+
+| GlobVapour         | water_vapour                     | http://www.globvapour.info/                                     | Schneider, Nadine, et al. "ESA DUE GlobVapour water vapor products: Validation." |
+|                    |                                  |                                                                 | AIP Conference Proceedings. Vol. 1531. No. 1. 2013.                              |
++--------------------+----------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------+
+
+.. |br| raw:: html
+
+   <br />
+
 .. todo:: HP compile latest list of target data generated
-
-
-
-
