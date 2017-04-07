@@ -2,7 +2,10 @@
    :width: 150 px
    :align: center
 
-=============================
+|
+|
+|
+
 Earth System Data Cube (ESDC)
 =============================
 
