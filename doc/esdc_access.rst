@@ -96,6 +96,8 @@ Python packages:
     * xarray >= 0.9
     * matplotlib >= 2.0
     * netCDF4 >= 1.2
+    * h5netcdf >= 0.3
+    * h5py >= 2.7
     * scikit_image >= 0.11
     * scipy >= 0.16
 
