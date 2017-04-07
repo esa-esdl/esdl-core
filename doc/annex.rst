@@ -2,6 +2,8 @@
 Annexes
 =======
 
+.. todo:: GB - remove me!
+
 Below you find a list of all data sets distributed through the Earth system Data Cube (ESDC).
 In future versions of this document, this list will be automatically generated at ingestion of the source data sets
 to the ESDC and provide a more detailed reference to the original data, its official name, and the data owner.
