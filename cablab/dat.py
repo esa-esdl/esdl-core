@@ -3,9 +3,9 @@
 .. _xarray.DataArray: http://xarray.pydata.org/en/stable/data-structures.html#dataarray
 .. _Numpy: http://www.numpy.org/
 
-
-This module provides additional analytical utility functions which work for `xarray.Dataset`_, `xarray.DataArray`_, 
-and also Numpy_ arrays. 
+The following functions provide the high-level API of the ESDC Python DAT.
+It provides additional analytical utility functions which work for `xarray.Dataset`_ objects
+which are used to represent the ESDC data. 
 """
 
 import xarray as xr
