@@ -1,3 +1,4 @@
+
 import math
 import os
 from collections import OrderedDict
@@ -118,16 +119,18 @@ class CubeDataAccess:
         else:
             raise IndexError('key cannot be a tuple')
 
-    def dataset(self, key=None):
+    def dataset(self, key=None) -> xr.Dataset:
         """
-        Get one or more cube variables as ``xarray.Dataset`` instances.
+        .. _xarray.Dataset: http://xarray.pydata.org/en/stable/data-structures.html#dataset
+
+        Get one or more cube variables as a single `xarray.Dataset`_ with the dimensions (time, latitude, longitude).
 
         :param key: The variable selector, which can be a name, or index, or a sequence of names and indices.
                 Valid names (type ``str``) are the ones returned by the ``variable_names`` list while valid
                 indices (type ``int``) point into this list.
                 If a sequence is provided, a sequence will be returned.
                 Passing ``None`` is equivalent to passing the ``variable_names`` list.
-        :return: a ``xarray.Dataset`` instance with the dimensions (time, latitude, longitude).
+        :return: an `xarray.Dataset`_ instance with the dimensions (time, latitude, longitude).
         """
 
         if isinstance(key, int):
@@ -150,7 +153,9 @@ class CubeDataAccess:
     # TODO (forman, 20160713): Use xarray API to achieve the same result
     def get(self, variable=None, time=None, latitude=None, longitude=None):
         """
-        Get the cube's data.
+        Get the cube's data as a list of numpy-like data arrays. The returned list will 
+        correspond to the **variable** argument. A one-element list will be returned
+        even if **variable** is not a list.
 
         :param variable: an variable index or name or a sequence of variable indexes or names
         :param time: a single datetime.datetime object or a 2-element iterable (time_start, time_end)
@@ -206,7 +211,7 @@ class CubeDataAccess:
 
     def close(self):
         """
-        Closes this **CubeData** by closing all open datasets.
+        Close cube data access by closing all open files it might be referring to.
         """
         self._close_datasets()
 

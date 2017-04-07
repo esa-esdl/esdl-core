@@ -1,8 +1,29 @@
+.. todo:: HP exchange page logo
 
-CAB-LAB User Guide
-==================
 
-Contents:
+.. todo:: HP add logo image here
+
+
+logo image here
+
+=============================
+Earth System Data Cube (ESDC)
+=============================
+
+.. todo:: GB add overrview text - what is this site about?
+
+bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub
+bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub
+bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub
+bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub
+bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub
+bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub
+bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub
+bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub bla bla blub
+
+
+Table of Contents
+=================
 
 .. toctree::
    :maxdepth: 2

@@ -40,5 +40,4 @@ __all__ = [
     'Cube',
     'CubeConfig',
     'CubeSourceProvider',
-    'SOURCE_PROVIDERS',
 ]

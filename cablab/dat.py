@@ -1,24 +1,25 @@
 """
-ESDC DAT (Data Analytics Toolkit)
-=================================
+.. _xarray.Dataset: http://xarray.pydata.org/en/stable/data-structures.html#dataset
+.. _xarray.DataArray: http://xarray.pydata.org/en/stable/data-structures.html#dataarray
+.. _Numpy: http://www.numpy.org/
 
-Note, the ESDC (Earth System Data Cube) is accessed via an 
-`xarray.Dataset <http://xarray.pydata.org/en/stable/data-structures.html#dataset>_`, therefore the ``xarray.Dataset``
-API is the primary DAT.
 
-This module provides additional analytical utility functions which work for `xarray.Dataset`, `xarray.DataArray`, and
-also Numpy arrays. 
+This module provides additional analytical utility functions which work for `xarray.Dataset`_, `xarray.DataArray`_, 
+and also Numpy_ arrays. 
 """
 
+import xarray as xr
 
 def corrcf(ds, var1=None, var2=None, dim='time'):
     '''
-    Function calculating the correlation coefficient of two variables var1 and var2 in one xarray Dataset
-    ds.
-    :param ds: Xarray.Dataset
+    Function calculating the correlation coefficient of two variables **var1** and **var2** in one `xarray.Dataset`_
+    **ds**.
+    
+    :param ds: an `xarray.Dataset`_
     :param var1: Variable 1
     :param var2: Variable 2, both have to be of identical size
-    :param dim: dimension for aggregation, default is time. In the defualt case, the result is an image
+    :param dim: dimension for aggregation, default is time. 
+                In the default case, the result is an image
     :return:
     '''
 
@@ -41,15 +42,16 @@ def corrcf(ds, var1=None, var2=None, dim='time'):
 
 def map_plot(ds, var=None, time=0, title_str='No title', projection='kav7', lon_0=0, resolution=None, **kwargs):
     '''
-    Function plotting a projected map
-    :param ds: xarray.Dataset
+    Function plotting a projected map for a variable **var** in `xarray.Dataset`_ **ds**.
+    
+    :param ds: an `xarray.Dataset`_
     :param var: variable to plot
-    :param time: time step or dateime date to plot
+    :param time: time step or datetime date to plot
     :param title_str: Title string
     :param projection: for Basemap
     :param lon_0: longitude 0 for central
     :param resolution: resolution for Basemap object
-    :param kwargs: Any other **kwargs accepted by the pcolormap function of Basemap
+    :param kwargs: Any other **kwargs** accepted by the pcolormap function of Basemap
     :return:
     '''
 

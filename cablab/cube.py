@@ -55,9 +55,9 @@ class Cube:
         return self._closed
 
     @property
-    def data(self):
+    def data(self) -> CubeDataAccess:
         """
-        The cube's data. See **CubeData** class.
+        The cube's data which is an instance of the **CubeDataAccess** class.
         """
         if not self._data:
             self._data = CubeDataAccess(self.config, self.base_dir)

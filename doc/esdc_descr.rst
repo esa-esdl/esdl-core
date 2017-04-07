@@ -241,15 +241,15 @@ informed user to evaluate the validity and consistency of the processed data and
 .. todo:: Elaborate further! Or at least revise if you feel like it.
 
 
-Cube Data
-=========
+Cube Data Variables
+===================
 
 .. todo:: NF create template for data content
 
 .. todo:: FG compile latest list of source data used
 
 +--------------------+----------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------+
-| Project name       | Dataset name                     | URL                                                             | Citation                                                                         |
+| Project name       | Variable name in ESDC            | URL                                                             | Citation                                                                         |
 +====================+==================================+=================================================================+==================================================================================+
 | ESA Aerosol CCI    | aerosol_optical_thickness_1610   | http://www.esa-aerosol-cci.org/                                 | Holzer-Popp, T., de Leeuw, G., Griesfeller, J.,                                  |
 +                    +----------------------------------+                                                                 | Martynenko, D., Klueser, L., Bevan, S., et al. (2013).                           |
