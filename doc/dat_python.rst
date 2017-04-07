@@ -26,9 +26,11 @@ Overview
 The primary Data Analytics Toolkit for Python is xarray_ since the central
 data structure used for representing the ESDC in Python is the `xarray.Dataset`_.
 
-Such dataset objects are what you get when accessing the cube's data as follows::
+Such dataset objects are what you get when accessing the cube's data as follows:
 
-    cube = Cube("/home/doe/esdc/cablab-datacube-0.2.4/low-res")
+.. code-block:: python
+
+    cube = Cube.open("/home/doe/esdc/cablab-datacube-0.2.4/low-res")
     dataset = cube.data.dataset(["precipitation", "evaporation", "ozone"])
 
 Any geo-physical variable in the ESDC is represented by a `xarray.DataArray`_, which are Numpy_-like data arrays

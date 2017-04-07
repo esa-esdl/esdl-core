@@ -38,15 +38,16 @@ for further processing and analysis with specialized methods from the
 The ESDC allows for all these approaches, because all variables are available on a common spatiotemporal grid, which greatly
 reduces the pre-processing efforts typically required to establish consistency among data from different sources.
 
+.. _esdc_project:
 
-The ESDC Project
-================
+ESDC Project
+============
 
 The steadily growing Earth Observation archives are currently mostly investigated
 by means of disciplinary approaches. It would be, however, desirable to adopt a more holistic approach in understanding land-atmosphere interactions and
 the role of humans in the earth system. The potential of a simultaneous exploration of multiple EO data streams
 has so far been widely neglected in the scientific community.
-The Earth System Data Cube project (ESDC) aims at filling this gap by providing
+The Earth System Data Cube project (ESDC, formerly CAB-LAB) aims at filling this gap by providing
 a virtual laboratory that facilitates the co-exploration of multiple EOs for a better understanding of land ecosystem trajectories.
 
 The idea is to build on the existing data-sets and to offer novel tools and technical methods to detect dependencies in the coupled human-nature system.
