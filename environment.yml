@@ -18,6 +18,9 @@ dependencies:
 - six=1.10.0=py35_0
 - wheel=0.29.0=py35_0
 - xarray=0.8.2=py35_0
+- sphinx>=1.4
+- sphinx_rtd_theme=0.1.9
+- sphinx-argparse
 - pip:
   - h5netcdf=0.2.2
-  - sphinx_rtd_theme=0.2.4
+  - sphinx_autodoc_annotation
