@@ -1,10 +1,6 @@
-.. todo:: HP exchange page logo
-
-
-.. todo:: HP add logo image here
-
-
-logo image here
+.. image:: pix/EarthDataCube3.png
+   :width: 150 px
+   :align: center
 
 =============================
 Earth System Data Cube (ESDC)

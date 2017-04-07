@@ -39,31 +39,31 @@ The ESDC allows for all these approaches, because all variables are available on
 reduces the pre-processing efforts typically required to establish consistency among data from different sources.
 
 
-The CAB-LAB Project
-===================
+The ESDC Project
+================
 
 The steadily growing Earth Observation archives are currently mostly investigated
 by means of disciplinary approaches. It would be, however, desirable to adopt a more holistic approach in understanding land-atmosphere interactions and
 the role of humans in the earth system. The potential of a simultaneous exploration of multiple EO data streams
 has so far been widely neglected in the scientific community.
-The Coupled Atmosphere Biosphere virtual LABoratory project (CAB-LAB) aims at filling this gap by providing
+The Earth System Data Cube project (ESDC) aims at filling this gap by providing
 a virtual laboratory that facilitates the co-exploration of multiple EOs for a better understanding of land ecosystem trajectories.
 
 The idea is to build on the existing data-sets and to offer novel tools and technical methods to detect dependencies in the coupled human-nature system.
-CAB-LAB's central service to the scientific community will be a Biosphere Atmosphere Virtual Laboratory (BAVL), which comprises a Data
+ESDC's central service to the scientific community will be a Biosphere Atmosphere Virtual Laboratory (BAVL), which comprises a Data
 Cube populated with a wide range of EOs and convenient methods to access and analyze this data remotely by means of the Jupiter framework.
 Moreover, the project aims at advancing the scientific analysis capacities by developing data-driven exploration strategies that identify and attribute major changes
-in the biosphere-atmosphere system. Ultimately, CAB-LAB will develop a set of indices
+in the biosphere-atmosphere system. Ultimately, ESDC will develop a set of indices
 characterizing the major relevant Biosphere-Atmosphere System Trajectories, BASTs.
 The project partners, Max-Planck-Institute for Biogeochemistry, Brockmann Consult GmbH,
 and Stockholm Resilience Center are financed by the European Space Agency (ESA) for three years (2015 to 2017) to
-develop the software for CAB-LAB, to collect and analyze the EO data, and to disseminate the idea of the project and its preliminary results.
+develop the software for ESDC, to collect and analyze the EO data, and to disseminate the idea of the project and its preliminary results.
 
 
 Purpose
 =======
 
-This Product Handbook is a living document that is under active development just as the CAB-LAB project itself.
+This Product Handbook is a living document that is under active development just as the ESDC project itself.
 Its purpose is to facilitate the usage of the BAVL and primarily targets scientists from various disciplines with a good
 command of one of the supported high-level programming languages (`Python <http://www.python.org>`_, `Julia <http://julialang.org/>`_,
 and `R <http://www.>`_), a solid background in the analysis of
@@ -119,7 +119,7 @@ CAB-LAB                  Coupled Atmosphere Biosphere virtual LABoratory
 -----------------------  ---------------------------------------------------------------------------------------------
 DAT                      Data Analytics Toolkit
 -----------------------  ---------------------------------------------------------------------------------------------
-EDSC                     Earth System Data Cube
+ESDC                     Earth System Data Cube
 -----------------------  ---------------------------------------------------------------------------------------------
 EO                       Earth Observations
 -----------------------  ---------------------------------------------------------------------------------------------
@@ -135,9 +135,9 @@ Image                    An 2D data cube subset with dimension (lat, lon)
 Data Policy
 ===========
 
-The CAB-LAB team processes and distributes the data in the ESDC in good faith, but makes no warranty, expressed or implied,
+The ESDC team processes and distributes the data in the ESDC in good faith, but makes no warranty, expressed or implied,
 nor assumes any legal liability or responsibility for any purpose for which the data are used.
-In particular, the CAB-LAB team does not claim ownership of the data distributed through the ESDC nor does it alter the data
+In particular, the ESDC team does not claim ownership of the data distributed through the ESDC nor does it alter the data
 policy of the data owner. Therefore, the user is referred to the data owner for specific questions of data use.
 References and more details of the data sets are listed in the `annex of the Product Handbook <annex.html#Annexes>`_.
 
@@ -148,7 +148,7 @@ the respective data owners.
 
     Please cite the ESDC as:
 
-    The CAB-LAB developer team (2016). The Earth System Data Cube (Version 0.1), available at: https://github.com/CAB-LAB.
+    The ESDC developer team (2016). The Earth System Data Cube (Version 0.1), available at: https://github.com/CAB-LAB.
 
 
 .. index:: Legal information
@@ -172,4 +172,6 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program. If not, see http://www.gnu.org/licenses/.
+
+Copyright (C) 2016  The ESDC developer team.
 
