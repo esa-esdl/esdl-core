@@ -1,27 +1,33 @@
 name: cablab
 channels:
-- forman
-- ioos
-- conda-forge
+  - forman
+  - conda-forge
+  - ioos
 dependencies:
-#- h5py=2.6.0=np111py35_0
-- gridtools=0.3.0=py35_0
-#- h5netcdf=0.2.2=py35_0
-- llvmlite=0.13.0=py35_0
-- netcdf4=1.2.4=np111py35_0
-- numba=0.28.1=np111py35_0
-- pandas=0.18.1=np111py35_0
-- pip=8.1.2=py35_0
-- python=3.5.2=0
-- python-dateutil=2.5.3=py35_0
-- pytz=2016.6.1=py35_0
-- setuptools=27.2.0=py35_0
-- six=1.10.0=py35_0
-- wheel=0.29.0=py35_0
-- xarray=0.8.2=py35_0
-- sphinx>=1.4
-- sphinx_rtd_theme=0.1.9
-- sphinx-argparse
-- pip:
-  - h5netcdf=0.2.2
-  - sphinx_autodoc_annotation
+  #- h5py=2.6.0=np111py35_0
+  - gridtools=0.3.0=py35_0
+  #- h5netcdf=0.2.2=py35_0
+  - llvmlite=0.13.0=py35_0
+  - netcdf4=1.2.4=np111py35_0
+  - numba=0.28.1=np111py35_0
+  - pandas=0.18.1=np111py35_0
+  - pip=8.1.2=py35_0
+  - python=3.5.2=0
+  - python-dateutil=2.5.3=py35_0
+  - pytz=2016.6.1=py35_0
+  - setuptools=27.2.0=py35_0
+  - six=1.10.0=py35_0
+  - wheel=0.29.0=py35_0
+  - xarray=0.8.2=py35_0
+  #
+  # for mocking all libraries we DON'T want/cant require
+  #
+  - mock
+  #
+  # readthedocs specific
+  #
+  - sphinx>=1.4
+  - sphinx_rtd_theme=0.1.9
+  - sphinx-argparse
+  - pip:
+    - sphinx_autodoc_annotation
