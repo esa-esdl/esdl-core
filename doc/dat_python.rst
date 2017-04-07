@@ -30,6 +30,7 @@ Such dataset objects are what you get when accessing the cube's data as follows:
 
 .. code-block:: python
 
+    from cablab import Cube
     cube = Cube.open("/home/doe/esdc/cablab-datacube-0.2.4/low-res")
     dataset = cube.data.dataset(["precipitation", "evaporation", "ozone"])
 
