@@ -2,6 +2,7 @@ name: cablab
 channels:
 - forman
 - ioos
+- conda-forge
 dependencies:
 #- h5py=2.6.0=np111py35_0
 - gridtools=0.3.0=py35_0
