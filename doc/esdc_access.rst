@@ -188,7 +188,7 @@ In contrast it returns a list of `Numpy ndarray`_ arrays, one for each requested
 
 The corresponding API for Julia is very similar and illustrated in :doc:`dat_julia`.
 
-**Accessing the cube data using the ``dataset()`` function**
+**Accessing the cube data**
 
 The ``cube.data.dataset()`` has an optional argument which is a list of variable names to include in the returned
 `xarray.DataArray`_ object. If omitted, all variables will be included. Note it can take up to a few seconds to open
@@ -279,70 +279,15 @@ Data arrays also have a handy ``plot()`` method. Try:
     lst.sel(lon=11, method='nearest').plot()
     lst.sel(lat=53, method='nearest').plot()
 
-**Accessing the cube data using the ``get()`` function**
+**Closing the cube**
 
-The ``cube.data.get()`` method expects up to four arguments:
-
-.. code-block::
-
-    cube_data.get(variable=None, time=None, latitude=None, longitude=None)
-
-with
-
-    * *variable:* a variable index or name or an iterable returning multiple
-      of these (var1, var2, ...
-    * *time:* a single datetime.datetime object or a 2-element iterable
-      (time\_start, time\_end)
-    * *latitude:* a single latitude value or a 2-element iterable
-      (latitude\_start, latitude\_end)
-    * *longitude:* a single longitude value or a 2-element iterable
-      (longitude\_start, longitude\_end)
-    * *return:* a dictionary mapping variable names --> data arrays of
-      dimension (time, latitude, longitude)
-
-
-**Getting a chunk of 1 variable, all available time steps, and 40 x 40 spatial grid points:**
-
-.. code:: python
-
-    precip_chunk = cube_data.get('Precip',None,(0,10),(0,10))
-    np.array(precip_chunk).shape
-
-.. parsed-literal::
-
-    (1, 457, 40, 40)
-
-**Getting time-series at a single point of all variables for the entire period:**
-
-.. code:: python
-
-    time_series = cube_data.get(None,None,51.34,8.23)
-    [var.shape for var in time_series]
-
-.. parsed-literal::
-
-    [(457,), (457,), (457,), (457,), (457,), (368,)]
-
-**Getting a complete global image of a variable at a specific time**
-
-.. code:: python
-
-    Emission_single_image = cube_data.get('Emission', datetime(2002,1,1))
-    np.array(Emission_single_image).shape
-
-.. parsed-literal::
-
-    (1, 720, 1440)
+If you no longer require access to the cube, it should be closed to release file handles and reserved memory.
 
 .. code:: python
 
     cube.close()
 
-Note that the available memory limits the maximum size of the data chunk that can be simultaneously loaded,
-e.g. a simple cube_reader.get() will load the entire ESDC into memory and thus likely fail on most
-personal computers.
-
-Some more elaborate demonstrations are also included in the `ESDC community notebooks`_.
+Some more demonstrations are included in the `ESDC community notebooks`_.
 
 Using Julia
 ===========
