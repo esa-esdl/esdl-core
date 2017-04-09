@@ -69,6 +69,8 @@ running in a Cloud environment.
 Using Python
 ============
 
+.. _data_access_py_inst:
+
 Installation
 ------------
 
@@ -94,12 +96,12 @@ the system dependencies should be checked. Currently, the ``cablab-core`` librar
 Python packages:
 
     * xarray >= 0.9
-    * matplotlib >= 2.0
-    * netCDF4 >= 1.2
+    * netcdf4 >= 1.2
     * h5netcdf >= 0.3
     * h5py >= 2.7
-    * scikit_image >= 0.11
     * scipy >= 0.16
+    * scikit_image >= 0.11
+    * matplotlib >= 2.0
 
 We recommend to using Conda_ for installation of these packages (requires a Anacondfa/Miniconda environment).
 If you can't use Conda, and you have to stay with standard Python, it may lack one or more of the above's transitive
@@ -108,14 +110,14 @@ pre-compiled Python binaries for different architectures, which can be then inst
 
 .. code-block:: tcsh
 
-    pip install <wheel-file>
+    $ pip install <wheel-file>
 
 Kudos to Christoph Gohlke for the continuous efforts!
 The cablab-core library can be installed from terminal (Linux/Unix/MacOs) or shell (Windows):
 
 .. code-block:: tcsh
 
-    python setup.py install
+    $ python setup.py develop
 
 After download of a ESDC including the corresponding ``cube.config`` file and successful installation of the ESDC,
 you are ready to explore the data in the ESDC using the :ref:`data_access_py`.
@@ -131,13 +133,13 @@ several Python distributions, but can also be installed by a simple
 
 .. code-block:: tcsh
 
-    pip install jupyter
+    $ pip install jupyter
 
 and started from the command line by typing:
 
 .. code-block:: tcsh
 
-    jupyter notebook
+    $ jupyter notebook
 
 This will open an interactive Jupyter session in your browser.
 
