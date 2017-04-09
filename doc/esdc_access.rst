@@ -6,6 +6,11 @@
 .. _JupyterHub: https://jupyterhub.readthedocs.io/en/latest/
 .. _Notebooks: https://jupyter.readthedocs.io/en/latest/index.html
 .. _Conda: https://conda.io/docs/intro.html
+.. _Anaconda: https://www.continuum.io/downloads
+.. _Miniconda: https://conda.io/miniconda.html
+.. _xarray.Dataset: http://xarray.pydata.org/en/stable/data-structures.html#dataset
+.. _xarray.DataArray: http://xarray.pydata.org/en/stable/data-structures.html#dataarray
+.. _Numpy ndarrays: http://docs.scipy.org/doc/numpy/reference/arrays.ndarray.html
 
 .. _ESDC E-Laboratory: http://cablab.earthsystemdatacube.net/cablab-jupyterhub/
 .. _ESDC THREDDS server: http://www.brockmann-consult.de/cablab-thredds/catalog.html
@@ -84,108 +89,174 @@ standard operations on the large amount of data in the ESDC.
 While in the E-laboratory, the Data Access API and the DAT are already pre-installed,
 the user has to download and install the cube library when working on a local computer.
 
+The ESDC Python package has been developed against latest Anaconda_ / Miniconda_ distributions and uses their
+Conda_ package manager.
+
 To get started on your local computer with Python, clone the `cablab-core`
 repository from `<https://github.com/CAB-LAB>`_:
 
-.. code-block:: tcsh
+.. code-block:: bash
 
     git clone https://github.com/CAB-LAB/cablab-core
 
-It will create a new folder ``cablab-core``, which contains a file named ``setup.py``. Before installation,
-the system dependencies should be checked. Currently, the ``cablab-core`` library requires the following
-Python packages:
+The following command will create a new Python 3.5 environment named ``esdc`` with all required dependencies, namely
 
-    * xarray >= 0.9
-    * netcdf4 >= 1.2
+    * dask >= 0.14
+    * gridtools >= 0.1 (from Conda channel ``forman``)
     * h5netcdf >= 0.3
     * h5py >= 2.7
+    * netcdf4 >= 1.2
     * scipy >= 0.16
     * scikit_image >= 0.11
     * matplotlib >= 2.0
+    * xarray >= 0.9
 
-We recommend to using Conda_ for installation of these packages (requires a Anacondfa/Miniconda environment).
-If you can't use Conda, and you have to stay with standard Python, it may lack one or more of the above's transitive
-package dependencies, we recommend to visit `<http://www.lfd.uci.edu/~gohlke/pythonlibs/>`_ to obtain
-pre-compiled Python binaries for different architectures, which can be then installed using pip:
+.. code-block:: bash
 
-.. code-block:: tcsh
+    $ conda env create environment.yml
 
-    $ pip install <wheel-file>
+To active new Python environment named ``esdc`` you must source on Linux/Darwin
 
-Kudos to Christoph Gohlke for the continuous efforts!
-The cablab-core library can be installed from terminal (Linux/Unix/MacOs) or shell (Windows):
+.. code-block:: bash
 
-.. code-block:: tcsh
+    $ source activate.sh esdc
 
+on Windows:
+
+.. code-block:: bat
+
+    > activate esdc
+
+Now change into new folder ``cablab-core`` and install the ``cablab`` Python package using the ``develop`` target:
+
+.. code-block:: bash
+
+    $ cd cablab-core
     $ python setup.py develop
 
 After download of a ESDC including the corresponding ``cube.config`` file and successful installation of the ESDC,
 you are ready to explore the data in the ESDC using the :ref:`data_access_py`.
 
-.. data_access_api
+.. data_access_py
 
 Usage
 -----
 
-In the following, the Data Access via a Python in a Jupyter_ Notebook is described. All commands do, however,
-also work in any interactive Python environment or in a Python script. Jupyter is already included in
-several Python distributions, but can also be installed by a simple
+The following example code demonstrates how to access a locally stored ESDC, query its content, and get
+data chunks of different sizes for further analysis.
 
-.. code-block:: tcsh
-
-    $ pip install jupyter
-
-and started from the command line by typing:
-
-.. code-block:: tcsh
-
-    $ jupyter notebook
-
-This will open an interactive Jupyter session in your browser.
-
-In the example below, it is demonstrated how the user can access a locally stored ESDC, query the content, and get
-chunks of different sizes for further analysis. A valid configuration file, typically named cube.config,
-has to be located in the root folder of the ESDC, i.e. in the folder you pass to ``Cube.open()``.
-It contains essential metadata about the ESDC to be loaded and is automatically built during the generation
-of the ESDC. Some more elaborate demonstrations are also included in the `ESDC community notebooks`_.
-
-In the following notebook, data access using CABLAB's Python API is demonstrated.
+**Open a cube**
 
 .. code:: python
 
     from cablab import Cube
-    from cablab import CubeData
     from datetime import datetime
     import numpy as np
 
-.. code:: python
-
     cube = Cube.open("/path/to/datacube")
-    cube_data = cube.data
+
+
+Note, in order to work properly the ``/path/to/datacube/`` passed to ``Cube.open()``
+must be the path to an existing ESDC cube directory which contains a valid configuration file named ``cube.config``.
+It contains essential metadata about the ESDC to be opened.
+
 
 .. code:: python
 
-    cube_data.variable_names
+    cube.data.variable_names
+
+.. code-block:: python
+
+    ['aerosol_optical_thickness_1610',
+     'aerosol_optical_thickness_550',
+     'aerosol_optical_thickness_555',
+     'aerosol_optical_thickness_659',
+     'aerosol_optical_thickness_865',
+     'air_temperature_2m',
+     'bare_soil_evaporation',
+     'black_sky_albedo',
+     'burnt_area',
+     'country_mask',
+     'c_emissions',
+     ...]
+
+After successful opening the ESDC, chunks of data or the entire data set can be accessed via the
+``dataset()`` and ``get()`` functions. The first returns a `xarray.Dataset`_ object in which all
+cube variables are represented as `xarray.DataArray`_ objects. More about these objects can also be
+found in :doc:`dat_python` section. The second function can be used to read subsets of the data.
+In contrast it returns a list of `Numpy ndarrays`_ arrays, one for each requested variable.
+
+The corresponding API for Julia is very similar and illustrated in :doc:`dat_julia`.
+
+**Accessing the cube data using the ``dataset()`` function**
+
+The ``cube.data.dataset()`` has an optional argument which is a list of variable names to include in the returned
+`xarray.DataArray`_ object. If omitted, all variables will be included. Note it can take up to a few seconds to open
+generate the dataset object with all variables.
+
+.. code:: python
+
+    ds = cube.data.dataset()
+    ds
 
 .. parsed-literal::
 
-    {'BurntArea': 0,
-     'Emission': 1,
-     'Ozone': 2,
-     'Precip': 3,
-     'SoilMoisture': 4,
-     'tcwv_res': 5}
+    <`xarray.Dataset`_>
+    Dimensions:                            (bnds: 2, lat: 720, lon: 1440, time: 506)
+    Coordinates:
+      * time                               (time) datetime64[ns] 2001-01-05 ...
+      * lon                                (lon) float32 -179.875 -179.625 ...
+        lon_bnds                           (lon, bnds) float32 -180.0 -179.75 ...
+        lat_bnds                           (lat, bnds) float32 89.75 90.0 89.5 ...
+      * lat                                (lat) float32 89.875 89.625 89.375 ...
+        time_bnds                          (time, bnds) datetime64[ns] 2001-01-01 ...
+    Dimensions without coordinates: bnds
+    Data variables:
+        aerosol_optical_thickness_1610     (time, lat, lon) float64 nan nan nan ...
+        aerosol_optical_thickness_550      (time, lat, lon) float64 nan nan nan ...
+        aerosol_optical_thickness_555      (time, lat, lon) float64 nan nan nan ...
+        aerosol_optical_thickness_659      (time, lat, lon) float64 nan nan nan ...
+        aerosol_optical_thickness_865      (time, lat, lon) float64 nan nan nan ...
+        air_temperature_2m                 (time, lat, lon) float64 243.4 243.4 ...
+        bare_soil_evaporation              (time, lat, lon) float64 nan nan nan ...
+        black_sky_albedo                   (time, lat, lon) float64 nan nan nan ...
+        burnt_area                         (time, lat, lon) float64 0.0 0.0 0.0 ...
+        country_mask                       (time, lat, lon) float64 nan nan nan ...
+        ...
 
+.. code:: python
 
-After successful opening the ESDC, chunks of data or the entire data set can be accessed via the get() function.
-Below we demonstrate basic approaches to retrieve different kind of subsets of the ESDC using the Data Access
-API in Python. The corresponding API for Julia is very similar and illustrated in :doc:`dat_julia`.
-
-**Get the cube's data**
-
-The ``cube_data.get()`` method expects up to four arguments:
+    lst = ds['land_surface_temperature']
+    lst
 
 .. parsed-literal::
+
+    <`xarray.DataArray`_ 'land_surface_temperature' (time: 506, lat: 720, lon: 1440)>
+    dask.array<concatenate, shape=(506, 720, 1440), dtype=float64, chunksize=(46, 720, 1440)>
+    Coordinates:
+      * time     (time) datetime64[ns] 2001-01-05 2001-01-13 2001-01-21 ...
+      * lon      (lon) float32 -179.875 -179.625 -179.375 -179.125 -178.875 ...
+      * lat      (lat) float32 89.875 89.625 89.375 89.125 88.875 88.625 88.375 ...
+    Attributes:
+        url:            http://data.globtemperature.info/
+        long_name:      land surface temperature
+        source_name:    LST
+        standard_name:  surface_temperature
+        comment:        Advanced Along Track Scanning Radiometer pixel land surfa...
+        units:          K
+
+Try also the ``plot()`` function:
+
+.. code:: python
+
+    lst[124, :, :].plot()
+    lst[124, :, 820].plot()
+
+**Accessing the cube data using the ``get()`` function**
+
+The ``cube.data.get()`` method expects up to four arguments:
+
+.. code-block::
 
     cube_data.get(variable=None, time=None, latitude=None, longitude=None)
 
@@ -243,6 +314,8 @@ with
 Note that the available memory limits the maximum size of the data chunk that can be simultaneously loaded,
 e.g. a simple cube_reader.get() will load the entire ESDC into memory and thus likely fail on most
 personal computers.
+
+Some more elaborate demonstrations are also included in the `ESDC community notebooks`_.
 
 Using Julia
 ===========
