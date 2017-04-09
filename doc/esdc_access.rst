@@ -10,7 +10,7 @@
 .. _Miniconda: https://conda.io/miniconda.html
 .. _xarray.Dataset: http://xarray.pydata.org/en/stable/data-structures.html#dataset
 .. _xarray.DataArray: http://xarray.pydata.org/en/stable/data-structures.html#dataarray
-.. _Numpy ndarrays: http://docs.scipy.org/doc/numpy/reference/arrays.ndarray.html
+.. _Numpy ndarray: http://docs.scipy.org/doc/numpy/reference/arrays.ndarray.html
 
 .. _ESDC E-Laboratory: http://cablab.earthsystemdatacube.net/cablab-jupyterhub/
 .. _ESDC THREDDS server: http://www.brockmann-consult.de/cablab-thredds/catalog.html
@@ -184,7 +184,7 @@ After successful opening the ESDC, chunks of data or the entire data set can be 
 ``dataset()`` and ``get()`` functions. The first returns a `xarray.Dataset`_ object in which all
 cube variables are represented as `xarray.DataArray`_ objects. More about these objects can also be
 found in :doc:`dat_python` section. The second function can be used to read subsets of the data.
-In contrast it returns a list of `Numpy ndarrays`_ arrays, one for each requested variable.
+In contrast it returns a list of `Numpy ndarray`_ arrays, one for each requested variable.
 
 The corresponding API for Julia is very similar and illustrated in :doc:`dat_julia`.
 
@@ -245,12 +245,39 @@ generate the dataset object with all variables.
         comment:        Advanced Along Track Scanning Radiometer pixel land surfa...
         units:          K
 
-Try also the ``plot()`` function:
+The variable ``lst`` can now be used like a `Numpy ndarray`_. Howver, using ``xarray`` there are a
+number of more convenient data access methods that take care of the actual coordinates provided for every
+dimenstion. For example, the ``sel()`` method can be used to extract slices and subsets from a data array.
+Here a point is extract from ``lst``, and the result is a 1-element data array:
 
 .. code:: python
 
-    lst[124, :, :].plot()
-    lst[124, :, 820].plot()
+    lst_point = lst.sel(time='2006-06-15', lat=53, lon=11, method='nearest')
+    lst_point
+
+.. parsed-literal::
+    <xarray.DataArray 'land_surface_temperature' ()>
+    dask.array<getitem, shape=(), dtype=float64, chunksize=()>
+    Coordinates:
+        time     datetime64[ns] 2006-06-14
+        lon      float32 11.125
+        lat      float32 53.125
+    Attributes:
+        url:            http://data.globtemperature.info/
+        long_name:      land surface temperature
+        source_name:    LST
+        standard_name:  surface_temperature
+        comment:        Advanced Along Track Scanning Radiometer pixel land surfa...
+        units:          K
+
+Data arrays also have a handy ``plot()`` method. Try:
+
+.. code:: python
+
+    lst.sel(lat=53, lon=11, method='nearest').plot()
+    lst.sel(time='2006-06-15', method='nearest').plot()
+    lst.sel(lon=11, method='nearest').plot()
+    lst.sel(lat=53, method='nearest').plot()
 
 **Accessing the cube data using the ``get()`` function**
 
