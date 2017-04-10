@@ -39,7 +39,7 @@ if on_rtd:
 
     mocked_packages = ['gridtools', 'h5netcdf', 'netCDF4', 'numpy', 'xarray']
     # On READTHEDOCS, filter out all requirements that start with one of the names in mocked_packages
-    # These are mocked, see doc/source/conf.py
+    # These are mocked, see doc/conf.py
     requirements = itertools.filterfalse(lambda req: any(req.startswith(mp) for mp in mocked_packages),
                                          requirements)
 
