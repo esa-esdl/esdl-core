@@ -11,8 +11,7 @@ dependencies:
   - netcdf4=1.2.4=np111py35_0
   - numba=0.28.1=np111py35_0
   - pandas=0.18.1=np111py35_0
-#  - pip=9.0.1=py35_0
-  - pip=8.1.2=py35_0
+  - pip=9.0.1=py35_0
   - python=3.5.2=0
   - python-dateutil=2.5.3=py35_0
   - pytz=2016.6.1=py35_0
@@ -23,10 +22,10 @@ dependencies:
   #
   # ReadTheDocs specific
   #
-  - sphinx>=1.4
-  - sphinx_rtd_theme=0.1.9
-  - sphinx-argparse
+  #- sphinx>=1.4
+  #- sphinx_rtd_theme=0.1.9
+  #- sphinx-argparse
   #
   # for mocking all libraries we DON'T want/cant require on ReadTheDocs
   #
-  - mock
+  # - mock
