@@ -24,7 +24,7 @@ def _get_ds_method(var_attributes):
 class CubeSourceProvider(metaclass=ABCMeta):
     """
     An abstract interface for objects representing data source providers for the data cube.
-    Cube source providers are passed to the **Cube.update()** method.
+    Cube source providers are passed to the :py:meth:`Cube.update` method.
 
     :param cube_config: Specifies the fixed layout and conventions used for the cube.
     :param name: The provider's registration name.
@@ -51,7 +51,7 @@ class CubeSourceProvider(metaclass=ABCMeta):
     @abstractmethod
     def prepare(self):
         """
-        Called by a Cube instance's **update()** method before any other provider methods are called.
+        Called by a Cube instance's :py:meth:`update` method before any other provider methods are called.
         Provider instances should prepare themselves w.r.t. the given cube configuration *cube_config*.
         """
         pass
@@ -78,7 +78,7 @@ class CubeSourceProvider(metaclass=ABCMeta):
     @abstractproperty
     def variable_descriptors(self) -> Dict[str, Dict[str, Any]]:
         """
-        Return a dictionary which maps target(!) variable names to a dictionary of target(!) attribute values.
+        Return a dictionary which maps target(!) variable names to a dictionary of target attribute values.
         The following attributes have a special meaning and shall or should be provided:
 
         * ``data_type``: A numpy data type. Mandatory attribute.
@@ -99,21 +99,22 @@ class CubeSourceProvider(metaclass=ABCMeta):
     def compute_variable_images(self, period_start: datetime, period_end: datetime) -> Dict[str, np.ndarray]:
         """
         Return variable name to variable image mapping of all provided variables.
-        Each image is a numpy array with the shape (height, width) derived from the **get_spatial_coverage()** method.
+        Each image is a numpy array with the shape (height, width) derived from the :py:meth:`get_spatial_coverage`
+        method.
 
         The images must be computed (by aggregation or interpolation or copy) from the source data in the given
         time period *period_start* <= source_data_time < *period_end* and taking into account other data cube
         configuration settings.
 
-        The method is called by a Cube instance's **update()** method for all possible time periods in the time
-        range given by the **get_temporal_coverage()** method. The times given are adjusted w.r.t. the cube's
+        The method is called by a Cube instance's :py:meth:`update` method for all possible time periods in the time
+        range given by the :py:meth:`get_temporal_coverage` method. The times given are adjusted w.r.t. the cube's
         reference time and temporal resolution.
 
         :param period_start: The period start time as a datetime.datetime instance
         :param period_end: The period end time as a datetime.datetime instance
 
         :return: A dictionary variable name --> image. Each image must be numpy array-like object of shape
-                 (grid_height, grid_width) as given by the **CubeConfig**.
+                 (grid_height, grid_width) as given by the :py:class:`CubeConfig`.
                  Return ``None`` if no such variables exists for the given target time range.
         """
         return None
@@ -121,7 +122,7 @@ class CubeSourceProvider(metaclass=ABCMeta):
     @abstractmethod
     def close(self):
         """
-        Called by the cube's **update()** method after all images have been retrieved and the provider is no
+        Called by the cube's :py:meth:`update` method after all images have been retrieved and the provider is no
         longer used.
         """
         pass
@@ -129,7 +130,7 @@ class CubeSourceProvider(metaclass=ABCMeta):
 
 class BaseCubeSourceProvider(CubeSourceProvider, metaclass=ABCMeta):
     """
-    A partial implementation of the **CubeSourceProvider** interface that computes its output image data
+    A partial implementation of the :py:class:`CubeSourceProvider` interface that computes its output image data
     using weighted averages. The weights are computed according to the overlap of source time ranges and a
     requested target time range.
 
@@ -218,7 +219,7 @@ class BaseCubeSourceProvider(CubeSourceProvider, metaclass=ABCMeta):
         Compute the target images for all variables from the sources with the given time indices to weights mapping.
 
         The time indices in *index_to_weight* are guaranteed to point into the time ranges list returned by
-        **compute_source_time_ranges()**.
+        py:meth:`compute_source_time_ranges`.
 
         The weight values in *index_to_weight* are float values computed from the overlap of source time ranges with
         a requested target time range.

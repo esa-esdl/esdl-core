@@ -134,6 +134,16 @@ Now change into new folder ``cablab-core`` and install the ``cablab`` Python pac
     $ cd cablab-core
     $ python setup.py develop
 
+You can now easily change source code in ``cablab-core`` without reinstalling it.
+When you do not plan to add or modify any code (e.g. add a new source data provider), you can also permanently
+install the sources using
+
+.. code-block:: bash
+
+    $ python setup.py install
+
+However, if you now change any code, make sure to the install command again.
+
 After download of a ESDC including the corresponding ``cube.config`` file and successful installation of the ESDC,
 you are ready to explore the data in the ESDC using the :ref:`data_access_py`.
 

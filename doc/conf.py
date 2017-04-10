@@ -64,7 +64,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'ESDC'
-copyright = '2017, The ESDC Team'
+copyright = '2017, The Earth System Data Cube (ESDC) Team'
 author1 = 'Brockmann Consult GmbH'
 author2 = 'MPI for Biogeochemistry Jena'
 esdc_logo = "pix/EarthDataCube3.png"
