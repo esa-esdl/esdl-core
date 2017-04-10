@@ -31,7 +31,6 @@ Table of Contents
    dat_julia
    dat_python
    collaboration
-   annex
 
 
 Indices and Tables
