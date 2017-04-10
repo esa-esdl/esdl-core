@@ -1,5 +1,5 @@
 .. _cablab/providers/ozone.py: https://github.com/CAB-LAB/cablab-core/blob/master/cablab/providers/ozone.py
-
+.. _cube-config: https://github.com/CAB-LAB/cube-config
 
 ===============
 ESDC Generation
@@ -86,6 +86,8 @@ multivariate sources also have a ``var`` parameter to indicate which variable of
 
 will create the cube ``mycube`` in current directory using the ``mycube.config`` configuration and add a single
 variable ``ozone`` from source NetCDF files in  ``/path/to/ozone/netcdfs``.
+
+Note, the GitHub repository `cube-config`_ is used to keep the configurations of individual ESDC versions.
 
 Writing a new Provider
 ======================
