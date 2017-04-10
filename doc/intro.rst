@@ -87,27 +87,40 @@ Finally, all data-sets included in the ESDC are listed and described in the `ann
 References
 ==========
 
-.. todo:: GB add more references here
-
 1.  ESDC webpage: http://www.earthsystemdatacube.net
 
 2.  CAB-LAB's github repository: https://github.com/CAB-LAB
+
+3. E-Laboratory: https://cablab.earthsystemdatacube.net
 
 
 Peer-reviewed Publications
 ==========================
 
-.. todo:: FG add more references here
+Sippel, S., Lange, H., Mahecha, M. D., Hauhs, M., Bodesheim, P., Kaminski, T., Gans, F. & Rosso, O.A. (2016)
+Diagnosing the Dynamics of Observed and Simulated Ecosystem Gross Primary Productivity with Time Causal Information
+Theory Quantifiers. PLoS ONE, accepted. doi:10.1371/journal.pone.0164960.
 
-1. Sippel, S., Zscheischler, J., Heimann, M., Otto, F. E. L., Peters, J. and Mahecha, M. D. (2015),
-   Quantifying changes in climate variability and extremes: Pitfalls and their overcoming,
-   Geophys. Res. Lett., 42, 9990–9998. doi:10.1002/2015GL066307.
+
+Sippel, S., Zscheischler, J., Heimann, M., Otto, F. E. L., Peters, J., & Mahecha, M. D. (2015),
+Quantifying changes in climate variability and extremes: Pitfalls and their overcoming, Geophysical Research Letters,
+42(22), 9990–9998. doi:10.1002/2015GL066307.
+
+
+Sippel, S., Zscheischler, J., Heimann, M., Lange, H., Mahecha, M. D., van Oldenborgh, G. J., Otto,
+F. E. L. & Reichstein, M. (2016) Have precipitation extremes and annual totals been increasing in the world's dry
+regions over the last 60 years? Hydrology and Earth System Sciences Discussions. doi:10.5194/hess-2016-452.
+
+
+Flach, M., Gans, F., Brenning, A., Denzler, J., Reichstein, M., Rodner, E., Bathiany, S., Bodesheim, P., Guanche,
+Y., Sippel, S., and Mahecha, M.D. Multivariate Anomaly Detection for Earth Observations: A Comparison of Algorithms
+and Feature Extraction Techniques. Earth System Dynamics – Discussions, doi:10.5194/esd-2016-51.
+
+
 
 
 Terms and Abbreviations
 =======================
-
-.. todo:: GB keep this section up-to-date
 
 =======================  =============================================================================================
 Term                     Description
