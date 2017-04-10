@@ -61,7 +61,7 @@ Here is the configuration file that is used to produce the low-resolution ESDC. 
 cube that whose source data will aggregated/interpolated to match 8 day periods and then resampled to match
 1440 x 720 spatial grid cells:
 
-.. code-block:: txt
+.. code-block:: text
 
     model_version = '0.2.4'
     spatial_res = 0.25
