@@ -310,12 +310,12 @@ Cube Data Variables
 |                    |                                  |                                                                 | Trigo, I. F., et al., 2011: The Satellite Application Facility on Land Surface   |
 |                    |                                  |                                                                 | Analysis. Int. J. Remote Sens., 32, 2725-2744, doi: 10.1080/01431161003743199.   |
 +--------------------+----------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------+
-| Ozone CCI          | ozone                            | http://www.esa-ozone-cci.org/                                   |  Laeng, A., et al. "The ozone climate change initiative: Comparison of four      |
+| Ozone CCI          | ozone                            | http://www.esa-ozone-cci.org/                                   | Laeng, A., et al. "The ozone climate change initiative: Comparison of four       |
 |                    |                                  |                                                                 | Level-2 processors for the Michelson Interferometer for Passive Atmospheric      |
-|                    |                                  |                                                                 |  Sounding (MIPAS)." Remote Sensing of Environment 162 (2015): 316-343.           |
+|                    |                                  |                                                                 | Sounding (MIPAS)." Remote Sensing of Environment 162 (2015): 316-343.            |
 +--------------------+----------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------+
 | GPCP               | precipitation                    | http://precip.gsfc.nasa.gov/                                    | Adler, Robert F., et al. "The version-2 global precipitation climatology project |
-|                    |                                  |                                                                 |  (GPCP) monthly precipitation analysis (1979-present)." Journal of               |
+|                    |                                  |                                                                 | (GPCP) monthly precipitation analysis (1979-present)." Journal of                |
 |                    |                                  |                                                                 | hydrometeorology 4.6 (2003): 1147-1167.                                          |
 +--------------------+----------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------+
 | SoilMoisture CCI   | soil_moisture                    | http://www.esa-soilmoisture-cci.org/                            | Y.Y., Parinussa, R.M., Dorigo, W.A., De Jeu, R.A.M., Wagner, W., McCabe, M.F.,   |

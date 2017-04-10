@@ -267,7 +267,7 @@ The low-level interface of the ESDC Python DAT is the `xarray API`_.
 
 The following functions provide the high-level API of the ESDC Python DAT:
 
-.. automodule:: dat.py
+.. automodule:: cablab.dat
     :members:
 
 
