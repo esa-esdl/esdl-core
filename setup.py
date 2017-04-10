@@ -1,3 +1,5 @@
+import os
+
 try:
     import setuptools
 except ImportError:
@@ -21,6 +23,25 @@ def get_version():
 
 # Same effect as "from ect import __version__", but avoids importing ect:
 __version__ = get_version()
+
+# in alphabetical oder
+requirements = [
+    'gridtools',
+    'h5netcdf',
+    'netCDF4',
+    'numpy',
+    'xarray',
+]
+
+on_rtd = os.environ.get('READTHEDOCS') == 'True'
+if on_rtd:
+    import itertools
+
+    mocked_packages = ['gridtools', 'h5netcdf', 'netCDF4', 'numpy', 'xarray']
+    # On READTHEDOCS, filter out all requirements that start with one of the names in mocked_packages
+    # These are mocked, see doc/source/conf.py
+    requirements = itertools.filterfalse(lambda req: any(req.startswith(mp) for mp in mocked_packages),
+                                         requirements)
 
 packages = find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
 
@@ -74,5 +95,5 @@ setup(
         ],
     },
     # *Minimum* requirements
-    install_requires=['numpy', 'netCDF4', 'gridtools', 'xarray', 'h5netcdf'],
+    install_requires=requirements
 )
