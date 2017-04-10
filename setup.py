@@ -35,13 +35,9 @@ requirements = [
 
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
 if on_rtd:
-    import itertools
-
-    mocked_packages = ['gridtools', 'h5netcdf', 'netCDF4', 'numpy', 'xarray']
-    # On READTHEDOCS, filter out all requirements that start with one of the names in mocked_packages
-    # These are mocked, see doc/conf.py
-    requirements = itertools.filterfalse(lambda req: any(req.startswith(mp) for mp in mocked_packages),
-                                         requirements)
+    # On READTHEDOCS, all dependencies are mocked (except tornado)
+    # see doc/source/conf.py and readthedocs-env.yml
+    requirements = ['gridtools']
 
 packages = find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
 
