@@ -23,7 +23,7 @@ sys.path.append(os.path.abspath('..'))
 # http://blog.rtwilson.com/how-to-make-your-sphinx-documentation-compile-with-readthedocs-when-youre-using-numpy-and-scipy/
 import mock
 
-MOCK_MODULES = ['h5netcdf', 'h5py', 'xarray', 'netCDF4', 'numba', 'pandas', 'llvmlite']
+MOCK_MODULES = ['h5netcdf', 'h5py', 'xarray', 'netCDF4', 'numba', 'pandas', 'llvmlite', 'numpy']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
 
