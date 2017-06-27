@@ -17,8 +17,6 @@ and visualize the data set.
 Our goal is to foster a holistic understanding of the Earth System by simplifying the simultaneous and consistent
 analysis of big and freely available data sets of geopyhsical variables.
 
-Table of Contents
-=================
 
 .. toctree::
    :maxdepth: 2
