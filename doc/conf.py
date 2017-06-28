@@ -63,7 +63,7 @@ project = 'ESDC'
 copyright = '2017, The Earth System Data Cube (ESDC) Team'
 author1 = 'Brockmann Consult GmbH'
 author2 = 'MPI for Biogeochemistry Jena'
-esdc_logo = "pix/EarthDataCube3.png"
+esdc_logo = "pix/EarthDataCube3_small.png"
 esdc_icon = "pix/EarthDataCube3.ico"
 
 # The version info for the project you're documenting, acts as replacement for
