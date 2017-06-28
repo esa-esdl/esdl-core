@@ -25,6 +25,7 @@ dependencies:
   - sphinx>=1.4
   - sphinx_rtd_theme=0.1.9
   - sphinx-argparse
+  - mkdocs
   #
   # for mocking all libraries we DON'T want/cant require on ReadTheDocs
   #
