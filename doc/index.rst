@@ -1,5 +1,5 @@
 .. image:: pix/EarthDataCube3.png
-   :width: 300 px
+   :width: 250 px
    :align: center
 
 |
