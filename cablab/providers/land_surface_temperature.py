@@ -24,6 +24,8 @@ class LandSurfTemperatureProvider(NetCDFCubeSourceProvider):
                 'long_name': 'land surface temperature',
                 'comment': 'Advanced Along Track Scanning Radiometer pixel land surface temperature product',
                 'url': 'http://data.globtemperature.info/',
+                'project_name' : 'GlobTemperature',
+                'references' : 'Jiménez, C., et al. "Inversion of AMSR‐E observations for land surface temperature estimation: 1. Methodology and evaluation with station temperature." Journal of Geophysical Research: Atmospheres 122.6 (2017): 3330-3347.',
             }
         }
 

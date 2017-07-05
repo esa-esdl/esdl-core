@@ -29,6 +29,7 @@ class SnowAreaExtentProvider(NetCDFCubeSourceProvider):
                               'ESA Special Publication. Vol. 686. 2010.',
                 'comment': 'Grid cell fractional snow cover based on the Globsnow CCI product.',
                 'url': 'http://www.globsnow.info/',
+                'project_name' : 'GlobSnow',
             }
         }
 

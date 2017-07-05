@@ -25,6 +25,7 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
                 'references': 'Holzer-Popp, T., de Leeuw, G., Griesfeller, J., Martynenko, D., Klueser, L., Bevan, S., et al. (2013). Aerosol retrieval experiments in the ESA Aerosol_cci project. Atmospheric Measurement Techniques, 6, 1919-1957. doi:10.5194/amt-6-1919-2013. ',
                 'comment': 'Aerosol optical thickness derived from the dataset produced by the Aerosol CCI project.',
                 'url': 'http://www.esa-aerosol-cci.org/',
+                'project_name' : 'ESA Aerosol CCI',
             },
             'aerosol_optical_thickness_550': {
                 'source_name': 'AOD550_mean',
@@ -36,6 +37,7 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
                 'references': 'Holzer-Popp, T., de Leeuw, G., Griesfeller, J., Martynenko, D., Klueser, L., Bevan, S., et al. (2013). Aerosol retrieval experiments in the ESA Aerosol_cci project. Atmospheric Measurement Techniques, 6, 1919-1957. doi:10.5194/amt-6-1919-2013. ',
                 'comment': 'Aerosol optical thickness derived from the dataset produced by the Aerosol CCI project.',
                 'url': 'http://www.esa-aerosol-cci.org/',
+                'project_name' : 'ESA Aerosol CCI',
             },
             'aerosol_optical_thickness_555': {
                 'source_name': 'AOD555_mean',
@@ -47,6 +49,7 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
                 'references': 'Holzer-Popp, T., de Leeuw, G., Griesfeller, J., Martynenko, D., Klueser, L., Bevan, S., et al. (2013). Aerosol retrieval experiments in the ESA Aerosol_cci project. Atmospheric Measurement Techniques, 6, 1919-1957. doi:10.5194/amt-6-1919-2013. ',
                 'comment': 'Aerosol optical thickness derived from the dataset produced by the Aerosol CCI project.',
                 'url': 'http://www.esa-aerosol-cci.org/',
+                'project_name' : 'ESA Aerosol CCI',
             },
             'aerosol_optical_thickness_659': {
                 'source_name': 'AOD659_mean',
@@ -58,6 +61,7 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
                 'references': 'Holzer-Popp, T., de Leeuw, G., Griesfeller, J., Martynenko, D., Klueser, L., Bevan, S., et al. (2013). Aerosol retrieval experiments in the ESA Aerosol_cci project. Atmospheric Measurement Techniques, 6, 1919-1957. doi:10.5194/amt-6-1919-2013. ',
                 'comment': 'Aerosol optical thickness derived from the dataset produced by the Aerosol CCI project.',
                 'url': 'http://www.esa-aerosol-cci.org/',
+                'project_name' : 'ESA Aerosol CCI',
             },
             'aerosol_optical_thickness_865': {
                 'source_name': 'AOD865_mean',
@@ -69,6 +73,7 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
                 'references': 'Holzer-Popp, T., de Leeuw, G., Griesfeller, J., Martynenko, D., Klueser, L., Bevan, S., et al. (2013). Aerosol retrieval experiments in the ESA Aerosol_cci project. Atmospheric Measurement Techniques, 6, 1919-1957. doi:10.5194/amt-6-1919-2013. ',
                 'comment': 'Aerosol optical thickness derived from the dataset produced by the Aerosol CCI project.',
                 'url': 'http://www.esa-aerosol-cci.org/',
+                'project_name' : 'ESA Aerosol CCI',
             }
         }
 

@@ -84,7 +84,7 @@ setup(
             'sensible_heat = cablab.providers.mpi_bgc:MPIBGCProvider',
             'net_ecosystem_exchange = cablab.providers.mpi_bgc:MPIBGCProvider',
             'terrestrial_ecosystem_respiration = cablab.providers.mpi_bgc:MPIBGCProvider',
-            'gross_primary_production = cablab.providers.mpi_bgc:MPIBGCProvider',
+            'gross_primary_productivity = cablab.providers.mpi_bgc:MPIBGCProvider',
             'country_mask = cablab.providers.country_mask:CountryMaskProvider',
             'srex_mask = cablab.providers.srex_mask:SrexMaskProvider',
             'water_mask = cablab.providers.water_mask:WaterMaskProvider',

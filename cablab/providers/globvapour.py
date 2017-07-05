@@ -26,6 +26,7 @@ class GlobVapourProvider(NetCDFCubeSourceProvider):
                               'AIP Conference Proceedings. Vol. 1531. No. 1. 2013.',
                 'comment': 'Total column water vapour based on the GlobVapour CCI product.',
                 'url': 'http://www.globvapour.info/',
+                'project_name' : 'GlobVapour',
             }
         }
 

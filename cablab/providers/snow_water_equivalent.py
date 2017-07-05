@@ -26,6 +26,8 @@ class SnowWaterEquivalentProvider(NetCDFCubeSourceProvider):
                 'references': 'Luojus, Kari, et al. "ESA DUE Globsnow-Global Snow Database for Climate Research." '
                               'ESA Special Publication. Vol. 686. 2010.',
                 'comment': 'Grid cell fractional snow cover based on the Globsnow CCI product.',
+                'url': 'http://www.globsnow.info/',
+                'project_name' : 'GlobSnow',
             }
         }
 

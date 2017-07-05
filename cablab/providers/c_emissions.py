@@ -28,6 +28,7 @@ class CEmissionsProvider(NetCDFCubeSourceProvider):
                               '(2013): 317-328.',
                 'comment': 'Carbon emissions by fires based on the GFED4 fire product.',
                 'url': 'http://www.globalfiredata.org/',
+                'project_name' : 'GFED4',
             }
         }
 
