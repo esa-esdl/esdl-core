@@ -17,6 +17,8 @@ all_vars_descr = {'GPPall': {
                       'FLUXNET sites with regression algorithms." (2016).',
         'standard_name': 'gross_primary_productivity_of_carbon',
         'url': 'http://www.fluxcom.org/',
+        'project_name' : 'FLUXCOM',
+        'comment' : 'Gross Carbon uptake of of the ecosystem through photosynthesis',
     }},
 
     'TERall': {
@@ -30,6 +32,8 @@ all_vars_descr = {'GPPall': {
                           'FLUXNET sites with regression algorithms." (2016).',
             'standard_name': 'ecosystem_respiration_carbon_flux',
             'url': 'http://www.fluxcom.org/',
+            'project_name' : 'FLUXCOM',
+            'comment' : 'Total carbon release of the ecosystem through respiration.',
         }},
     'NEE': {
         'net_ecosystem_exchange': {
@@ -42,6 +46,8 @@ all_vars_descr = {'GPPall': {
                           'FLUXNET sites with regression algorithms." (2016).',
             'standard_name': 'net_primary_productivity_of_carbon',
             'url': 'http://www.fluxcom.org/',
+            'project_name' : 'FLUXCOM',
+            'comment' : 'Net carbon exchange between the ecosystem and the atmopshere.'
         }},
     'LE': {
         'latent_energy': {
@@ -54,6 +60,8 @@ all_vars_descr = {'GPPall': {
                           'FLUXNET sites with regression algorithms." (2016).',
             'standard_name': 'surface_upward_latent_heat_flux',
             'url': 'http://www.fluxcom.org/',
+            'project_name' : 'FLUXCOM',
+            'comment' : 'Latent heat flux from the surface.',
         }},
     'H': {
         'sensible_heat': {
@@ -66,6 +74,8 @@ all_vars_descr = {'GPPall': {
                           'FLUXNET sites with regression algorithms." (2016).',
             'standard_name': 'surface_upward_sensible_heat_flux',
             'url': 'http://www.fluxcom.org/',
+            'project_name' : 'FLUXCOM',
+            'comment' : 'Sensible heat flux from the surface'
         }},
 }
 

@@ -23,7 +23,8 @@ class AirTemperatureProvider(NetCDFCubeSourceProvider):
                 'long_name': '2 metre temperature',
                 'references': 'Dee, D.P. et al. 2011 http://onlinelibrary.wiley.com/doi/10.1002/qj.828/abstract',
                 'comment': 'Air temperature at 2m from the ERAInterim reanalysis product.',
-                'url': 'http://www.ecmwf.int/en/research/climate-reanalysis/era-interim'
+                'url': 'http://www.ecmwf.int/en/research/climate-reanalysis/era-interim',
+                'project_name' : 'ERAInterim',
             }
         }
 

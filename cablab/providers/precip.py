@@ -26,7 +26,8 @@ class PrecipProvider(NetCDFCubeSourceProvider):
                               'monthly precipitation analysis (1979-present)." Journal of hydrometeorology 4.6 '
                               '(2003): 1147-1167.',
                 'comment': 'Precipitation based on the GPCP dataset.',
-                'url': 'http://precip.gsfc.nasa.gov/'
+                'url': 'http://precip.gsfc.nasa.gov/',
+                'project_name' : 'GPCP',
             }
         }
 

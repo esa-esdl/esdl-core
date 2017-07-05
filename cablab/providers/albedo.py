@@ -27,6 +27,7 @@ class AlbedoProvider(NetCDFCubeSourceProvider):
                               'Abstracts. Vol. 13. 2012.',
                 'comment': 'White sky albedo derived from the GlobAlbedo CCI project dataset',
                 'url': 'http://www.globalbedo.org/',
+                'project_name' : 'GlobAlbedo',
             },
             'black_sky_albedo': {
                 'source_name': 'DHR_VIS',
@@ -38,8 +39,9 @@ class AlbedoProvider(NetCDFCubeSourceProvider):
                 'references': 'Muller, Jan-Peter, et al. "The ESA GLOBALBEDO project for mapping the Earth’s '
                               'land surface albedo for 15 years from European sensors." Geophysical Research '
                               'Abstracts. Vol. 13. 2012.',
-                'comment': 'White sky albedo derived from the GlobAlbedo CCI project dataset',
+                'comment': 'Black sky albedo derived from the GlobAlbedo CCI project dataset',
                 'url': 'http://www.globalbedo.org/',
+                'project_name' : 'GlobAlbedo',
             }
         }
 

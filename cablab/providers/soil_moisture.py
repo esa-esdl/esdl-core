@@ -31,6 +31,7 @@ class SoilMoistureProvider(NetCDFCubeSourceProvider):
                               'and active microwave satellite based retrievals. Hydrology and Earth System Sciences, 15, 425-436.',
                 'url': 'http://www.esa-soilmoisture-cci.org',
                 'comment': 'Soil moisture based on the SOilmoisture CCI project',
+                'project_name' : 'SoilMoisture CCI',
             }
         }
 

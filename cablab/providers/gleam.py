@@ -15,6 +15,13 @@ all_vars_descr = {'E': {
         'long_name': 'Evaporation',
         'standard_name': 'water_evaporation_flux',
         'url': 'http://www.gleam.eu',
+        'references': 'Martens, B., Miralles, D.G., Lievens, H., van der '
+                      'Schalie, R., de Jeu, R.A.M., Fernández-Prieto, D.,'
+                      ' Beck, H.E., Dorigo, W.A., and Verhoest, N.E.C.: '
+                      'GLEAM v3: satellite-based land evaporation and root-zone'
+                      ' soil moisture, Geoscientific Model Development, '
+                      '10, 1903–1925, 2017.',
+        'project_name' : 'GLEAM',
     }},
     'S': {
         'evaporative_stress': {
@@ -24,7 +31,14 @@ all_vars_descr = {'E': {
             'units': '',
             'long_name': 'Evaporative Stress Factor',
             'standard_name': 'evaporative_stress_factor',
+            'references': 'Martens, B., Miralles, D.G., Lievens, H., van der '
+                          'Schalie, R., de Jeu, R.A.M., Fernández-Prieto, D.,'
+                          ' Beck, H.E., Dorigo, W.A., and Verhoest, N.E.C.: '
+                          'GLEAM v3: satellite-based land evaporation and root-zone'
+                          ' soil moisture, Geoscientific Model Development, '
+                          '10, 1903–1925, 2017.',
             'url': 'http://www.gleam.eu',
+            'project_name' : 'GLEAM',
         }},
     'Ep': {
         'potential_evaporation': {
@@ -35,6 +49,13 @@ all_vars_descr = {'E': {
             'long_name': 'Potential Evaporation',
             'standard_name': 'potential_water_evaporation_flux',
             'url': 'http://www.gleam.eu',
+            'references': 'Martens, B., Miralles, D.G., Lievens, H., van der '
+                          'Schalie, R., de Jeu, R.A.M., Fernández-Prieto, D.,'
+                          ' Beck, H.E., Dorigo, W.A., and Verhoest, N.E.C.: '
+                          'GLEAM v3: satellite-based land evaporation and root-zone'
+                          ' soil moisture, Geoscientific Model Development, '
+                          '10, 1903–1925, 2017.',
+            'project_name' : 'GLEAM',
         }},
     'Ei': {
         'interception_loss': {
@@ -45,6 +66,13 @@ all_vars_descr = {'E': {
             'long_name': 'Interception Loss',
             'standard_name': 'interception_loss',
             'url': 'http://www.gleam.eu',
+            'references': 'Martens, B., Miralles, D.G., Lievens, H., van der '
+                          'Schalie, R., de Jeu, R.A.M., Fernández-Prieto, D.,'
+                          ' Beck, H.E., Dorigo, W.A., and Verhoest, N.E.C.: '
+                          'GLEAM v3: satellite-based land evaporation and root-zone'
+                          ' soil moisture, Geoscientific Model Development, '
+                          '10, 1903–1925, 2017.',
+            'project_name' : 'GLEAM',
         }},
     'SMroot': {
         'root_moisture': {
@@ -55,6 +83,13 @@ all_vars_descr = {'E': {
             'long_name': 'Root-Zone Soil Moisture',
             'standard_name': 'soil_moisture_content',
             'url': 'http://www.gleam.eu',
+            'references': 'Martens, B., Miralles, D.G., Lievens, H., van der '
+                          'Schalie, R., de Jeu, R.A.M., Fernández-Prieto, D.,'
+                          ' Beck, H.E., Dorigo, W.A., and Verhoest, N.E.C.: '
+                          'GLEAM v3: satellite-based land evaporation and root-zone'
+                          ' soil moisture, Geoscientific Model Development, '
+                          '10, 1903–1925, 2017.',
+            'project_name' : 'GLEAM',
         }},
     'SMsurf': {
         'surface_moisture': {
@@ -65,6 +100,13 @@ all_vars_descr = {'E': {
             'long_name': 'Surface Soil Moisture',
             'standard_name': 'soil_moisture_content',
             'url': 'http://www.gleam.eu',
+            'references': 'Martens, B., Miralles, D.G., Lievens, H., van der '
+                          'Schalie, R., de Jeu, R.A.M., Fernández-Prieto, D.,'
+                          ' Beck, H.E., Dorigo, W.A., and Verhoest, N.E.C.: '
+                          'GLEAM v3: satellite-based land evaporation and root-zone'
+                          ' soil moisture, Geoscientific Model Development, '
+                          '10, 1903–1925, 2017.',
+            'project_name' : 'GLEAM',
         }},
     'Eb': {
         'bare_soil_evaporation': {
@@ -75,6 +117,13 @@ all_vars_descr = {'E': {
             'long_name': 'Bare Soil Evaporation',
             'standard_name': 'bare_soil_water_evaporation_flux',
             'url': 'http://www.gleam.eu',
+            'references': 'Martens, B., Miralles, D.G., Lievens, H., van der '
+                          'Schalie, R., de Jeu, R.A.M., Fernández-Prieto, D.,'
+                          ' Beck, H.E., Dorigo, W.A., and Verhoest, N.E.C.: '
+                          'GLEAM v3: satellite-based land evaporation and root-zone'
+                          ' soil moisture, Geoscientific Model Development, '
+                          '10, 1903–1925, 2017.',
+            'project_name' : 'GLEAM',
         }},
     'Es': {
         'snow_sublimation': {
@@ -85,6 +134,13 @@ all_vars_descr = {'E': {
             'long_name': 'Snow Sublimation',
             'standard_name': 'snow_sublimation_flux',
             'url': 'http://www.gleam.eu',
+            'references': 'Martens, B., Miralles, D.G., Lievens, H., van der '
+                          'Schalie, R., de Jeu, R.A.M., Fernández-Prieto, D.,'
+                          ' Beck, H.E., Dorigo, W.A., and Verhoest, N.E.C.: '
+                          'GLEAM v3: satellite-based land evaporation and root-zone'
+                          ' soil moisture, Geoscientific Model Development, '
+                          '10, 1903–1925, 2017.',
+            'project_name' : 'GLEAM',
         }},
     'Et': {
         'transpiration': {
@@ -95,6 +151,13 @@ all_vars_descr = {'E': {
             'long_name': 'Transpiration',
             'standard_name': 'transpiration_flux',
             'url': 'http://www.gleam.eu',
+            'references': 'Martens, B., Miralles, D.G., Lievens, H., van der '
+                          'Schalie, R., de Jeu, R.A.M., Fernández-Prieto, D.,'
+                          ' Beck, H.E., Dorigo, W.A., and Verhoest, N.E.C.: '
+                          'GLEAM v3: satellite-based land evaporation and root-zone'
+                          ' soil moisture, Geoscientific Model Development, '
+                          '10, 1903–1925, 2017.',
+            'project_name' : 'GLEAM',
         }},
     'Ew': {
         'open_water_evaporation': {
@@ -105,6 +168,13 @@ all_vars_descr = {'E': {
             'long_name': 'Open-water Evaporation',
             'standard_name': 'water_evaporation_flux',
             'url': 'http://www.gleam.eu',
+            'references': 'Martens, B., Miralles, D.G., Lievens, H., van der '
+                          'Schalie, R., de Jeu, R.A.M., Fernández-Prieto, D.,'
+                          ' Beck, H.E., Dorigo, W.A., and Verhoest, N.E.C.: '
+                          'GLEAM v3: satellite-based land evaporation and root-zone'
+                          ' soil moisture, Geoscientific Model Development, '
+                          '10, 1903–1925, 2017.',
+            'project_name' : 'GLEAM',
         }},
 
 }

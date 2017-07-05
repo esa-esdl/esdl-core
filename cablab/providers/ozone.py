@@ -27,6 +27,7 @@ class OzoneProvider(NetCDFCubeSourceProvider):
                               'Sounding (MIPAS)." Remote Sensing of Environment 162 (2015): 316-343.',
                 'comment': 'Atmospheric ozone based on the Ozone CCI data.',
                 'url': 'http://www.esa-ozone-cci.org/',
+                'project_name' : 'Ozone CCI',
             }
         }
 

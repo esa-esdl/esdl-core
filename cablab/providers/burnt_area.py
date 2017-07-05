@@ -31,6 +31,7 @@ class BurntAreaProvider(NetCDFCubeSourceProvider):
                               '(GFED4)." Journal of Geophysical Research: Biogeosciences 118.1 (2013): 317-328.',
                 'comment': 'Burnt Area based on the GFED4 fire product.',
                 'url': 'http://www.globalfiredata.org/',
+                'project_name' : 'GFED4',
             }
         }
 
