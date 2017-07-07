@@ -5,6 +5,7 @@ import numpy
 from cablab.util import aggregate_images
 from cablab.util import temporal_weight
 from cablab.util import resolve_temporal_range_index
+from cablab.util import aggregate_images
 
 from datetime import datetime
 
@@ -47,9 +48,16 @@ class UtilTest(unittest.TestCase):
         self.assertTrue(numpy.ma.is_masked(im))
 
         self.assertAlmostEqual(im[0][0], 2.2, places=3)
-        self.assertAlmostEqual(im[0][1], (0.5 * 2.1 + 0.25 * 4.3) / 2, places=4)
+        self.assertAlmostEqual(im[0][1], (0.5 * 2.1 + 0.25 * 4.3) / 0.75, places=4)
         self.assertIs(im[1][0], numpy.ma.masked)
-        self.assertAlmostEqual(im[1][1], (0.5 * 4.1 + 1.0 * 5.2 + 0.25 * 6.3) / 3, places=3)
+        self.assertAlmostEqual(im[1][1], (0.5 * 4.1 + 1.0 * 5.2 + 0.25 * 6.3) / 1.75, places=3)
+
+        im1 = numpy.zeros((3,3))
+        im2 = numpy.ones((3,3))
+
+        im = aggregate_images((im1,im2), weights = (0.25,0.75))
+
+        self.assertEqual(im[0][0],0.75)
 
     def test_resolve_temporal_range_index(self):
         time1_index, time2_index = resolve_temporal_range_index(2001, 2011, 8,
