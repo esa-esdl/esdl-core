@@ -27,7 +27,7 @@ SOURCE_PROVIDERS = _load_source_providers()
 
 def _parse_source_arg(source: str):
     from collections import OrderedDict
-    parts = source.split(';')
+    parts = source.split(os.pathsep)
     name = parts[0]
     if not name:
         return name, None, None, 'SOURCE name must not be empty'
