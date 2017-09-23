@@ -8,7 +8,7 @@ import cablab
 import cablab.util
 from .cube_access import CubeDataAccess
 from .cube_config import CubeConfig, CUBE_CHANGELOG
-from .cube_provider import CubeSourceProvider
+# from .cube_provider import CubeSourceProvider
 from .version import version as __version__
 
 
@@ -106,7 +106,7 @@ class Cube:
             self._data = None
         self._closed = True
 
-    def update(self, provider: CubeSourceProvider):
+    def update(self, provider: 'CubeSourceProvider'):
         """
         Updates the data cube with source data from the given image provider.
 
