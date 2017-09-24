@@ -1,6 +1,6 @@
 import numpy as np
 
-from cablab import NetCDFStaticCubeSourceProvider
+from cablab.cube_provider import NetCDFStaticCubeSourceProvider
 
 
 class SrexMaskProvider(NetCDFStaticCubeSourceProvider):

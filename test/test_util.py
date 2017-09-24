@@ -2,7 +2,6 @@ import unittest
 
 import numpy
 
-from cablab.util import aggregate_images
 from cablab.util import temporal_weight
 from cablab.util import resolve_temporal_range_index
 from cablab.util import aggregate_images

@@ -6,8 +6,8 @@ from unittest import TestCase
 
 import xarray as xr
 
-from cablab import Cube, CubeConfig, TestCubeSourceProvider
-from cablab.cube_access import CubeDataAccess
+from cablab import Cube, CubeConfig
+from cablab.cube_provider import TestCubeSourceProvider
 
 CUBE_DIR = 'testcube'
 

@@ -2,7 +2,7 @@ import os
 from datetime import timedelta
 
 import numpy
-from cablab import NetCDFCubeSourceProvider
+from cablab.cube_provider import NetCDFCubeSourceProvider
 from dateutil.relativedelta import relativedelta
 from netCDF4 import num2date
 

@@ -5,7 +5,8 @@ from unittest import TestCase
 
 import numpy as np
 
-from cablab import CubeSourceProvider, CubeConfig, Cube
+from cablab import CubeConfig, Cube
+from cablab.cube_provider import CubeSourceProvider
 
 CUBE_DIR = 'testcube'
 

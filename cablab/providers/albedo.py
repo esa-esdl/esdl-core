@@ -4,7 +4,7 @@ import os
 import numpy
 from netCDF4 import date2num, num2date
 
-from cablab import NetCDFCubeSourceProvider
+from cablab.cube_provider import NetCDFCubeSourceProvider
 
 
 class AlbedoProvider(NetCDFCubeSourceProvider):

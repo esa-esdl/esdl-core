@@ -4,7 +4,7 @@ from datetime import timedelta
 
 import numpy
 
-from cablab import NetCDFCubeSourceProvider
+from cablab.cube_provider import NetCDFCubeSourceProvider
 
 
 class LandSurfTemperatureProvider(NetCDFCubeSourceProvider):

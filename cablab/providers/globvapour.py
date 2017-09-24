@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import netCDF4
 import numpy
 
-from cablab import NetCDFCubeSourceProvider
+from cablab.cube_provider import NetCDFCubeSourceProvider
 
 
 class GlobVapourProvider(NetCDFCubeSourceProvider):

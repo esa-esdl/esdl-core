@@ -5,7 +5,7 @@ import gridtools.resampling as gtr
 import netCDF4
 import numpy as np
 
-from cablab import BaseStaticCubeSourceProvider
+from cablab.cube_provider import BaseStaticCubeSourceProvider
 from cablab.util import Config
 
 

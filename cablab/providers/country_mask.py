@@ -1,6 +1,6 @@
 import numpy
 
-from cablab import NetCDFStaticCubeSourceProvider
+from cablab.cube_provider import NetCDFStaticCubeSourceProvider
 
 
 class CountryMaskProvider(NetCDFStaticCubeSourceProvider):

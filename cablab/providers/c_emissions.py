@@ -3,7 +3,7 @@ from datetime import timedelta, datetime
 
 import numpy
 
-from cablab import NetCDFCubeSourceProvider
+from cablab.cube_provider import NetCDFCubeSourceProvider
 
 
 class CEmissionsProvider(NetCDFCubeSourceProvider):

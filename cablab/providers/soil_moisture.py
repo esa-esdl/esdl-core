@@ -4,7 +4,7 @@ from datetime import timedelta
 import netCDF4
 import numpy
 
-from cablab import NetCDFCubeSourceProvider
+from cablab.cube_provider import NetCDFCubeSourceProvider
 
 
 class SoilMoistureProvider(NetCDFCubeSourceProvider):
