@@ -133,7 +133,7 @@ class EsdcDataStore(DataStore):
               monitor: Monitor = Monitor.NONE) -> Sequence[DataSource]:
         if ds_id:
             data_source = self._data_sources.get(ds_id)
-            return [data_source] if data_source else None
+            return [data_source] if data_source else []
         # TODO (forman): use query_expr
         return list(self._data_sources.values())
 
