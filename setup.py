@@ -26,7 +26,8 @@ __version__ = get_version()
 
 # in alphabetical oder
 requirements = [
-    'gridtools',
+    # Exclude 'gridtools' as it is only required for Cube production
+    # 'gridtools',
     'h5netcdf',
     'netCDF4',
     'numpy',
@@ -55,6 +56,9 @@ setup(
     entry_points={
         'console_scripts': [
             'cube-gen = cablab.cube_gen:main',
+        ],
+        'cate_plugins': [
+            'cate_esdc = cablab.cate.esdc:cate_init',
         ],
         'cablab.source_providers': [
             'test = cablab:TestCubeSourceProvider',
