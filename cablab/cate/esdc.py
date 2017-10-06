@@ -110,7 +110,7 @@ class EsdcDataStore(DataStore):
     """
 
     def __init__(self):
-        super().__init__('esdc', title='Earth System Data Cube')
+        super().__init__('esdc', title='Earth System Data Cube', is_local=True)
         esdc_data_source_defs = conf.get_config_value('esdc_data_sources', [])
         self._data_sources = OrderedDict()
         for ds_id, title, local_path in esdc_data_source_defs:
@@ -119,8 +119,10 @@ class EsdcDataStore(DataStore):
             cube = None
             try:
                 cube = cablab.Cube.open(local_path)
+                # print('Success registering ESDC data source "%s"!' % ds_id)
             except Exception as e:
-                warnings.warn('ESDC data source "%s" registered: %s' % (ds_id, e))
+                warnings.warn('Failed registering ESDC data source "%s": %s' % (ds_id, e))
+                # print('Failed to register ESDC data source "%s": %s' % (ds_id, e))
                 pass
             if cube:
                 self._data_sources[ds_id] = EsdcDataSource(self, ds_id, title, cube)
