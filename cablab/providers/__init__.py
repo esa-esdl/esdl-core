@@ -20,6 +20,7 @@ from .snow_area_extent import SnowAreaExtentProvider
 from .snow_water_equivalent import SnowWaterEquivalentProvider
 from .soil_moisture import SoilMoistureProvider
 from .water_mask import WaterMaskProvider
+from .test_provider import TestCubeSourceProvider
 
 __author__ = 'Brockmann Consult GmbH'
 
@@ -40,4 +41,5 @@ __all__ = [
     'SnowWaterEquivalentProvider',
     'SoilMoistureProvider',
     'WaterMaskProvider',
+    'TestCubeSourceProvider'
 ]

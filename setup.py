@@ -61,7 +61,7 @@ setup(
             'cate_esdc = cablab.cate.esdc:cate_init',
         ],
         'cablab.source_providers': [
-            'test = cablab:TestCubeSourceProvider',
+            'test = cablab.providers:TestCubeSourceProvider',
             'burnt_area = cablab.providers.burnt_area:BurntAreaProvider',
             'c_emissions = cablab.providers.c_emissions:CEmissionsProvider',
             'ozone = cablab.providers.ozone:OzoneProvider',
