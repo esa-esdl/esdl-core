@@ -1,7 +1,7 @@
 name: esdc
 channels:
-  - forman
   - conda-forge
+  - forman
   - ioos
 dependencies:
   - dask=0.14.1=py35_0
@@ -21,12 +21,7 @@ dependencies:
   - wheel=0.29.0=py35_0
   - xarray=0.8.2=py35_0
   #
-  # ReadTheDocs specific
+  # for testing only
   #
-  - sphinx>=1.4
-  - sphinx_rtd_theme=0.1.9
-  - sphinx-argparse
-  #
-  # for mocking all libraries we DON'T want/cant require on ReadTheDocs
-  #
-  - mock
+  - pytest
+  - pytest-cov
