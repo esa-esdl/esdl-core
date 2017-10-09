@@ -279,7 +279,9 @@ class Cube:
         var_variable = dataset.createVariable(variable_name, variable_data_type,
                                               ('time', 'lat', 'lon',),
                                               zlib=self._config.compression,
-                                              fill_value=variable_fill_value)
+                                              fill_value=variable_fill_value,
+                                              chunksizes=self._config.chunk_sizes,
+                                              complevel=5)
         var_variable.scale_factor = variable_attributes.get('scale_factor', 1.0)
         var_variable.add_offset = variable_attributes.get('add_offset', 0.0)
 

@@ -18,7 +18,7 @@ After installing ``cablab-core`` as described in section :ref:`data_access_py_in
 
     $ cube-gen --help
 
-    CAB-LAB command-line interface, version 0.2.1rc0+1
+    CAB-LAB command-line interface, version 0.2.2
     usage: cube-gen [-h] [-l] [-G] [-c CONFIG] [TARGET] [SOURCE [SOURCE ...]]
 
     Generates a new CAB-LAB data cube or updates an existing one.

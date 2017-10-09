@@ -6,7 +6,7 @@ import netCDF4
 
 #: The current version of the data cube's configuration and data model.
 #: The model version is incremented on every change of the cube's data model.
-CUBE_MODEL_VERSION = '1.0.0'
+CUBE_MODEL_VERSION = '1.0.1'
 
 CUBE_CHANGELOG = """
 version 0.1
@@ -43,6 +43,10 @@ version 0.2.4
 version 1.0.0
 -------------
 * First official release to public
+
+version 1.0.1
+-------------
+* Now with chunking variations
 """
 
 
@@ -100,6 +104,7 @@ class CubeConfig:
         self.file_format = file_format
         self.compression = compression
         self.static_data = static_data
+        self.chunk_sizes = chunk_sizes
         self._validate()
 
     def __repr__(self):
