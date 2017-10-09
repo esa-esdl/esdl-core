@@ -3,8 +3,8 @@ from unittest import TestCase
 
 import numpy
 
-from cablab import CubeConfig
-from cablab.cube_provider import BaseCubeSourceProvider, BaseStaticCubeSourceProvider
+from ..cablab import CubeConfig
+from ..cablab.cube_provider import BaseCubeSourceProvider, BaseStaticCubeSourceProvider
 
 
 class BaseCubeSourceProviderTest(TestCase):
