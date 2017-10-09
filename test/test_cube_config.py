@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from ..cablab import CubeConfig, CUBE_MODEL_VERSION
+from cablab import CubeConfig, CUBE_MODEL_VERSION
 
 
 class CubeConfigTest(TestCase):
