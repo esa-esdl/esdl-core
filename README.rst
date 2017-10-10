@@ -1,3 +1,7 @@
+.. image:: https://ci.appveyor.com/api/projects/status/qvtsx40uv7p0e1tn?svg=true
+   :target: https://ci.appveyor.com/project/hans-permana/cablab-core
+
+
 ============
 CAB-LAB Core 
 ============
