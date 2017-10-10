@@ -41,7 +41,7 @@ class CubeDataAccess:
         self._cube_var_list = []
 
         data_dir = os.path.join(cube_base_dir, 'data')
-        data_dir_entries = os.listdir(data_dir)
+        data_dir_entries = sorted(os.listdir(data_dir))
         var_index = 0
         for data_dir_entry in data_dir_entries:
             var_dir = os.path.join(data_dir, data_dir_entry)
@@ -81,7 +81,7 @@ class CubeDataAccess:
     @property
     def variable_names(self) -> list:
         """
-        Return a sequence of variable names.
+        Return a sequence of variable names in alphabetical order.
         """
         return [cube_var.name for cube_var in self._cube_var_list]
 
@@ -91,7 +91,7 @@ class CubeDataAccess:
 
         :param key: The variable selector, which can be a name, or index, or a sequence of names and indices.
                 Valid names (type ``str``) are the ones returned by the ``variable_names`` list while valid
-                indices (type ``int``) point into this list.
+                indices (type ``int``) point into this list, which is in alphabetical order w.r.t. the variable names.
                 If a sequence is provided, a sequence will be returned.
                 Passing ``None`` is equivalent to passing the ``variable_names`` list.
         :return: a ``xarray.DataArray`` instance or a sequence of such representing the variable(s) with the
