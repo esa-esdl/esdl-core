@@ -70,8 +70,7 @@ class CubeTest(TestCase):
             data = cube2.data
             self.assertIsNotNone(data)
             self.assertEqual((2, 11 * 46, 720, 1440), data.shape)
-            self.assertIn('FAPAR', data.variable_names)
-            self.assertIn('LAI', data.variable_names)
+            self.assertEquals(['FAPAR', 'LAI'], data.variable_names)
 
             lai_var = data.variable('LAI')
             self.assert_cf_conformant_time_info(data, 'LAI')
