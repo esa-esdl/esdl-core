@@ -1,3 +1,5 @@
+.. image:: https://travis-ci.org/CAB-LAB/cablab-core.svg?branch=cube-v1.0.1
+    :target: https://travis-ci.org/CAB-LAB/cablab-core
 .. image:: https://ci.appveyor.com/api/projects/status/qvtsx40uv7p0e1tn?svg=true
    :target: https://ci.appveyor.com/project/hans-permana/cablab-core
 
