@@ -146,6 +146,9 @@ class Cube:
                     if var_name_to_image:
                         self._write_images(provider, datasets, (time_index, time_1, time_2), var_name_to_image)
                 time_1 = time_2
+        for key in datasets:
+            if datasets[key].isopen():
+                datasets[key].close()
         provider.close()
 
     def _write_images(self, provider, datasets, target_time, var_name_to_image):
