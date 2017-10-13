@@ -2,6 +2,8 @@
     :target: https://travis-ci.org/CAB-LAB/cablab-core
 .. image:: https://ci.appveyor.com/api/projects/status/qvtsx40uv7p0e1tn?svg=true
    :target: https://ci.appveyor.com/project/hans-permana/cablab-core
+.. image:: https://codecov.io/gh/CAB-LAB/cablab-core/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/CAB-LAB/cablab-core
 
 
 ============
