@@ -1,6 +1,7 @@
 import os.path
 import warnings
 from typing import Optional, Any, Sequence
+from collections import OrderedDict
 
 import xarray as xr
 from cate.conf import conf
@@ -8,7 +9,7 @@ from cate.core import DataStore, DataSource
 from cate.core.ds import DATA_STORE_REGISTRY
 from cate.core.op import op, op_input
 from cate.core.types import TimeRangeLike, PolygonLike, VarNamesLike, TimeRange
-from cate.util import Monitor, OrderedDict
+from cate.util.monitor import Monitor
 
 import cablab
 
