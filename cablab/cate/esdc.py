@@ -1,7 +1,7 @@
 import os.path
 import warnings
-from typing import Optional, Any, Sequence
 from collections import OrderedDict
+from typing import Optional, Any, Sequence
 
 import xarray as xr
 from cate.conf import conf
@@ -78,7 +78,8 @@ class EsdcDataSource(DataSource):
                      time_range: TimeRangeLike.TYPE = None,
                      region: PolygonLike.TYPE = None,
                      var_names: VarNamesLike.TYPE = None,
-                     protocol: str = None) -> Any:
+                     protocol: str = None,
+                     monitor: Monitor = Monitor.NONE) -> Any:
         if time_range or region or var_names:
             raise ValueError("ESDCdata source cannot have constraints")
         return self._cube.data.dataset()
