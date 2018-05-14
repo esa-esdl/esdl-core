@@ -307,7 +307,8 @@ class CubeDataAccess:
         variable.dataset = xr.open_mfdataset(file_pattern,
                                              concat_dim='time',
                                              preprocess=self._preprocess_dataset,
-                                             engine='h5netcdf')
+                                             engine='h5netcdf',
+                                             chunks=self._cube_config.chunk_sizes)
 
     def _preprocess_dataset(self, ds: Dataset):
         # Convert specific data variables to coordinate variables
