@@ -101,10 +101,6 @@ class CubeConfig:
                  static_data=False,
                  model_version=CUBE_MODEL_VERSION):
         self.model_version = model_version
-        if chunk_sizes is not None and len(chunk_sizes) != 3:
-            raise ValueError('chunk_sizes must be a sequence of three integers: <time-size>, <lat-size>, <lon-size>')
-        if comp_level is not None and (comp_level < 1 or comp_level > 9):
-            raise ValueError('comp_level must be an integer in the range 1 to 9')
         self.spatial_res = spatial_res
         self.grid_x0 = grid_x0
         self.grid_y0 = grid_y0
@@ -119,8 +115,8 @@ class CubeConfig:
         self.file_format = file_format
         self.static_data = static_data
         self.chunk_sizes = chunk_sizes
-        self.gzip_compression = compression
-        self.compression_level = comp_level
+        self.compression = compression
+        self.comp_level = comp_level
         self._validate()
 
     def __repr__(self):
@@ -233,3 +229,9 @@ class CubeConfig:
         lon2 = -180 + (self.grid_x0 + self.grid_width) * self.spatial_res
         if lon1 >= lon2 or lon1 < -180 or lon1 > 180 or lon2 < -180 or lon2 > 180:
             raise ValueError('illegal combination of grid_x0, grid_width, spatial_res values')
+
+        if self.chunk_sizes is not None and len(self.chunk_sizes) != 3:
+            raise ValueError('chunk_sizes must be a sequence of three integers: <time-size>, <lat-size>, <lon-size>')
+        
+        if self.comp_level is not None and (self.comp_level < 1 or self.comp_level > 9):
+            raise ValueError('comp_level must be an integer in the range 1 to 9')
