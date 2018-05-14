@@ -6,12 +6,41 @@ import netCDF4
 
 #: The current version of the data cube's configuration and data model.
 #: The model version is incremented on every change of the cube's data model.
-CUBE_MODEL_VERSION = '1.0.1'
+CUBE_MODEL_VERSION = '1.0.2'
 
 CUBE_CHANGELOG = """
-version 0.1
------------
-* initial version
+
+version 1.0.2
+-------------
+* Introduced new configuration parameter comp_level (0...9, default 5)
+
+version 1.0.1
+-------------
+* Configuration parameter chunk_size now used
+
+version 1.0.0
+-------------
+* First official release to public
+
+version 0.2.4
+-------------
+* Changed the data type of Ozone from double to float https://github.com/CAB-LAB/cablab-core/issues/54
+* Fixed the inconsistencies on the values on the first time step of the second year onwards of the MPI data https://github.com/CAB-LAB/cablab-core/issues/55
+* Fixed flipped aerosols data https://github.com/CAB-LAB/cablab-core/issues/57
+
+version 0.2.3
+-------------
+* Fixed flipped and shifted issue in ozone data https://github.com/CAB-LAB/cablab-core/issues/52
+* Fixed the missing value issue in ozone data https://github.com/CAB-LAB/cablab-core/issues/51
+
+version 0.2.2
+-------------
+* Fixed lon- and pixel- shifted issues in air temperature data
+* Changed the downsampling method for country mask variable to MODE
+
+version 0.2.1
+-------------
+* Remove add_offset and scale_factor from cube data: https://github.com/CAB-LAB/cablab-core/issues/43
 
 version 0.2
 -----------
@@ -20,33 +49,9 @@ The netCDF file schema has been updated according to the following issues:
 * CF-compliant variable names (ongoing): https://github.com/CAB-LAB/cablab-core/issues/32
 * CF-compliant geospatial information: https://github.com/CAB-LAB/cablab-core/issues/35
 
-version 0.2.1
--------------
-* Remove add_offset and scale_factor from cube data: https://github.com/CAB-LAB/cablab-core/issues/43
-
-version 0.2.2
--------------
-* Fixed lon- and pixel- shifted issues in air temperature data
-* Changed the downsampling method for country mask variable to MODE
-
-version 0.2.3
--------------
-* Fixed flipped and shifted issue in ozone data https://github.com/CAB-LAB/cablab-core/issues/52
-* Fixed the missing value issue in ozone data https://github.com/CAB-LAB/cablab-core/issues/51
-
-version 0.2.4
--------------
-* Changed the data type of Ozone from double to float https://github.com/CAB-LAB/cablab-core/issues/54
-* Fixed the inconsistencies on the values on the first time step of the second year onwards of the MPI data https://github.com/CAB-LAB/cablab-core/issues/55
-* Fixed flipped aerosols data https://github.com/CAB-LAB/cablab-core/issues/57
-
-version 1.0.0
--------------
-* First official release to public
-
-version 1.0.1
--------------
-* Now with chunking variations
+version 0.1
+-----------
+* initial version
 """
 
 
@@ -69,7 +74,12 @@ class CubeConfig:
     :param variables: A list of variable names to be included in the cube.
     :param file_format: The file format used. Must be one of 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_CLASSIC'
                         or 'NETCDF3_64BIT'.
-    :param compression: Whether the data should be compressed.
+    :param chunk_sizes: A mapping of dimension names to chunk size for encoding.
+                        Default is None.
+    :param compression: Whether gzip compression is used for encoding.
+                        Default is False.
+    :param comp_level: Integer between 1 and 9 describing the level of compression desired for encoding.
+                       Default is 5. Ignored if *compression* is False.
     """
 
     def __init__(self,
@@ -85,8 +95,9 @@ class CubeConfig:
                  end_time=datetime(2012, 1, 1),
                  variables=None,
                  file_format='NETCDF4_CLASSIC',
-                 compression=False,
                  chunk_sizes=None,
+                 compression=False,
+                 comp_level=5,
                  static_data=False,
                  model_version=CUBE_MODEL_VERSION):
         self.model_version = model_version
@@ -102,9 +113,10 @@ class CubeConfig:
         self.end_time = end_time
         self.variables = variables
         self.file_format = file_format
-        self.compression = compression
         self.static_data = static_data
         self.chunk_sizes = chunk_sizes
+        self.gzip_compression = compression
+        self.compression_level = comp_level
         self._validate()
 
     def __repr__(self):
