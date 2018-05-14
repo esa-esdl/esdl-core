@@ -13,6 +13,16 @@ class CubeConfigTest(TestCase):
             CubeConfig(grid_x0=-1)
         with self.assertRaises(ValueError):
             CubeConfig(grid_y0=-1)
+        with self.assertRaises(ValueError):
+            CubeConfig(chunk_sizes=tuple())
+        with self.assertRaises(ValueError):
+            CubeConfig(chunk_sizes=[256])
+        with self.assertRaises(ValueError):
+            CubeConfig(chunk_sizes=(256, 256))
+        with self.assertRaises(ValueError):
+            CubeConfig(comp_level=0)
+        with self.assertRaises(ValueError):
+            CubeConfig(comp_level=10)
 
     def test_model_version_is_current(self):
         config = CubeConfig()

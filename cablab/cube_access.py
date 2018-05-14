@@ -304,11 +304,21 @@ class CubeDataAccess:
 
     def _open_dataset(self, variable):
         file_pattern = os.path.join(variable.dir_path, '*.nc')
+        chunk_sizes = self._cube_config.chunk_sizes
+        dask_chunks = None
+        if chunk_sizes:
+            time_size, lat_size, lon_size = chunk_sizes
+            # TODO (forman): use multiples of chunk sizes in certain dimensions
+            #                until some constraint is fulfilled.
+            #                e.g. hint that allows using max. XYZ MB per variable,
+            #                only have multiples in time dimension, because users want
+            #                time-series analysis...
+            dask_chunks = dict(time=time_size, lat=lat_size, lon=lon_size)
         variable.dataset = xr.open_mfdataset(file_pattern,
                                              concat_dim='time',
                                              preprocess=self._preprocess_dataset,
                                              engine='h5netcdf',
-                                             chunks=self._cube_config.chunk_sizes)
+                                             chunks=dask_chunks)
 
     def _preprocess_dataset(self, ds: Dataset):
         # Convert specific data variables to coordinate variables

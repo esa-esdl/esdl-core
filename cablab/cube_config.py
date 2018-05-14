@@ -101,6 +101,10 @@ class CubeConfig:
                  static_data=False,
                  model_version=CUBE_MODEL_VERSION):
         self.model_version = model_version
+        if chunk_sizes is not None and len(chunk_sizes) != 3:
+            raise ValueError('chunk_sizes must be a sequence of three integers: <time-size>, <lat-size>, <lon-size>')
+        if comp_level is not None and (comp_level < 1 or comp_level > 9):
+            raise ValueError('comp_level must be an integer in the range 1 to 9')
         self.spatial_res = spatial_res
         self.grid_x0 = grid_x0
         self.grid_y0 = grid_y0
