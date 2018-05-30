@@ -11,7 +11,7 @@ from cate.core.op import op, op_input
 from cate.core.types import TimeRangeLike, PolygonLike, VarNamesLike, TimeRange
 from cate.util.monitor import Monitor
 
-import cablab
+import esdl
 
 __author__ = "Norman Fomferra, Brockmann Consult GmbH"
 
@@ -28,9 +28,9 @@ def read_esdc(cube_config_file: str) -> xr.Dataset:
            a data cube base directory.
     :return: A dataset comprising all the data cube variables.
     """
-    import cablab
+    import esdl
     cube_base_dir = os.path.dirname(cube_config_file)
-    return cablab.Cube.open(cube_base_dir).data.dataset()
+    return esdl.Cube.open(cube_base_dir).data.dataset()
 
 
 class EsdcDataSource(DataSource):
@@ -38,7 +38,7 @@ class EsdcDataSource(DataSource):
     An ESDC data source represent an individual data cube.
     """
 
-    def __init__(self, data_store: 'EsdcDataStore', ds_id: str, title: str, cube: cablab.Cube):
+    def __init__(self, data_store: 'EsdcDataStore', ds_id: str, title: str, cube: esdl.Cube):
         self._data_store = data_store
         self._ds_id = ds_id
         self._title = title
@@ -120,7 +120,7 @@ class EsdcDataStore(DataStore):
                 ds_id = 'esdc.' + ds_id
             cube = None
             try:
-                cube = cablab.Cube.open(local_path)
+                cube = esdl.Cube.open(local_path)
                 # print('Success registering ESDC data source "%s"!' % ds_id)
             except Exception as e:
                 warnings.warn('Failed registering ESDC data source "%s": %s' % (ds_id, e))

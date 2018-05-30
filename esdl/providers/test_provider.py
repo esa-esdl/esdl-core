@@ -1,6 +1,6 @@
 import numpy as np
-from cablab.cube_provider import CubeSourceProvider
-from cablab.cube_config import CubeConfig
+from esdl.cube_provider import CubeSourceProvider
+from esdl.cube_config import CubeConfig
 
 
 class TestCubeSourceProvider(CubeSourceProvider):

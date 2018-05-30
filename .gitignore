@@ -59,8 +59,8 @@ target/
 # PyCharm / IDEA
 .idea
 
-# Ignored CAB-LAB (Data Cube) files
+# Ignored ESDL (Data Cube) files
 *.nc
 testcube
-cablab-config.py
+esdl-config.py
 

@@ -12,11 +12,11 @@
 .. _xarray.DataArray: http://xarray.pydata.org/en/stable/data-structures.html#dataarray
 .. _Numpy ndarray: http://docs.scipy.org/doc/numpy/reference/arrays.ndarray.html
 
-.. _ESDC E-Laboratory: http://cablab.earthsystemdatacube.net/cablab-jupyterhub/
-.. _ESDC THREDDS server: http://www.brockmann-consult.de/cablab-thredds/catalog.html
-.. _ESDC FTP server: ftp://ftp.brockmann-consult.de/cablab02/cablab-datacube-0.2.4/
-.. _ESDC community repository: https://github.com/CAB-LAB/cablab-shared
-.. _ESDC community notebooks: https://github.com/CAB-LAB/cablab-shared/tree/master/notebooks
+.. _ESDL E-Laboratory: http://jupyterhub.earthsystemdatalab.net/
+.. _ESDL THREDDS server: http://www.brockmann-consult.de/cablab-thredds/catalog.html
+.. _ESDL FTP server: ftp://ftp.brockmann-consult.de/cablab02/esdc-31d-1deg-1x180x360-1.0.1_1/
+.. _ESDL community repository: https://github.com/esa-esdl/esdl-shared
+.. _ESDL community notebooks: https://github.com/esa-esdl/esdl-shared/tree/master/notebooks
 
 
 ===========
@@ -29,7 +29,7 @@ which can be accessed in a number of different ways which are described in this 
 Download ESDC Data
 ==================
 
-The simplest approach to access the ESDC data is downloading it to you computer using the `ESDC FTP server`_.
+The simplest approach to access the ESDC data is downloading it to you computer using the `ESDL FTP server`_.
 
 Since the ESDC is basically a directory of NetCDF_ files, you can use a variety of software packages and programming
 languages to access the data. In each cube directory, you find a text file ``cube.config`` which describes the overall
@@ -42,7 +42,7 @@ by a convenient data structures. The section :ref:`data_access_py` describes how
 OPeNDAP and WCS Services
 ========================
 
-The ESDC' data variables can also be accessed via a dedicated `ESDC THREDDS server`_.
+The ESDC' data variables can also be accessed via a dedicated `ESDL THREDDS server`_.
 
 The server supports the `OPeNDAP`_ and OGC-compliant `Web Coverage Service (WCS)`_ data access protocols.
 You can use it for accessing subsets of the ESDC's data variables and also for visual exploration of the data,
@@ -56,7 +56,7 @@ the aforementioned ESDC Python/Julia data access packages.
 E-Laboratory
 ============
 
-A dedicated `ESDC E-Laboratory`_ has been developed to access the ESDC data via distributed
+A dedicated `ESDL E-Laboratory`_ has been developed to access the ESDC data via distributed
 `Jupyter`_ `Notebooks`_ for Julia and Python. This is the most resource efficient and convenient
 way of exploring the ESDC.
 
@@ -64,7 +64,7 @@ These notebooks have direct access to the ESDC data so there is no need to downl
 In addition they provide the ESDC Python and Julia APIs comprising
 the Data Access API and the Data Analytics Toolkit.
 
-The E-Laboratory provides some example notebooks in the shared `ESDC community repository`_.
+The E-Laboratory provides some example notebooks in the shared `ESDL community repository`_.
 
 The E-Laboratory is based on the JupyterHub_ platform and currently comprises three 16-core computers
 running in a Cloud environment.
@@ -92,17 +92,17 @@ the user has to download and install the cube library when working on a local co
 The ESDC Python package has been developed against latest Anaconda_ / Miniconda_ distributions and uses their
 Conda_ package manager.
 
-To get started on your local computer with Python, clone the `cablab-core`
-repository from `<https://github.com/CAB-LAB>`_:
+To get started on your local computer with Python, clone the `esdl-core`
+repository from `<https://github.com/esa-esdl>`_:
 
 .. code-block:: bash
 
-    git clone https://github.com/CAB-LAB/cablab-core
+    git clone https://github.com/esa-esdl/esdl-core
 
-The following command will create a new Python 3.5 environment named ``esdc`` with all required dependencies, namely
+The following command will create a new Python 3.5 environment named ``esdl`` with all required dependencies, namely
 
     * dask >= 0.14
-    * gridtools >= 0.1 (from Conda channel ``forman``)
+    * gridtools >= 0.1 (from Conda channel ``cablab``)
     * h5netcdf >= 0.3
     * h5py >= 2.7
     * netcdf4 >= 1.2
@@ -127,14 +127,14 @@ on Windows:
 
     > activate esdc
 
-Now change into new folder ``cablab-core`` and install the ``cablab`` Python package using the ``develop`` target:
+Now change into new folder ``esdl-core`` and install the ``esdl`` Python package using the ``develop`` target:
 
 .. code-block:: bash
 
-    $ cd cablab-core
+    $ cd esdl-core
     $ python setup.py develop
 
-You can now easily change source code in ``cablab-core`` without reinstalling it.
+You can now easily change source code in ``esdl-core`` without reinstalling it.
 When you do not plan to add or modify any code (e.g. add a new source data provider), you can also permanently
 install the sources using
 
@@ -159,7 +159,7 @@ data chunks of different sizes for further analysis.
 
 .. code:: python
 
-    from cablab import Cube
+    from esdl import Cube
     from datetime import datetime
     import numpy as np
 
@@ -297,7 +297,7 @@ If you no longer require access to the cube, it should be closed to release file
 
     cube.close()
 
-Some more demonstrations are included in the `ESDC community notebooks`_.
+Some more demonstrations are included in the `ESDL community notebooks`_.
 
 Using Julia
 ===========

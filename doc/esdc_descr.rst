@@ -42,7 +42,7 @@ The **time span** currently covered is 2001-2011. We are dedicated to expand thi
 Format and Structure
 ====================
 
-The binary data format for the Earth System Data Cube (ESDC) in the CAB-LAB project is **netCDF 4 classic**, where the term classic stands for an
+The binary data format for the Earth System Data Cube (ESDC) in the ESDL project is **netCDF 4 classic**, where the term classic stands for an
 underlying HDF-5 format accessed by a netCDF 4 API.
 
 The netCDF file's content and structure follows the `CF-conventions <http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html>`_.
@@ -147,7 +147,7 @@ Gap-Filling Approach
 --------------------
 
 The current version (version 0.1, Feb 2016) of the ESDC does not explicitly fill gaps. However, some
-gap-filling occurs during temporal aggregation as described below. The CAB-LAB team may provide
+gap-filling occurs during temporal aggregation as described below. The ESDL team may provide
 gap-filled ESDC versions at a later point in time of the project. Gap-filling is part of the *Data Analytics
 Toolkit* and is thus not tackled during Data Cube generation to retain the information on the original data coverage
 as much as possible.

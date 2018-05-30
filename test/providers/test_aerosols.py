@@ -1,10 +1,10 @@
 import os
 import unittest
 from datetime import datetime
-from cablab import CubeConfig
-from cablab.providers.aerosols import AerosolsProvider
+from esdl import CubeConfig
+from esdl.providers.aerosols import AerosolsProvider
 from test.providers.provider_test_utils import ProviderTestBase
-from cablab.util import Config
+from esdl.util import Config
 
 SOURCE_DIR = Config.instance().get_cube_source_path('CCI-Aerosols/AATSR_SU_v4.1/L3_DAILY')
 

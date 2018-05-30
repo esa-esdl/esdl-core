@@ -12,12 +12,12 @@ from .cube_provider import CubeSourceProvider
 
 def _load_source_providers():
     source_provider_classes = dict()
-    for entry_point in iter_entry_points(group='cablab.source_providers', name=None):
+    for entry_point in iter_entry_points(group='esdl.source_providers', name=None):
         source_provider_class = entry_point.load()
         if issubclass(source_provider_class, CubeSourceProvider):
             source_provider_classes[entry_point.name] = source_provider_class
         else:
-            print('warning: cablab.source_providers: requires a \'%s\' but got a \'%s\'' % (
+            print('warning: esdl.source_providers: requires a \'%s\' but got a \'%s\'' % (
                 CubeSourceProvider, type(source_provider_class)))
     return source_provider_classes
 
@@ -54,7 +54,7 @@ def main(args=None):
     if not args:
         args = sys.argv[1:]
 
-    print('CAB-LAB command-line interface, version %s' % __version__)
+    print('ESDL command-line interface, version %s' % __version__)
 
     """
     Configure and run argument parser
@@ -65,11 +65,11 @@ def main(args=None):
       - resampling_order      : to specify the re-sampling order (space_first or time_first).
                                 The default is time_first.
         # Usage examples:
-    cube-gen "cablab-datacube/low-res" "burnt_area:dir=cablab-source/BurntArea"
-    cube-gen "cablab-datacube/low-res" "evaporative_stress:dir=cablab-source/evaporative_stress:var=S"
-    cube-gen "cablab-datacube/low-res" "soil_moisture:dir=cablab-source/ECV_sm:resampling_order=space_first"
+    cube-gen "esdc-31d-1deg-1x180x360-1.0.1_1" "burnt_area:dir=data-source/BurntArea"
+    cube-gen "esdc-31d-1deg-1x180x360-1.0.1_1" "evaporative_stress:dir=data-source/evaporative_stress:var=S"
+    cube-gen "esdc-31d-1deg-1x180x360-1.0.1_1" "soil_moisture:dir=data-source/ECV_sm:resampling_order=space_first"
     """
-    parser = argparse.ArgumentParser(description='Generates a new CAB-LAB data cube or updates an existing one.')
+    parser = argparse.ArgumentParser(description='Generates a new ESDL data cube or updates an existing one.')
     parser.add_argument('-l', '--list', action='store_true',
                         help="list all available source providers")
     parser.add_argument('-G', '--dont-clear-cache', action='store_true',

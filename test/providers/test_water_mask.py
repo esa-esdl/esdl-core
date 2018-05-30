@@ -1,9 +1,9 @@
 import os
 import unittest
 from datetime import datetime
-from cablab import CubeConfig
-from cablab.providers.water_mask import WaterMaskProvider
-from cablab.util import Config
+from esdl import CubeConfig
+from esdl.providers.water_mask import WaterMaskProvider
+from esdl.util import Config
 
 SOURCE_DIR = Config.instance().get_cube_source_path('WaterBodies4.0')
 

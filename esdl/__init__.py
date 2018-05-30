@@ -2,16 +2,16 @@
 
 Data Cube read-only access::
 
-    from cablab import Cube
+    from esdl import Cube
     from datetime import datetime
-    cube = Cube.open('./cablab-cube-v05')
+    cube = Cube.open('./esdl-cube-v05')
     data = cube.data.get(['LAI', 'Precip'], [datetime(2001, 6, 1), datetime(2012, 1, 1)], 53.2, 12.8)
 
 Data Cube creation/update::
 
-    from cablab import Cube, CubeConfig
+    from esdl import Cube, CubeConfig
     from datetime import datetime
-    cube = Cube.create('./my-cablab-cube', CubeConfig(spatial_res=0.05))
+    cube = Cube.create('./my-esdl-cube', CubeConfig(spatial_res=0.05))
     cube.update(MyVar1SourceProvider(cube.config, './my-cube-sources/var1'))
     cube.update(MyVar2SourceProvider(cube.config, './my-cube-sources/var2'))
 

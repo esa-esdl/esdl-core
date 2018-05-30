@@ -1,6 +1,6 @@
 """
 Various utility constants, functions and classes.
-Developer note: make sure this module does not import any other cablab module!
+Developer note: make sure this module does not import any other esdl module!
 """
 import gzip
 import math
@@ -125,12 +125,12 @@ class DatasetCache(metaclass=ABCMeta):
     Datasets are cached the CAB-LAB user data folder **cache_base_dir**/**name**.
 
     :param name: A name for the cache.
-    :param cache_base_dir: Cache base directory. Defaults to ~/.cablab.
+    :param cache_base_dir: Cache base directory. Defaults to ~/.esdl.
     """
 
     def __init__(self, name, cache_base_dir=None):
         if cache_base_dir is None:
-            cache_base_dir = os.path.join(os.path.join(os.path.expanduser("~"), '.cablab'), 'cache')
+            cache_base_dir = os.path.join(os.path.join(os.path.expanduser("~"), '.esdl'), 'cache')
         self._cache_dir = os.path.join(cache_base_dir, name)
         self._file_to_dataset = dict()
 
@@ -216,7 +216,7 @@ class Config:
     """
 
     # The default file name for CAB-LAB configurations
-    DEFAULT_FILE_NAME = 'cablab-config.py'
+    DEFAULT_FILE_NAME = 'esdl-config.py'
 
     _INSTANCE = None
 

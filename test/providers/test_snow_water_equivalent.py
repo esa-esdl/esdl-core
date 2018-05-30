@@ -4,10 +4,10 @@ from datetime import datetime
 
 import numpy as np
 
-from cablab import CubeConfig
-from cablab.providers.snow_water_equivalent import SnowWaterEquivalentProvider
+from esdl import CubeConfig
+from esdl.providers.snow_water_equivalent import SnowWaterEquivalentProvider
 from test.providers.provider_test_utils import ProviderTestBase
-from cablab.util import Config
+from esdl.util import Config
 
 SOURCE_DIR = Config.instance().get_cube_source_path('SWE')
 

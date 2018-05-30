@@ -5,8 +5,8 @@ import gridtools.resampling as gtr
 import netCDF4
 import numpy as np
 
-from cablab.cube_provider import BaseStaticCubeSourceProvider
-from cablab.util import Config
+from esdl.cube_provider import BaseStaticCubeSourceProvider
+from esdl.util import Config
 
 
 class WaterMaskProvider(BaseStaticCubeSourceProvider):

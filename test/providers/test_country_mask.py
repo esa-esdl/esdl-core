@@ -1,9 +1,9 @@
 import os
 import unittest
 from datetime import datetime
-from cablab import CubeConfig
-from cablab.providers.country_mask import CountryMaskProvider
-from cablab.util import Config
+from esdl import CubeConfig
+from esdl.providers.country_mask import CountryMaskProvider
+from esdl.util import Config
 
 SOURCE_DIR = Config.instance().get_cube_source_path('CountryCodes')
 

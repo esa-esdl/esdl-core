@@ -13,7 +13,7 @@ class EsdcDataStoreTest(TestCase):
             print("EsdcDataStoreTest not executed, no Cate found.")
             return
 
-        from cablab.cate.esdc import cate_init
+        from esdl.cate.esdc import cate_init
         cate_init()
 
         data_store = DATA_STORE_REGISTRY.get_data_store('esdc')

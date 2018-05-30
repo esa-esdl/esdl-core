@@ -1,5 +1,5 @@
-.. _cablab/providers/ozone.py: https://github.com/CAB-LAB/cablab-core/blob/master/cablab/providers/ozone.py
-.. _cube-config: https://github.com/CAB-LAB/cube-config
+.. _esdl/providers/ozone.py: https://github.com/esa-esdl/esdl-core/blob/master/esdl/providers/ozone.py
+.. _cube-config: https://github.com/esa-esdl/cube-config
 
 ===============
 ESDC Generation
@@ -12,16 +12,16 @@ Command-Line Tool
 
 To generate new data cubes or to update existing ones a dedicated command-line tool ``cube-gen`` is used.
 
-After installing ``cablab-core`` as described in section :ref:`data_access_py_inst`, try:
+After installing ``esdl-core`` as described in section :ref:`data_access_py_inst`, try:
 
 .. code-block:: bash
 
     $ cube-gen --help
 
-    CAB-LAB command-line interface, version 0.2.2
+    ESDL command-line interface, version 0.2.2
     usage: cube-gen [-h] [-l] [-G] [-c CONFIG] [TARGET] [SOURCE [SOURCE ...]]
 
-    Generates a new CAB-LAB data cube or updates an existing one.
+    Generates a new ESDL data cube or updates an existing one.
 
     positional arguments:
       TARGET                data cube root directory
@@ -43,18 +43,18 @@ The ``list`` option lists all currently installed *source data providers*:
 
     $ cube-gen --list
 
-    ozone -> cablab.providers.ozone.OzoneProvider
-    net_ecosystem_exchange -> cablab.providers.mpi_bgc.MPIBGCProvider
-    air_temperature -> cablab.providers.air_temperature.AirTemperatureProvider
-    interception_loss -> cablab.providers.gleam.GleamProvider
-    transpiration -> cablab.providers.gleam.GleamProvider
-    open_water_evaporation -> cablab.providers.gleam.GleamProvider
+    ozone -> esdl.providers.ozone.OzoneProvider
+    net_ecosystem_exchange -> esdl.providers.mpi_bgc.MPIBGCProvider
+    air_temperature -> esdl.providers.air_temperature.AirTemperatureProvider
+    interception_loss -> esdl.providers.gleam.GleamProvider
+    transpiration -> esdl.providers.gleam.GleamProvider
+    open_water_evaporation -> esdl.providers.gleam.GleamProvider
     ...
 
 Source data providers are the pluggable software components used by ``cube-gen`` to read data from a
 source directory and transform it into a common data cube structure. The list above shows the mapping from
 short names to be used by the ``cube-gen`` command-line to the actual Python code, e.g. for ``ozone``,
-the ``OzoneProvider`` class of the `cablab/providers/ozone.py`_ module is used.
+the ``OzoneProvider`` class of the `esdl/providers/ozone.py`_ module is used.
 
 The common cube structure is established by a *cube configuration* file provided by the ``cube-config`` option.
 Here is the configuration file that is used to produce the low-resolution ESDC. It will produce a 0.25 degrees global
@@ -94,13 +94,13 @@ Writing a new Provider
 
 In order to add new source data for which there is no source data provider yet, you can write your own.
 
-Make sure ``cablab-core`` is installed as described in section :ref:`data_access_py_inst` above.
+Make sure ``esdl-core`` is installed as described in section :ref:`data_access_py_inst` above.
 
 If your source data is NetCDF, writing a new provider is easy. Just copy one of the existing providers,
-e.g. `cablab/providers/ozone.py`_ and start adopting the code to your needs.
+e.g. `esdl/providers/ozone.py`_ and start adopting the code to your needs.
 
 For source data other than NetCDF, you will have to write a provider from scratch by implementing
-the :py:class:`cablab.CubeSourceProvider` interface or by extending the :py:class:`cablab.BaseCubeSourceProvider`
+the :py:class:`esdl.CubeSourceProvider` interface or by extending the :py:class:`esdl.BaseCubeSourceProvider`
 which is usually easier. Make sure you adhere to the contract described in the documentation of the respective class.
 
 To run your provider you will have to register it in the ``setup.py`` file. Assuming your provider is called
@@ -110,10 +110,10 @@ To run your provider you will have to register it in the ``setup.py`` file. Assu
 .. code-block:: python
 
     entry_points={
-        'cablab.source_providers': [
-            'burnt_area = cablab.providers.burnt_area:BurntAreaProvider',
-            'c_emissions = cablab.providers.c_emissions:CEmissionsProvider',
-            'ozone = cablab.providers.ozone:OzoneProvider',
+        'esdl.source_providers': [
+            'burnt_area = esdl.providers.burnt_area:BurntAreaProvider',
+            'c_emissions = esdl.providers.c_emissions:CEmissionsProvider',
+            'ozone = esdl.providers.ozone:OzoneProvider',
             ...
             'sst = myproviders:SeaSurfaceTemperatureProvider',
 
@@ -128,12 +128,12 @@ Sharing a Provider
 ==================
 
 If you plan to distribute and share your provider, you should create your own Python module separate
-from ``cablab-core`` with a dedicated ``setup.py`` with only your providers listed in the ``entry_points`` section.
-Other users may then install your module on top of an ``cablab-core`` to make use of your plugin.
+from ``esdl-core`` with a dedicated ``setup.py`` with only your providers listed in the ``entry_points`` section.
+Other users may then install your module on top of an ``esdl-core`` to make use of your plugin.
 
 
 Python Cube API Reference
 =========================
 
-.. automodule:: cablab
+.. automodule:: esdl
     :members:

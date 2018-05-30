@@ -1,4 +1,4 @@
-name: esdc
+name: esdl
 channels:
   - conda-forge
   - cablab

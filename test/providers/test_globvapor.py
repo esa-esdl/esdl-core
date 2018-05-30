@@ -2,10 +2,10 @@ import os
 import unittest
 from datetime import datetime
 
-from cablab import CubeConfig
-from cablab.providers.globvapour import GlobVapourProvider
+from esdl import CubeConfig
+from esdl.providers.globvapour import GlobVapourProvider
 from test.providers.provider_test_utils import ProviderTestBase
-from cablab.util import Config
+from esdl.util import Config
 
 SOURCE_DIR = Config.instance().get_cube_source_path('globvapour/GOME_SCIA_GOME2/monthly')
 

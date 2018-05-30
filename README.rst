@@ -1,30 +1,30 @@
-.. image:: https://travis-ci.org/CAB-LAB/cablab-core.svg?branch=master
-    :target: https://travis-ci.org/CAB-LAB/cablab-core
+.. image:: https://travis-ci.org/esa-esdl/esdl-core.svg?branch=master
+    :target: https://travis-ci.org/esa-esdl/esdl-core
 .. image:: https://ci.appveyor.com/api/projects/status/qvtsx40uv7p0e1tn?svg=true
-   :target: https://ci.appveyor.com/project/hans-permana/cablab-core
-.. image:: https://codecov.io/gh/CAB-LAB/cablab-core/branch/master/graph/badge.svg
-  :target: https://codecov.io/gh/CAB-LAB/cablab-core
+   :target: https://ci.appveyor.com/project/hans-permana/esdl-core
+.. image:: https://codecov.io/gh/esa-esdl/esdl-core/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/esa-esdl/esdl-core
 
 
-============
-CAB-LAB Core 
-============
+==========
+ESDL Core
+==========
 
 ----------
 Components
 ----------
 
-* ``cablab`` - Public CAB-LAB API
-* ``cablab.cube`` - Data Cube Generation and Access (protected, public parts expr) 
-* ``cablab.cube_cli`` - Command-line interface (protected) 
-* ``cablab.util`` - Common utility functions (protected)
+* ``esdl`` - Public ESDL API
+* ``esdl.cube`` - Data Cube Generation and Access (protected, public parts expr)
+* ``esdl.cube_cli`` - Command-line interface (protected)
+* ``esdl.util`` - Common utility functions (protected)
 
 
 -------------
 Documentation
 -------------
 
-Find the CAB-LAB documentation `here <http://cablab.readthedocs.io/en/latest/>`_.
+Find the ESDL documentation `here <http://cablab.readthedocs.io/en/latest/>`_.
 
 ---------------
 Developer Guide
@@ -55,15 +55,15 @@ Extension points and extensions
 Defined extension points
 ------------------------
 
-* ``cablab.image_providers``: *key* = *class derived from* ``cablab.ImageProvider``    
+* ``esdl.image_providers``: *key* = *class derived from* ``esdl.ImageProvider``
 
 Extensions
 ----------
 
-* ``cablab.image_providers``: 
-  * ``'burnt_area = cablab.providers.burnt_area.BurntAreaProvider'``    
+* ``esdl.image_providers``:
+  * ``'burnt_area = esdl.providers.burnt_area.BurntAreaProvider'``
 * ``console_scripts``: 
-  * ``'cablab_cli = cablab.cli:main'``, see %PYTHON_HOME%/Scripts/cablab_cli (*.exe on Windows) after installation
+  * ``'esdl_cli = esdl.cli:main'``, see %PYTHON_HOME%/Scripts/esdl_cli (*.exe on Windows) after installation
     
 
 ------------
@@ -83,7 +83,7 @@ or real installation::
 How to generate a data cube
 ---------------------------
 
-Create a file ``cablab-config.py`` in your project root directory or your current working directory and add the 
+Create a file ``esdl-config.py`` in your project root directory or your current working directory and add the
 following entry::
 
     cube_sources_root = <your local cube source directory>

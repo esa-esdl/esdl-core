@@ -365,7 +365,7 @@ class NetCDFStaticCubeSourceProvider(BaseStaticCubeSourceProvider, metaclass=ABC
     :param name: The provider's registration name.
     :param dir_path: Source directory to read the single file from. If relative path,
            it will be resolved against the **cube_sources_root** path of the
-           global CAB-LAB configuration (**cablab.util.Config.instance()**).
+           global ESDL configuration (**esdl.util.Config.instance()**).
     """
 
     def __init__(self, cube_config: CubeConfig, name: str, dir_path: str):
@@ -416,7 +416,7 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider, metaclass=ABCMeta):
     :param name: The provider's registration name.
     :param dir_path: Source directory to read the files from. If relative path,
            it will be resolved against the **cube_sources_root** path of the
-           global CAB-LAB configuration (**cablab.util.Config.instance()**).
+           global ESDL configuration (**esdl.util.Config.instance()**).
     :param resampling_order: The order in which resampling is performed. One of 'time_first', 'space_first'.
     """
 

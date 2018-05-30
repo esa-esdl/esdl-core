@@ -73,25 +73,25 @@ The focus of this document is therefore clearly on the description of the data a
 
 
 In the final version, it is meant to be a self-contained documentation that enables the user to independently reap the full potential of the Earth System Data Cube (ESDC).
-Developers may find a visit of the `project's git-hub pages <https://github.com/CAB-LAB>`_ worthwile.
+Developers may find a visit of the `project's git-hub pages <https://github.com/esa-esdl>`_ worthwile.
 
 Scope
 =====
 
-The Product Handbook gives a general overview of the `ESCD's structure <esdc_descr.html#ESDC Description>`__
+The Product Handbook gives a general overview of the `ESDC's structure <esdc_descr.html#ESDC Description>`__
 and provide some examples to illustrate `potential uses of the system <cube_scenarios.html#What can I do with the Earth System Data Cube?>`__ .
 The main part is considered with a detailed `technical description of the ESDC <cube_usage.html#How can I use the Earth System Data Cube?>`__
-, which is accompanied by the full `specification of the API <api_reference.html#CAB-LAB API Reference>`__.
+, which is accompanied by the full `specification of the API <api_reference.html#ESDL API Reference>`__.
 Finally, all data-sets included in the ESDC are listed and described in the `annex of the Product Handbook <annex.html#Annexes>`__.
 
 References
 ==========
 
-1.  ESDC webpage: http://www.earthsystemdatacube.net
+1. ESDC webpage: http://www.earthsystemdatalab.net
 
-2.  CAB-LAB's github repository: https://github.com/CAB-LAB
+2. ESDL's github repository: https://github.com/esa-esdl
 
-3. E-Laboratory: https://cablab.earthsystemdatacube.net
+3. E-Laboratory: https://jupyterhub.earthsystemdatalab.net
 
 
 Peer-reviewed Publications
@@ -129,11 +129,11 @@ BAST                     Biosphere-Atmosphere System Trajectory
 -----------------------  ---------------------------------------------------------------------------------------------
 BAVL                     Biosphere Atmosphere Virtual Laboratory
 -----------------------  ---------------------------------------------------------------------------------------------
-CAB-LAB                  Coupled Atmosphere Biosphere virtual LABoratory
------------------------  ---------------------------------------------------------------------------------------------
 DAT                      Data Analytics Toolkit
 -----------------------  ---------------------------------------------------------------------------------------------
 ESDC                     Earth System Data Cube
+-----------------------  ---------------------------------------------------------------------------------------------
+ESDL                     Earth System Data Laboratory
 -----------------------  ---------------------------------------------------------------------------------------------
 EO                       Earth Observations
 -----------------------  ---------------------------------------------------------------------------------------------
@@ -155,14 +155,14 @@ In particular, the ESDC team does not claim ownership of the data distributed th
 policy of the data owner. Therefore, the user is referred to the data owner for specific questions of data use.
 References and more details of the data sets are listed in the `annex of the Product Handbook <annex.html#Annexes>`_.
 
-The CAB-LAB team is thankful to have received permissions for re-distribution of all data contained in the ESDC from
+The ESDL team is thankful to have received permissions for re-distribution of all data contained in the ESDC from
 the respective data owners.
 
 .. note::
 
     Please cite the ESDC as:
 
-    The ESDC developer team (2016). The Earth System Data Cube (Version 0.1), available at: https://github.com/CAB-LAB.
+    The ESDC developer team (2016). The Earth System Data Cube (Version 0.1), available at: https://github.com/esa-esdl.
 
 
 .. index:: Legal information

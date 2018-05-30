@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 
 import netCDF4
 
-import cablab
-import cablab.util
+import esdl
+import esdl.util
 from .cube_access import CubeDataAccess
 from .cube_config import CubeConfig, CUBE_CHANGELOG
 # from .cube_provider import CubeSourceProvider
@@ -140,7 +140,7 @@ class Cube:
                 time_2 = time_1 + d_time
                 if time_2 > time_max:
                     time_2 = time_max
-                weight = cablab.util.temporal_weight(time_1, time_2, target_start_time, target_end_time)
+                weight = esdl.util.temporal_weight(time_1, time_2, target_start_time, target_end_time)
                 if weight > 0.0:
                     var_name_to_image = provider.compute_variable_images(time_1, time_2)
                     if var_name_to_image:
@@ -192,8 +192,8 @@ class Cube:
         # see http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#attribute-appendix
         dataset.Conventions = 'CF-1.6'
         dataset.institution = 'Brockmann Consult GmbH, Germany'
-        dataset.source = 'CAB-LAB data cube generation, version %s' % __version__
-        dataset.history = time.ctime(time.time()) + ' - CAB-LAB data cube generation'
+        dataset.source = 'ESDL data cube generation, version %s' % __version__
+        dataset.history = time.ctime(time.time()) + ' - ESDL data cube generation'
         #
         # check (nf 20151023) - add more global attributes from CF-conventions here,
         #                       especially those that reference original sources and originators

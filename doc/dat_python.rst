@@ -8,9 +8,9 @@
 .. _pandas: http://pandas.pydata.org/
 .. _datetime: https://docs.python.org/3/library/datetime.html
 .. _Numpy ndarrays: http://docs.scipy.org/doc/numpy/reference/arrays.ndarray.html
-.. _cablab.dat: https://github.com/CAB-LAB/cablab-core/blob/master/cablab/dat.py
-.. _E-Lab: https://cablab.earthsystemdatacube.net
-.. _Jupyter notebook: https://github.com/CAB-LAB/cablab-shared/blob/master/notebooks/Python/Python_DAT.ipynb
+.. _esdl.dat: https://github.com/esa-esdl/esdl-core/blob/master/esdl/dat.py
+.. _E-Lab: https://jupyterhub.earthsystemdatalab.net
+.. _Jupyter notebook: https://github.com/esa-esdl/esdl-shared/blob/master/notebooks/Python/Python_DAT.ipynb
 
 
 .. _Indexing and selecting data: http://xarray.pydata.org/en/stable/indexing.html
@@ -47,8 +47,8 @@ Such dataset objects are what you get when accessing the cube's data as follows:
 
 .. code-block:: python
 
-    from cablab import Cube
-    cube = Cube.open("/home/doe/esdc/cablab-datacube-0.2.4/low-res")
+    from esdl import Cube
+    cube = Cube.open("/home/doe/esdc/esdc-31d-1deg-1x180x360-1.0.1_1")
     dataset = cube.data.dataset(["precipitation", "evaporation", "ozone", "soil_moisture","air_temperature_2m"])
 
 Any geo-physical variable in the ESDC is represented by a `xarray.DataArray`_, which are Numpy_-like data arrays
@@ -64,7 +64,7 @@ The following links point into the xarray_ documentation, they provide the low-l
 * `Time series data`_
 
 Building on top of the xarray_ API the DAT offers high-level functions for ESDC-specific workflows
-in the `cablab.dat`_ module. These functions are addressing specific user requirements and
+in the `esdl.dat`_ module. These functions are addressing specific user requirements and
 the scope of the module will increase with the users of the DAT. In the following, typical use cases and examples
 provide an illustrative introduction into the usage of the DAT and thus into the exploration of the ESDC.
 
@@ -267,7 +267,7 @@ The low-level interface of the ESDC Python DAT is the `xarray API`_.
 
 The following functions provide the high-level API of the ESDC Python DAT:
 
-.. automodule:: cablab.dat
+.. automodule:: esdl.dat
     :members:
 
 

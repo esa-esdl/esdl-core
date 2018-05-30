@@ -1,4 +1,4 @@
-name: cablab
+name: esdl
 channels:
   - conda-forge
   - forman

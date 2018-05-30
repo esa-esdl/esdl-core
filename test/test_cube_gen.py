@@ -2,8 +2,8 @@ import os
 from collections import OrderedDict
 from unittest import TestCase
 
-from cablab.cube_gen import _parse_source_arg
-from cablab.cube_gen import main
+from esdl.cube_gen import _parse_source_arg
+from esdl.cube_gen import main
 
 
 class MainTest(TestCase):
