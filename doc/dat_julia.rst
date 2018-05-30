@@ -5,7 +5,7 @@ DAT for Julia
 Overview
 ========
 
-The Data Analytics Toolkit (DAT) for Julia is hosted in `ESDL's github repository <https://github.com/esa-esdl/CABLAB.jl>`_
+The Data Analytics Toolkit (DAT) for Julia is hosted in `ESDL's github repository <https://github.com/esa-esdl/ESDL.jl>`_
 and is developed in close interaction with the scientific community. Here we give a short overview on the capabilities
 of the Julia DAT, but we would refer to the `official documentation`_ for
 a more detailed and frequently updated software description.
@@ -51,9 +51,9 @@ Example notebooks that explore the ESDC using the Julia DAT can be found in the 
 
 
 
-.. _`ESDL's github repository`: https://github.com/esa-esdl/CABLAB.jl
-.. _`official documentation`: http://esa-esdl.github.io/CABLAB.jl/latest/
-.. _Analysis: http://esa-esdl.github.io/CABLAB.jl/latest/analysis.html
-.. _Plotting: http://esa-esdl.github.io/CABLAB.jl/latest/plotting.html
-.. _`adding_new`: http://esa-esdl.github.io/CABLAB.jl/latest/adding_new.html
+.. _`ESDL's github repository`: https://github.com/esa-esdl/ESDL.jl
+.. _`official documentation`: http://esa-esdl.github.io/ESDL.jl/latest/
+.. _Analysis: http://esa-esdl.github.io/ESDL.jl/latest/analysis.html
+.. _Plotting: http://esa-esdl.github.io/ESDL.jl/latest/plotting.html
+.. _`adding_new`: http://esa-esdl.github.io/ESDL.jl/latest/adding_new.html
 .. _`esdl-shared`: https://github.com/esa-esdl/esdl-shared/tree/master/notebooks/Julia

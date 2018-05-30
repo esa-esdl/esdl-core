@@ -58,7 +58,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'ESDC'
+project = 'ESDL'
 copyright = '2017, The Earth System Data Cube (ESDC) Team'
 author1 = 'Brockmann Consult GmbH'
 author2 = 'MPI for Biogeochemistry Jena'

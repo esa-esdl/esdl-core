@@ -115,17 +115,17 @@ The following command will create a new Python 3.5 environment named ``esdl`` wi
 
     $ conda env create environment.yml
 
-To active new Python environment named ``esdc`` you must source on Linux/Darwin
+To active new Python environment named ``esdl`` you must source on Linux/Darwin
 
 .. code-block:: bash
 
-    $ source activate.sh esdc
+    $ source activate.sh esdl
 
 on Windows:
 
 .. code-block:: bat
 
-    > activate esdc
+    > activate esdl
 
 Now change into new folder ``esdl-core`` and install the ``esdl`` Python package using the ``develop`` target:
 
