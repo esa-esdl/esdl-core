@@ -318,7 +318,8 @@ class CubeDataAccess:
                                              concat_dim='time',
                                              preprocess=self._preprocess_dataset,
                                              engine='h5netcdf',
-                                             chunks=dask_chunks)
+                                             chunks=dask_chunks,
+                                             data_vars='minimal')
 
     def _preprocess_dataset(self, ds: Dataset):
         # Convert specific data variables to coordinate variables
