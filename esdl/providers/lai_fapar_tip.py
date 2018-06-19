@@ -1,8 +1,8 @@
-import datetime
 import os
 from datetime import timedelta
 
-import numpy
+import netCDF4
+import numpy as np
 
 from esdl.cube_provider import NetCDFCubeSourceProvider
 
@@ -18,8 +18,8 @@ class LaiFaparTipProvider(NetCDFCubeSourceProvider):
         return {
             'leaf_area_index': {
                 'source_name': 'Lai',
-                'data_type': numpy.float32,
-                'fill_value': numpy.nan,
+                'data_type': np.float32,
+                'fill_value': np.nan,
                 'units': '1',
                 'standard_name': 'leaf_area_index',
                 'long_name': 'Effective Leaf Area Index',
@@ -28,8 +28,8 @@ class LaiFaparTipProvider(NetCDFCubeSourceProvider):
             },
             'fapar_tip': {
                 'source_name': 'fapar',
-                'data_type': numpy.float32,
-                'fill_value': numpy.nan,
+                'data_type': np.float32,
+                'fill_value': np.nan,
                 'units': '1',
                 'standard_name': 'fapar',
                 'long_name': 'Fraction of Absorbed Photosynthetically Active Radiation',
@@ -40,18 +40,20 @@ class LaiFaparTipProvider(NetCDFCubeSourceProvider):
 
     def compute_source_time_ranges(self):
         source_time_ranges = []
-        file_names = os.listdir(self.dir_path)
-        for file_name in file_names:
-            if '.nc' in file_name:
-                # print (file_name)
-                source_date = datetime.datetime(int(file_name[22:26]), int(file_name[26:28]), int(file_name[28:30]), 12,
-                                                00)
-                if self.cube_config.start_time.year <= source_date.year <= self.cube_config.end_time.year:
-                    file = os.path.join(self.dir_path, file_name).replace("\\", "/")
-                    dataset = self.dataset_cache.get_dataset(file)
-                    if self.variable_descriptors[self._name]["source_name"] in dataset.variables:
-                        source_time_ranges.append(
-                            (source_date - timedelta(hours=12), source_date + timedelta(hours=12), file, 0))
-                    self.dataset_cache.close_dataset(file)
+        print(self.dir_path)
+        for root, sub_dirs, files in os.walk(self.dir_path):
+            for sub_dir in sub_dirs:
+                source_year = int(sub_dir)
+                if self.cube_config.start_time.year <= source_year <= self.cube_config.end_time.year:
+                    sub_dir_path = os.path.join(self.dir_path, sub_dir, "05")
+                    file_names = os.listdir(sub_dir_path)
+                    for file_name in file_names:
+                        if '.nc' in file_name:
+                            file = os.path.join(sub_dir_path, file_name)
+                            dataset = self.dataset_cache.get_dataset(file)
+                            time = netCDF4.num2date(dataset.variables['time'][0],
+                                                    dataset.variables['time'].units,
+                                                    calendar=dataset.variables['time'].calendar)
+                            self.dataset_cache.close_dataset(file)
+                            source_time_ranges.append((time, time + timedelta(days=1), file, 0))
         return sorted(source_time_ranges, key=lambda item: item[0])
-

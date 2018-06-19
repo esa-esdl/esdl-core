@@ -92,6 +92,7 @@ setup(
             'country_mask = esdl.providers.country_mask:CountryMaskProvider',
             'srex_mask = esdl.providers.srex_mask:SrexMaskProvider',
             'water_mask = esdl.providers.water_mask:WaterMaskProvider',
+            'lai_fapar_tip = esdl.providers.lai_fapar_tip:LaiFaparTipProvider'
         ],
     },
     # *Minimum* requirements
