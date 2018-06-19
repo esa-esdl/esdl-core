@@ -1,45 +1,48 @@
 import os
 from datetime import timedelta
 
-import netCDF4
 import numpy as np
+from netCDF4 import num2date
 
 from esdl.cube_provider import NetCDFCubeSourceProvider
 
 
-class LaiFaparTipProvider(NetCDFCubeSourceProvider):
-    def __init__(self, cube_config, name='lai_fapar_tip', dir=None, resampling_order=None):
-        super(LaiFaparTipProvider, self).__init__(cube_config, name, dir, resampling_order)
+class AlbedoAVHRRProvider(NetCDFCubeSourceProvider):
+    def __init__(self, cube_config, name='albedo', dir=None, resampling_order=None):
+        super(AlbedoAVHRRProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.old_indices = None
 
     @property
     def variable_descriptors(self):
-        # TODO: find out about references
+        # TODO: find out about the references
         return {
-            'leaf_area_index': {
-                'source_name': 'Lai',
+            'white_sky_albedo_avhrr': {
+                'source_name': 'BHR_VIS',
                 'data_type': np.float32,
-                'fill_value': np.nan,
+                'fill_value': -9999.0,
                 'units': '1',
-                'standard_name': 'leaf_area_index',
-                'long_name': 'Effective Leaf Area Index',
+                'long_name': 'Bi-Hemisphere Reflectance albedo - VIS band',
+                'standard_name': 'surface_albedo_white_sky',
+                'comment': 'White sky albedo derived from the QA4ECV Albedo Product',
                 'url': 'http://www.qa4ecv.eu/',
-                'project_name': 'QA4ECV',
+                'project_name': 'QA4ECV - European Union Framework Program 7',
             },
-            'fapar_tip': {
-                'source_name': 'fapar',
+            'black_sky_albedo_avhrr': {
+                'source_name': 'DHR_VIS',
                 'data_type': np.float32,
-                'fill_value': np.nan,
+                'fill_value': -9999.0,
                 'units': '1',
-                'standard_name': 'fapar',
-                'long_name': 'Fraction of Absorbed Photosynthetically Active Radiation',
+                'standard_name': 'surface_albedo_black_sky',
+                'long_name': 'Directional Hemisphere Reflectance albedo - VIS band',
+                'comment': 'Black sky albedo derived from the QA4ECV Albedo Product',
                 'url': 'http://www.qa4ecv.eu/',
-                'project_name': 'QA4ECV',
+                'project_name': 'QA4ECV - European Union Framework Program 7',
             }
         }
 
     def compute_source_time_ranges(self):
         source_time_ranges = []
+        print(self.dir_path)
         for root, sub_dirs, files in os.walk(self.dir_path):
             for sub_dir in sub_dirs:
                 source_year = int(sub_dir)
@@ -50,9 +53,9 @@ class LaiFaparTipProvider(NetCDFCubeSourceProvider):
                         if '.nc' in file_name:
                             file = os.path.join(sub_dir_path, file_name)
                             dataset = self.dataset_cache.get_dataset(file)
-                            time = netCDF4.num2date(dataset.variables['time'][0],
-                                                    dataset.variables['time'].units,
-                                                    calendar=dataset.variables['time'].calendar)
+                            time = num2date(dataset.variables['time'][0],
+                                            dataset.variables['time'].units,
+                                            calendar='gregorian')
                             self.dataset_cache.close_dataset(file)
                             source_time_ranges.append((time, time + timedelta(days=1), file, 0))
         return sorted(source_time_ranges, key=lambda item: item[0])
