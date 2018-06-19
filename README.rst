@@ -24,7 +24,7 @@ Components
 Documentation
 -------------
 
-Find the ESDL documentation `here <http://cablab.readthedocs.io/en/latest/>`_.
+Find the ESDL documentation `here <https://esdl.readthedocs.io/en/latest/>`_.
 
 ---------------
 Developer Guide
