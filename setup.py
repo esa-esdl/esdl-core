@@ -94,7 +94,6 @@ setup(
             'water_mask = esdl.providers.water_mask:WaterMaskProvider',
             'lai_fapar_tip = esdl.providers.lai_fapar_tip:LaiFaparTipProvider',
             'albedo_avhrr = esdl.providers.albedo_avhrr:AlbedoAVHRRProvider',
-            'fapar_avhrr = esdl.providers.fapar_avhrr:FaparAvhrrProvider'
         ],
     },
     # *Minimum* requirements

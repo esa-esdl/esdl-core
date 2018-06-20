@@ -1,5 +1,5 @@
 import os
-from datetime import timedelta, datetime
+from datetime import datetime
 
 import numpy as np
 
@@ -14,6 +14,7 @@ class FaparAvhrrProvider(NetCDFCubeSourceProvider):
     @property
     def variable_descriptors(self):
         # TODO: find out about references
+        # TODO: find out how to enter byte as valid min and valid max.
         return {
             'fapar_avhrr': {
                 'source_name': 'FAPAR',
