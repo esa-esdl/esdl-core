@@ -166,10 +166,14 @@ class BaseCubeSourceProvider(CubeSourceProvider, metaclass=ABCMeta):
         """
         Return the temporal coverage derived from the value returned by **compute_source_time_ranges()**.
         """
-        return self._source_time_ranges[0][0], self._source_time_ranges[-1][1]
+        if len(self._source_time_ranges) > 0:
+            return self._source_time_ranges[0][0], self._source_time_ranges[-1][1]
+        else:
+            raise KeyError("No datasets are available for the specified temporal coverage. "
+                           "Consider changing the start_time or end_time in cube.config")
 
     @abstractmethod
-    def compute_source_time_ranges(self) -> list:
+    def compute_source_time_ranges(self) -> list or None:
         """
         Return a sorted list of all time ranges of every source file.
         Items in this list must be 4-element tuples of the form

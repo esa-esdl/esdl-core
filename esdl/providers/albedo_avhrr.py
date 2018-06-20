@@ -42,7 +42,6 @@ class AlbedoAVHRRProvider(NetCDFCubeSourceProvider):
 
     def compute_source_time_ranges(self):
         source_time_ranges = []
-        print(self.dir_path)
         for root, sub_dirs, files in os.walk(self.dir_path):
             for sub_dir in sub_dirs:
                 source_year = int(sub_dir)

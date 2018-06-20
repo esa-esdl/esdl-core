@@ -116,7 +116,10 @@ class Cube:
             raise IOError('cube has been closed')
 
         provider.prepare()
-        target_start_time, target_end_time = provider.temporal_coverage
+        try:
+            target_start_time, target_end_time = provider.temporal_coverage
+        except Exception as e:
+            raise e
         if self._config.start_time and self._config.start_time > target_start_time:
             target_start_time = self._config.start_time
         if self._config.end_time and self._config.end_time < target_end_time:
