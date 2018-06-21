@@ -26,6 +26,7 @@ class BurntAreaProvider(NetCDFCubeSourceProvider):
                 # But it has to be done on the original data.
                 # 'long_name': 'Monthly Burnt Area',
                 'standard_name': 'burnt_area',
+                'long_name': 'Monthly Burnt Area',
                 'references': 'Giglio, Louis, James T. Randerson, and Guido R. Werf. "Analysis of daily, monthly, '
                               'and annual burned area using the fourth‐generation global fire emissions database '
                               '(GFED4)." Journal of Geophysical Research: Biogeosciences 118.1 (2013): 317-328.',

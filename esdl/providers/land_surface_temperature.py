@@ -21,7 +21,7 @@ class LandSurfTemperatureProvider(NetCDFCubeSourceProvider):
                 'fill_value': -32768.0,
                 'units': 'K',
                 'standard_name': 'surface_temperature',
-                'long_name': 'land surface temperature',
+                'long_name': 'Land Surface Temperature',
                 'comment': 'Advanced Along Track Scanning Radiometer pixel land surface temperature product',
                 'url': 'http://data.globtemperature.info/',
                 'project_name' : 'GlobTemperature',

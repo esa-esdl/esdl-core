@@ -20,14 +20,14 @@ class PrecipProvider(NetCDFCubeSourceProvider):
                 'data_type': numpy.float32,
                 'fill_value': -9999.0,
                 'units': 'mm/day',
-                # 'long_name': 'precip - v1.0',
+                'long_name': 'Precip - RealTime [RT] (see documentation for more information)',
                 'standard_name': 'precipitation_flux',
                 'references': 'Adler, Robert F., et al. "The version-2 global precipitation climatology project (GPCP) '
                               'monthly precipitation analysis (1979-present)." Journal of hydrometeorology 4.6 '
                               '(2003): 1147-1167.',
                 'comment': 'Precipitation based on the GPCP dataset.',
                 'url': 'http://precip.gsfc.nasa.gov/',
-                'project_name' : 'GPCP',
+                'project_name': 'GPCP',
             }
         }
 

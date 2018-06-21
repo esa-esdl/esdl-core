@@ -20,7 +20,7 @@ class SnowWaterEquivalentProvider(NetCDFCubeSourceProvider):
                 'data_type': numpy.float32,
                 'fill_value': -9999.0,
                 'units': 'mm',
-                'long_name': 'daily snow water equivalent',
+                'long_name': 'Daily Snow Water Equivalent',
                 'certain_values': "-2 == mountains, -1 == water bodies, 0 == either SWE, "
                                   "or missing data in the southern hemisphere",
                 'references': 'Luojus, Kari, et al. "ESA DUE Globsnow-Global Snow Database for Climate Research." '

@@ -29,7 +29,9 @@ class WaterMaskProvider(BaseStaticCubeSourceProvider):
                 'fill_value': 0,
                 'units': '-',
                 'standard_name': 'land_cover_lccs',
-                'long_name': 'terrestrial or water pixel classification',
+                'long_name': 'Terrestrial or water pixel classification',
+                'url': 'http://www.esa-landcover-cci.org',
+                'project_name': 'Climate Change Initiative - European Space Agency'
             }
         }
 

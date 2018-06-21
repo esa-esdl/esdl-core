@@ -20,7 +20,7 @@ class SoilMoistureProvider(NetCDFCubeSourceProvider):
                 'data_type': numpy.float32,
                 'fill_value': -9999.0,
                 'units': 'm3',
-                'long_name': 'soil moisture',
+                'long_name': 'Soil Moisture',
                 'standard_name': 'soil_moisture_content',
                 'references': 'Liu, Y.Y., Parinussa, R.M., Dorigo, W.A., De Jeu, '
                               'R.A.M., Wagner, W., McCabe, M.F., Evans, J.P., and van Dijk, A.I.J.M. '

@@ -20,7 +20,7 @@ class OzoneProvider(NetCDFCubeSourceProvider):
                 'data_type': numpy.float32,
                 'fill_value': numpy.nan,
                 'units': 'DU',
-                'long_name': 'mean total ozone column in dobson units',
+                'long_name': 'Mean total ozone column in dobson units',
                 'standard_name': 'atmosphere_mole_content_of_ozone',
                 'references': 'Laeng, A., et al. "The ozone climate change initiative: Comparison of four '
                               'Level-2 processors for the Michelson Interferometer for Passive Atmospheric '

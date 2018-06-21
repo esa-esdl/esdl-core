@@ -20,7 +20,7 @@ class GlobVapourProvider(NetCDFCubeSourceProvider):
                 'data_type': numpy.float32,
                 'fill_value': -999.0,
                 'units': 'kg m-2',
-                'long_name': 'total column water vapour',
+                'long_name': 'Total Column Water Vapour',
                 'standard_name': 'atmosphere_mass_content_of_water_vapor',
                 'references': 'Schneider, Nadine, et al. "ESA DUE GlobVapour water vapor products: Validation." '
                               'AIP Conference Proceedings. Vol. 1531. No. 1. 2013.',

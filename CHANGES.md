@@ -1,5 +1,6 @@
 ## version 0.3.0
 * Rename cablab to esdl
+* Added new providers: lai_fapar_tip and albedo_avhrr
 
 ## version 0.2.3
 

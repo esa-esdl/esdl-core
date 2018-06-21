@@ -20,7 +20,7 @@ class AlbedoProvider(NetCDFCubeSourceProvider):
                 'data_type': numpy.float32,
                 'fill_value': numpy.nan,
                 'units': '-',
-                'long_name': 'white sky albedo for visible wavebands',
+                'long_name': 'White Sky Albedo for Visible Wavebands',
                 'standard_name': 'surface_albedo_white_sky',
                 'references': 'Muller, Jan-Peter, et al. "The ESA GLOBALBEDO project for mapping the Earth’s '
                               'land surface albedo for 15 years from European sensors." Geophysical Research '
@@ -35,7 +35,7 @@ class AlbedoProvider(NetCDFCubeSourceProvider):
                 'fill_value': numpy.nan,
                 'units': '-',
                 'standard_name': 'surface_albedo_black_sky',
-                'long_name': 'black sky albedo for visible wavebands',
+                'long_name': 'Black Sky Albedo for Visible Wavebands',
                 'references': 'Muller, Jan-Peter, et al. "The ESA GLOBALBEDO project for mapping the Earth’s '
                               'land surface albedo for 15 years from European sensors." Geophysical Research '
                               'Abstracts. Vol. 13. 2012.',
