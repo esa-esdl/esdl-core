@@ -58,3 +58,12 @@ class AlbedoAVHRRProvider(NetCDFCubeSourceProvider):
                             self.dataset_cache.close_dataset(file)
                             source_time_ranges.append((time, time + timedelta(days=1), file, 0))
         return sorted(source_time_ranges, key=lambda item: item[0])
+
+    def transform_source_image(self, source_image):
+        """
+        Transforms the source image, here by flipping and then shifting horizontally.
+        :param source_image: 2D image
+        :return: source_image
+        """
+        source_image[(source_image < 0) | (source_image > 1)] = np.nan
+        return source_image
