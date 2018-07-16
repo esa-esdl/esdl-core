@@ -21,6 +21,7 @@ dependencies:
   - six=1.10.0=py35_0
   - wheel=0.29.0=py35_0
   - xarray=0.10.3=py35_0
+  - zarr=2.2.0=py_1
   #
   # for testing only
   #
