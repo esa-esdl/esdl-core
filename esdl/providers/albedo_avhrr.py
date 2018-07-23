@@ -46,7 +46,7 @@ class AlbedoAVHRRProvider(NetCDFCubeSourceProvider):
             for sub_dir in sub_dirs:
                 source_year = int(sub_dir)
                 if self.cube_config.start_time.year <= source_year <= self.cube_config.end_time.year:
-                    sub_dir_path = os.path.join(self.dir_path, sub_dir, "05")
+                    sub_dir_path = os.path.join(self.dir_path, sub_dir, "005")
                     file_names = os.listdir(sub_dir_path)
                     for file_name in file_names:
                         if '.nc' in file_name:
