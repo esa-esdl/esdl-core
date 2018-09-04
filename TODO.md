@@ -1,0 +1,3 @@
+- have a different repo for the data providers
+- allow appending new time slices
+- use logging / warnings package
