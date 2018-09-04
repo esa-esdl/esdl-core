@@ -28,7 +28,6 @@ def read_esdc(cube_config_file: str) -> xr.Dataset:
            a data cube base directory.
     :return: A dataset comprising all the data cube variables.
     """
-    import esdl
     cube_base_dir = os.path.dirname(cube_config_file)
     return esdl.Cube.open(cube_base_dir).data.dataset()
 
@@ -81,11 +80,11 @@ class EsdcDataSource(DataSource):
                      protocol: str = None,
                      monitor: Monitor = Monitor.NONE) -> Any:
         if time_range or region or var_names:
-            raise ValueError("ESDCdata source cannot have constraints")
+            raise ValueError("ESDC data sources cannot have constraints")
         return self._cube.data.dataset()
 
     def make_local(self, *args, **kwargs) -> Optional[DataSource]:
-        warnings.warn('EsdcDataSource cannot be made local')
+        warnings.warn('ESDC data sources cannot be made local')
         return None
 
     def _repr_html_(self):
@@ -121,10 +120,8 @@ class EsdcDataStore(DataStore):
             cube = None
             try:
                 cube = esdl.Cube.open(local_path)
-                # print('Success registering ESDC data source "%s"!' % ds_id)
             except Exception as e:
                 warnings.warn('Failed registering ESDC data source "%s": %s' % (ds_id, e))
-                # print('Failed to register ESDC data source "%s": %s' % (ds_id, e))
                 pass
             if cube:
                 self._data_sources[ds_id] = EsdcDataSource(self, ds_id, title, cube)
