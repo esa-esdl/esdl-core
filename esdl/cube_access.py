@@ -298,7 +298,7 @@ class CubeDataAccess:
                 return var_indexes
 
     def _get_or_open_dataset(self, cube_var):
-        if not cube_var.dataset:
+        if cube_var.dataset is None:
             self._open_dataset(cube_var)
         return cube_var.dataset
 
@@ -331,6 +331,6 @@ class CubeDataAccess:
 
     def _close_datasets(self):
         for cube_var in self._cube_var_list:
-            if cube_var.dataset:
+            if cube_var.dataset is not None:
                 cube_var.dataset.close()
                 cube_var.dataset = None
