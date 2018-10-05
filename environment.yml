@@ -20,11 +20,11 @@ dependencies:
   - setuptools >=40.4.3
   - six >=1.11.0
   - wheel >=0.32.0
-  - xarray >=0.10.9
+  - xarray >=0.10.6
   - zarr >= 2.2.0,<3.0
   #
   # for testing only
   #
   - pytest >=3.8.2
-  - pytest-cov >= cov-2.6.0
+  - pytest-cov
   - flake8
