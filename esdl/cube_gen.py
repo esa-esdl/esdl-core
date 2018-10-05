@@ -3,6 +3,7 @@ import os
 import sys
 
 from pkg_resources import iter_entry_points
+from collections import OrderedDict
 
 from .version import version as __version__
 from .cube import Cube
@@ -26,7 +27,6 @@ SOURCE_PROVIDERS = _load_source_providers()
 
 
 def _parse_source_arg(source: str):
-    from collections import OrderedDict
     parts = source.split(os.pathsep)
     name = parts[0]
     if not name:
