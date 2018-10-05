@@ -21,18 +21,6 @@ class CubeTest(TestCase):
         #     shutil.rmtree(CUBE_DIR, True)
         pass
 
-    def test_test(self):
-        cube2 = Cube.open(CUBE_DIR)
-        provider = CubeSourceProviderMock(cube2.config,
-                                          start_time=datetime(2006, 12, 15),
-                                          end_time=datetime(2007, 1, 15))
-        cube2.update(provider)
-        data = cube2.data
-        lai_var = data.variable('LAI')
-        scalar = lai_var[3, 320, 720]
-        #self.assertEqual(scalar.values, np.array(0.14, dtype=np.float64))
-        return scalar
-
     def test_update(self):
         cube = Cube.create(CUBE_DIR, CubeConfig())
         self.assertTrue(os.path.exists(CUBE_DIR))
@@ -82,7 +70,7 @@ class CubeTest(TestCase):
             data = cube2.data
             self.assertIsNotNone(data)
             self.assertEqual((2, 11 * 46, 720, 1440), data.shape)
-            self.assertEqual(['FAPAR', 'LAI'], data.variable_names)
+            self.assertEquals(['FAPAR', 'LAI'], data.variable_names)
 
             lai_var = data.variable('LAI')
             self.assert_cf_conformant_time_info(data, 'LAI')
@@ -95,7 +83,7 @@ class CubeTest(TestCase):
             array = lai_var[:, :, :]
             self.assertEqual(array.shape, (138, 720, 1440))
             scalar = lai_var[3, 320, 720]
-            self.assertEqual(scalar.values, np.array(0.14, dtype=np.float64))
+            self.assertEqual(scalar.values, np.array(0.14, dtype=np.float32))
 
             fapar_var = data.variable('FAPAR')
             self.assert_cf_conformant_time_info(data, 'FAPAR')
@@ -166,15 +154,15 @@ class CubeTest(TestCase):
         self.assertEqual(time_var.shape, (L,))
         # for i in range(L):
         #    print(i, i / P, time_var[i])
-        self.assertEqual(time_var.values[0], np.datetime64('2001-01-05T00:00:00.000000000'))
-        self.assertEqual(time_var.values[46], np.datetime64('2006-01-05T00:00:00.000000000'))
+        self.assertEqual(time_var.values[0], np.datetime64('2001-01-05T01:00:00.000000000+0100'))
+        self.assertEqual(time_var.values[46], np.datetime64('2006-01-05T01:00:00.000000000+0100'))
         self.assertIn('time_bnds', ds.variables)
         time_bnds_var = ds.variables['time_bnds']
         # self.assertEqual(time_bnds_var.calendar, 'gregorian')
         # self.assertEqual(time_bnds_var.units, 'days since 2001-01-01 00:00')
         self.assertEqual(time_bnds_var.shape, (L, 2), )
-        self.assertEqual(time_bnds_var.values[0, 0], np.datetime64('2001-01-01T00:00:00.000000000'))
-        self.assertEqual(time_bnds_var.values[0, 1], np.datetime64('2001-01-09T00:00:00.000000000'))
+        self.assertEqual(time_bnds_var.values[0, 0], np.datetime64('2001-01-01T01:00:00.000000000+0100'))
+        self.assertEqual(time_bnds_var.values[0, 1], np.datetime64('2001-01-09T01:00:00.000000000+0100'))
 
     def assert_cf_conformant_geospatial_info(self, data, var_name):
         W = 1440  # width in lon

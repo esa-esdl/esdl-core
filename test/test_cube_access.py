@@ -51,7 +51,7 @@ class CubeDataAccessTest(TestCase):
 
     def test_variable_api(self):
         with self.open_access() as data:
-            self.assertEqual(['a_var', 'b_var', 'c_var'], data.variable_names)
+            self.assertEquals(['a_var', 'b_var', 'c_var'], data.variable_names)
 
             var = data.variable('a_var')
             self.assertIs(xr.Variable, type(var))
