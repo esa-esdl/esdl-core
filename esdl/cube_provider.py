@@ -1,16 +1,16 @@
 import glob
 import os.path
 import time
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 from datetime import datetime
 
 import gridtools.resampling as gtr
 import netCDF4
 import numpy as np
-from typing import Tuple, Dict, Any
+from typing import Tuple, Dict, Any, TypeVar, Generic, Union
 
 from .cube_config import CubeConfig
-from .util import Config, NetCDFDatasetCache, aggregate_images, temporal_weight
+from .util import Config, NetCDFDatasetCache, aggregate_images, temporal_weight, XarrayDatasetCache
 
 
 def _get_us_method(var_attributes):
@@ -19,6 +19,9 @@ def _get_us_method(var_attributes):
 
 def _get_ds_method(var_attributes):
     return gtr.__dict__['DS_' + var_attributes.get('ds_method', 'MEAN')]
+
+
+C = TypeVar('C')
 
 
 class CubeSourceProvider(metaclass=ABCMeta):
@@ -56,8 +59,9 @@ class CubeSourceProvider(metaclass=ABCMeta):
         """
         pass
 
-    @abstractproperty
-    def temporal_coverage(self) -> Tuple[datetime, datetime]:
+    @property
+    @abstractmethod
+    def temporal_coverage(self) -> Tuple[datetime, datetime] or None:
         """
         Return the start and end time of the available source data.
 
@@ -65,8 +69,9 @@ class CubeSourceProvider(metaclass=ABCMeta):
         """
         return None
 
-    @abstractproperty
-    def spatial_coverage(self) -> Tuple[int, int, int, int]:
+    @property
+    @abstractmethod
+    def spatial_coverage(self) -> Tuple[int, int, int, int] or None:
         """
         Return the spatial coverage as a rectangle represented by a tuple of integers (x, y, width, height) in the
         cube's image coordinates.
@@ -75,8 +80,9 @@ class CubeSourceProvider(metaclass=ABCMeta):
         """
         return None
 
-    @abstractproperty
-    def variable_descriptors(self) -> Dict[str, Dict[str, Any]]:
+    @property
+    @abstractmethod
+    def variable_descriptors(self) -> Dict[str, Dict[str, Any]] or None:
         """
         Return a dictionary which maps target(!) variable names to a dictionary of target attribute values.
         The following attributes have a special meaning and shall or should be provided:
@@ -96,7 +102,7 @@ class CubeSourceProvider(metaclass=ABCMeta):
         return None
 
     @abstractmethod
-    def compute_variable_images(self, period_start: datetime, period_end: datetime) -> Dict[str, np.ndarray]:
+    def compute_variable_images(self, period_start: datetime, period_end: datetime) -> Dict[str, np.ndarray] or None:
         """
         Return variable name to variable image mapping of all provided variables.
         Each image is a numpy array with the shape (height, width) derived from the :py:meth:`get_spatial_coverage`
@@ -285,7 +291,8 @@ class BaseStaticCubeSourceProvider(CubeSourceProvider, metaclass=ABCMeta):
         """
         return self.cube_config.start_time, self.cube_config.end_time
 
-    def compute_variable_images(self, period_start: datetime, period_end: datetime) -> Dict[str, np.ndarray]:
+    def compute_variable_images(self, period_start: datetime, period_end: datetime) -> Union[Dict[str, np.ndarray],
+                                                                                             None]:
         if self._variable_images_computed:
             return None
 
@@ -393,13 +400,13 @@ class NetCDFStaticCubeSourceProvider(BaseStaticCubeSourceProvider, metaclass=ABC
         file = file_paths[0]
         return netCDF4.Dataset(file)
 
-    def close_dataset(self, dataset):
+    def close_dataset(self, dataset: netCDF4.Dataset):
         dataset.close()
 
-    def get_dataset_file_path(self, dataset):
+    def get_dataset_file_path(self, dataset: netCDF4.Dataset):
         return dataset.filepath
 
-    def get_dataset_image(self, dataset, var_name):
+    def get_dataset_image(self, dataset: netCDF4.Dataset, var_name: str) -> np.ndarray:
         variable = dataset.variables[var_name]
         if len(variable.shape) == 3:
             var_image = variable[0, :, :]
@@ -410,7 +417,7 @@ class NetCDFStaticCubeSourceProvider(BaseStaticCubeSourceProvider, metaclass=ABC
         return var_image
 
 
-class NetCDFCubeSourceProvider(BaseCubeSourceProvider, metaclass=ABCMeta):
+class DatasetCubeSourceProvider(BaseCubeSourceProvider, Generic[C], metaclass=ABCMeta):
     """
     A BaseCubeSourceProvider that
     * Uses NetCDF source datasets read from a given **dir_path**
@@ -424,8 +431,8 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider, metaclass=ABCMeta):
     :param resampling_order: The order in which resampling is performed. One of 'time_first', 'space_first'.
     """
 
-    def __init__(self, cube_config: CubeConfig, name: str, dir_path: str, resampling_order: str):
-        super(NetCDFCubeSourceProvider, self).__init__(cube_config, name)
+    def __init__(self, cache: C, cube_config: CubeConfig, name: str, dir_path: str, resampling_order: str):
+        super().__init__(cube_config, name)
 
         if dir_path is None:
             raise ValueError('dir_path expected')
@@ -441,15 +448,15 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider, metaclass=ABCMeta):
         else:
             self._dir_path = dir_path
         self._resampling_order = resampling_order
-        self._dataset_cache = NetCDFDatasetCache(name)
+        self._dataset_cache = cache
         self._old_indices = None
 
     @property
-    def dir_path(self):
+    def dir_path(self) -> str:
         return self._dir_path
 
     @property
-    def dataset_cache(self):
+    def dataset_cache(self) -> C:
         return self._dataset_cache
 
     def compute_variable_images_from_sources(self, index_to_weight):
@@ -465,13 +472,7 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider, metaclass=ABCMeta):
             for i in new_indices:
                 file, time_index = self._get_file_and_time_index(i)
                 source_name = var_attributes.get('source_name', var_name)
-                variable = self._dataset_cache.get_dataset(file).variables[source_name]
-                if len(variable.shape) == 3:
-                    var_image = variable[time_index, :, :]
-                elif len(variable.shape) == 2:
-                    var_image = variable[:, :]
-                else:
-                    raise ValueError("unexpected shape for variable '%s'" % var_name)
+                var_image = self._dataset_cache.get_dataset_variable(file, source_name)
                 var_image = self.transform_source_image(var_image)
                 if self._resampling_order == 'space_first':
                     var_image = gtr.resample_2d(var_image,
@@ -531,3 +532,55 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider, metaclass=ABCMeta):
 
     def close(self):
         self._dataset_cache.close_all_datasets()
+
+
+class NetCDFCubeSourceProvider(DatasetCubeSourceProvider[NetCDFDatasetCache]):
+    def __init__(self, cube_config: CubeConfig, name: str, dir_path: str, resampling_order: str):
+        super().__init__(NetCDFDatasetCache(name), cube_config, name, dir_path, resampling_order)
+
+    def variable_descriptors(self) -> Dict[str, Dict[str, Any]]:
+        pass
+
+    def transform_source_image(self, source_image):
+        """
+        Returns the source image. Override to implement transformations if needed.
+        :param source_image: 2D image
+        :return: source_image
+        """
+        return source_image
+
+    def compute_source_time_ranges(self) -> list or None:
+        """
+        Return a sorted list of all time ranges of every source file.
+        Items in this list must be 4-element tuples of the form
+        (time_start: datetime, time_stop: datetime, file: str, time_index: int).
+        The method is called from the **prepare()** method in order to pre-compute all available time ranges.
+        This method must be implemented by derived classes.
+        """
+        return None
+
+
+class CateCubeSourceProvider(DatasetCubeSourceProvider[XarrayDatasetCache]):
+    def __init__(self, cube_config: CubeConfig, name: str, dir_path: str, resampling_order: str):
+        super().__init__(XarrayDatasetCache(name), cube_config, name, dir_path, resampling_order)
+
+    def variable_descriptors(self) -> Dict[str, Dict[str, Any]]:
+        pass
+
+    def transform_source_image(self, source_image: np.ndarray) -> np.ndarray:
+        """
+        Returns the source image. Override to implement transformations if needed.
+        :param source_image: 2D image
+        :return: source_image
+        """
+        return source_image
+
+    def compute_source_time_ranges(self) -> Union[list, None]:
+        """
+        Return a sorted list of all time ranges of every source file.
+        Items in this list must be 4-element tuples of the form
+        (time_start: datetime, time_stop: datetime, file: str, time_index: int).
+        The method is called from the **prepare()** method in order to pre-compute all available time ranges.
+        This method must be implemented by derived classes.
+        """
+        return None
