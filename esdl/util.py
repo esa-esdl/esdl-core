@@ -3,12 +3,16 @@ Various utility constants, functions and classes.
 Developer note: make sure this module does not import any other esdl module!
 """
 import gzip
+
+import cate
+import cate.ops
 import math
 import os
 from abc import abstractmethod, ABCMeta
 from datetime import datetime, timedelta
 
 import netCDF4
+import xarray
 import numpy
 
 
@@ -135,6 +139,10 @@ class DatasetCache(metaclass=ABCMeta):
         self._file_to_dataset = dict()
 
     @abstractmethod
+    def get_dataset_variable(self, file: str, name: str):
+        pass
+
+    @abstractmethod
     def open_dataset(self, file):
         """
         Open a dataset. Never call this method directly.
@@ -200,7 +208,14 @@ class NetCDFDatasetCache(DatasetCache):
     def __init__(self, name, cache_base_dir=None):
         super(NetCDFDatasetCache, self).__init__(name, cache_base_dir=cache_base_dir)
 
-    def open_dataset(self, real_file):
+    def get_dataset_variable(self, file: str, name: str) -> numpy.ndarray:
+        var = self.get_dataset(file).variables[name]
+        if len(var.shape) == 2:
+            return var[:, :]
+        else:
+            raise ValueError("Error: wrong dimension for netCDF4 var. Should be 2 is " + str(len(var.shape)))
+
+    def open_dataset(self, real_file) -> netCDF4.Dataset:
         if os.path.isfile(real_file):
             return netCDF4.Dataset(real_file)
         else:
@@ -208,9 +223,28 @@ class NetCDFDatasetCache(DatasetCache):
                   real_file)
 
 
+class XarrayDatasetCache(DatasetCache):
+    def __init__(self, name, cache_base_dir=None):
+        super().__init__(name, cache_base_dir=cache_base_dir)
+
+    def get_dataset_variable(self, file: str, name: str) -> numpy.ndarray:
+        var = self.get_dataset(file).variables[name]
+        if len(var.shape) == 3:
+            return numpy.ma.masked_invalid(var, copy=False)
+        else:
+            raise ValueError("Error: wrong dimension for xarray var. Should be 3 is " + str(len(var.shape)))
+
+    def open_dataset(self, real_file) -> xarray.Dataset:
+        if os.path.isfile(real_file):
+            return cate.ops.read_netcdf(real_file)
+        else:
+            print('Warning: Input file (\'%s\') does not exist!' %
+                  real_file)
+
+
 class Config:
     """
-    Global CAB-LAB configuration.
+    Global ESDL configuration.
 
     :param cube_sources_root: The root directory for the Cube's source data files.
     """
@@ -236,7 +270,7 @@ class Config:
     @staticmethod
     def instance():
         """
-        :return: The CAB-LAB configuration singleton.
+        :return: The ESDL configuration singleton.
         """
         if Config._INSTANCE is None:
             config = None
@@ -255,7 +289,7 @@ class Config:
                     dir_path = os.path.join(dir_path, '..')
                 if config is None:
                     config = Config()
-                    print('Warning: no CAB-LAB configuration file (\'%s\') found in any known directory' %
+                    print('Warning: no ESDL configuration file (\'%s\') found in any known directory' %
                           Config.DEFAULT_FILE_NAME)
             Config._INSTANCE = config
         return Config._INSTANCE
@@ -266,5 +300,5 @@ class Config:
         with open(file_path, 'r') as fp:
             python_code = fp.read()
         exec(python_code, None, config.__dict__)
-        print('CAB-LAB configuration loaded from %s' % file_path)
+        print('ESDL configuration loaded from %s' % file_path)
         return config
