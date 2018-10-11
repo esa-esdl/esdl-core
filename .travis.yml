@@ -3,9 +3,7 @@
 # See http://conda.pydata.org/docs/travis.html for more info.
 #
 
-language: python
-python:
-  - "3.5"
+language: generic
 
 install:
   - sudo apt-get update
@@ -20,10 +18,12 @@ install:
   - conda update -q conda
   # Useful for debugging any issues with conda
   - conda info -a
-
+  - git clone https://github.com/CCI-Tools/cate
+  - cd cate
   - conda env create --file environment.yml
-  - source activate esdl
+  - source activate cate-env
   - conda list
+  - cd ..
   - python setup.py install
 
 script:
