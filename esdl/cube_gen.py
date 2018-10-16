@@ -4,10 +4,10 @@ import sys
 
 from pkg_resources import iter_entry_points
 
-from .version import version as __version__
-from .cube import Cube
-from .cube_config import CubeConfig
-from .cube_provider import CubeSourceProvider
+from esdl.version import version as __version__
+from esdl.cube import Cube
+from esdl.cube_config import CubeConfig
+from esdl.cube_provider import CubeSourceProvider
 
 
 def _load_source_providers():

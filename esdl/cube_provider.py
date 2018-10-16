@@ -472,8 +472,9 @@ class DatasetCubeSourceProvider(BaseCubeSourceProvider, Generic[C], metaclass=AB
             for i in new_indices:
                 file, time_index = self._get_file_and_time_index(i)
                 source_name = var_attributes.get('source_name', var_name)
-                var_image = self._dataset_cache.get_dataset_variable(file, source_name)
+                var_image = self._dataset_cache.get_dataset_variable(file, source_name, time_index)
                 var_image = self.transform_source_image(var_image)
+
                 if self._resampling_order == 'space_first':
                     var_image = gtr.resample_2d(var_image,
                                                 self.cube_config.grid_width,

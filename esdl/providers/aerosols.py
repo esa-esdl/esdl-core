@@ -4,10 +4,10 @@ from datetime import timedelta
 
 import numpy
 
-from esdl.cube_provider import CateCubeSourceProvider
+from esdl.cube_provider import NetCDFCubeSourceProvider
 
 
-class AerosolsProvider(CateCubeSourceProvider):
+class AerosolsProvider(NetCDFCubeSourceProvider):
     def __init__(self, cube_config, name='aerosols', dir=None, resampling_order=None):
         super(AerosolsProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.old_indices = None
@@ -32,10 +32,12 @@ class AerosolsProvider(CateCubeSourceProvider):
     def compute_source_time_ranges(self):
         source_time_ranges = []
         for root, sub_dirs, files in os.walk(self.dir_path):
+            print(root)
             for file_name in files:
                 time_info = file_name.split('-', 1)[0]
 
                 time = self.day2date(int(time_info))
+                print(time)
                 if self.cube_config.start_time <= time <= self.cube_config.end_time:
                     file = os.path.join(root, file_name)
                     self.dataset_cache.get_dataset(file)
@@ -49,7 +51,8 @@ class AerosolsProvider(CateCubeSourceProvider):
         :param source_image: 2D image
         :return: source_image
         """
-        return numpy.flipud(source_image)
+        #return numpy.flipud(source_image)
+        return source_image
 
     @staticmethod
     def day2date(times):

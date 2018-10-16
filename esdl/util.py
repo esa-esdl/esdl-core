@@ -209,7 +209,7 @@ class NetCDFDatasetCache(DatasetCache):
     def __init__(self, name, cache_base_dir=None):
         super(NetCDFDatasetCache, self).__init__(name, cache_base_dir=cache_base_dir)
 
-    def get_dataset_variable(self, file: str, name: str) -> numpy.ndarray:
+    def get_dataset_variable(self, file: str, name: str, time_index: int) -> numpy.ndarray:
         var = self.get_dataset(file).variables[name]
         if len(var.shape) == 2:
             return var[:, :]
@@ -228,9 +228,10 @@ class XarrayDatasetCache(DatasetCache):
     def __init__(self, name, cache_base_dir=None):
         super().__init__(name, cache_base_dir=cache_base_dir)
 
-    def get_dataset_variable(self, file: str, name: str) -> numpy.ndarray:
+    def get_dataset_variable(self, file: str, name: str, time_index: int) -> numpy.ndarray:
         var = self.get_dataset(file).variables[name]
         if len(var.shape) == 3:
+            var = var[time_index, :, :]
             return numpy.ma.masked_invalid(var, copy=False)
         else:
             raise ValueError("Error: wrong dimension for xarray var. Should be 3 is " + str(len(var.shape)))
