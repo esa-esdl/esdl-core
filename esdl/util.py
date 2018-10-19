@@ -4,8 +4,6 @@ Developer note: make sure this module does not import any other esdl module!
 """
 import gzip
 
-import cate
-import cate.ops
 import math
 import os
 from abc import abstractmethod, ABCMeta
@@ -238,6 +236,7 @@ class XarrayDatasetCache(DatasetCache):
             raise ValueError("Error: wrong dimension for xarray var. Should be 3 is " + str(len(var.shape)))
 
     def open_dataset(self, real_file) -> xarray.Dataset:
+        import cate.ops
         if os.path.isfile(real_file):
             return cate.ops.read_netcdf(real_file)
         else:
