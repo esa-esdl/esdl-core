@@ -1,5 +1,7 @@
 import os
 
+from pyreadline import execfile
+
 try:
     import setuptools
 except ImportError:
@@ -58,7 +60,7 @@ setup(
             'cube-gen = esdl.cube_gen:main',
         ],
         'cate_plugins': [
-            'cate_esdc = esdl.cate.esdc:cate_init',
+            'cate_esdc = esdl.cate_plugin.esdc:cate_init',
         ],
         'esdl.source_providers': [
             'test = esdl.providers:TestCubeSourceProvider',
