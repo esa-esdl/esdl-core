@@ -12,6 +12,15 @@ from esdl.util import aggregate_images
 from datetime import datetime
 
 
+def module_exists(module_name):
+    try:
+        __import__(module_name)
+    except ImportError:
+        return False
+    else:
+        return True
+
+
 def generate_test_netcdf4(has_time: bool = False, fn: str = 'test.nc') -> str:
     dataset = Dataset(fn, 'w', format='NETCDF4_CLASSIC')
     lat = dataset.createDimension('lat', 180)
@@ -134,7 +143,7 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(time1_index, 0)
         self.assertEqual(time2_index, 505)
 
-
+    @unittest.skipUnless(module_exists("cate"), "Could not load cate. Skip dataset cache test.")
     def test_datasetcache(self):
         netcdf_cache = NetCDFDatasetCache('test')
         xarray_cache = XarrayDatasetCache('test')
