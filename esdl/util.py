@@ -140,7 +140,7 @@ class DatasetCache(metaclass=ABCMeta):
         self._file_to_dataset = dict()
 
     @abstractmethod
-    def get_dataset_variable(self, file: str, name: str):
+    def get_dataset_variable(self, file: str, name: str, time_index: int):
         pass
 
     @abstractmethod
@@ -231,6 +231,7 @@ class XarrayDatasetCache(DatasetCache):
     def get_dataset_variable(self, file: str, name: str, time_index: int) -> numpy.ndarray:
         var = self.get_dataset(file).variables[name]
         if len(var.shape) == 3:
+            # need to slice in order to get the correct shape of teh return variable
             var = var[time_index, :, :]
             return numpy.ma.masked_invalid(var, copy=False)
         else:
