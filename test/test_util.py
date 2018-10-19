@@ -1,12 +1,57 @@
 import unittest
 
 import numpy
+from netCDF4 import Dataset, date2num
+from numpy.random import uniform
+from datetime import timedelta
 
-from esdl.util import temporal_weight
+from esdl.util import temporal_weight, NetCDFDatasetCache, XarrayDatasetCache
 from esdl.util import resolve_temporal_range_index
 from esdl.util import aggregate_images
 
 from datetime import datetime
+
+
+def generate_test_netcdf4(has_time: bool = False, fn: str = 'test.nc') -> str:
+    dataset = Dataset(fn, 'w', format='NETCDF4_CLASSIC')
+    lat = dataset.createDimension('lat', 180)
+    lon = dataset.createDimension('lon', 360)
+
+    latitudes = dataset.createVariable('latitude', numpy.float32, ('lat',))
+    longitudes = dataset.createVariable('longitude', numpy.float32, ('lon',))
+    if has_time:
+        time = dataset.createDimension('time', None)
+        temp = dataset.createVariable('temperature', numpy.float32, ('time', 'lat', 'lon'))
+    else:
+        temp = dataset.createVariable('temperature', numpy.float32, ('lat', 'lon'))
+
+    latitudes.units = 'degree_north'
+    longitudes.units = 'degree_east'
+    temp.units = 'K'
+
+    latitudes[:] = numpy.arange(-90, 90, 1)
+    longitudes[:] = numpy.arange(-180, 180, 1)
+    nlats = len(dataset.dimensions['lat'])
+    nlons = len(dataset.dimensions['lon'])
+
+    if has_time:
+        temp[0:5, :, :] = uniform(size=(5, nlats, nlons))
+
+        times = dataset.createVariable('time', numpy.float64, ('time',))
+        times.units = 'hours since 0001-01-01 00:00:00'
+        times.calendar = 'gregorian'
+
+        dates = []
+        for n in range(temp.shape[0]):
+            dates.append(datetime(2001, 3, 1) + n * timedelta(hours=12))
+
+        times[:] = date2num(dates, units=times.units, calendar=times.calendar)
+    else:
+        temp[:, :] = uniform(size=(nlats, nlons))
+
+    dataset.close()
+
+    return fn
 
 
 class UtilTest(unittest.TestCase):
@@ -51,12 +96,12 @@ class UtilTest(unittest.TestCase):
         self.assertIs(im[1][0], numpy.ma.masked)
         self.assertAlmostEqual(im[1][1], (0.5 * 4.1 + 1.0 * 5.2 + 0.25 * 6.3) / 1.75, places=3)
 
-        im1 = numpy.zeros((3,3))
-        im2 = numpy.ones((3,3))
+        im1 = numpy.zeros((3, 3))
+        im2 = numpy.ones((3, 3))
 
-        im = aggregate_images((im1,im2), weights = (0.25,0.75))
+        im = aggregate_images((im1, im2), weights=(0.25, 0.75))
 
-        self.assertEqual(im[0][0],0.75)
+        self.assertEqual(im[0][0], 0.75)
 
     def test_resolve_temporal_range_index(self):
         time1_index, time2_index = resolve_temporal_range_index(2001, 2011, 8,
@@ -88,3 +133,19 @@ class UtilTest(unittest.TestCase):
                                                                 datetime(2020, 12, 31))
         self.assertEqual(time1_index, 0)
         self.assertEqual(time2_index, 505)
+
+
+    def test_datasetcache(self):
+        netcdf_cache = NetCDFDatasetCache('test')
+        xarray_cache = XarrayDatasetCache('test')
+
+        file_netcdf = generate_test_netcdf4(has_time=False, fn='test_netcdf.nc')
+        file_xarray = generate_test_netcdf4(has_time=True, fn='test_xarray.nc')
+
+        # Test shape correct by passing a 3dim netcdf into the netcdf cache (needs dim2)
+        with self.assertRaises(ValueError):
+            netcdf_cache.get_dataset_variable(file_xarray, 'temperature', 0)
+
+        # Test shape correct by passing a 2dim netcdf into the xarray cache (needs dim3)
+        with self.assertRaises(ValueError):
+            xarray_cache.get_dataset_variable(file_netcdf, 'temperature', 0)
