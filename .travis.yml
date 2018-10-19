@@ -18,12 +18,9 @@ install:
   - conda update -q conda
   # Useful for debugging any issues with conda
   - conda info -a
-  - git clone https://github.com/CCI-Tools/cate
-  - cd cate
   - conda env create --file environment.yml
-  - source activate cate-env
+  - source activate esdl
   - conda list
-  - cd ..
   - python setup.py install
 
 script:
