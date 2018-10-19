@@ -21,16 +21,6 @@ class CubeTest(TestCase):
         #     shutil.rmtree(CUBE_DIR, True)
         pass
 
-    @staticmethod
-    def tt():
-        cube = Cube.open(CUBE_DIR)
-        provider = CubeSourceProviderMock(cube.config, start_time=datetime(2001, 1, 1), end_time=datetime(2001, 2, 1))
-        cube.update(provider)
-        data = cube.data
-        lai_var = data.variable('LAI')
-        scalar = lai_var[3, 320, 720]
-        return scalar
-
     def test_update(self):
         cube = Cube.create(CUBE_DIR, CubeConfig())
         self.assertTrue(os.path.exists(CUBE_DIR))
