@@ -1,7 +1,5 @@
 import os
 
-from pyreadline import execfile
-
 try:
     import setuptools
 except ImportError:
