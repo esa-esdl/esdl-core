@@ -32,12 +32,11 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
     def compute_source_time_ranges(self):
         source_time_ranges = []
         for root, sub_dirs, files in os.walk(self.dir_path):
-            print(root)
             for file_name in files:
                 time_info = file_name.split('-', 1)[0]
 
                 time = self.day2date(int(time_info))
-                print(time)
+
                 if self.cube_config.start_time <= time <= self.cube_config.end_time:
                     file = os.path.join(root, file_name)
                     self.dataset_cache.get_dataset(file)
