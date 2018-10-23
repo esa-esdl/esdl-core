@@ -7,7 +7,7 @@ import numpy
 from esdl.cube_provider import CateCubeSourceProvider
 
 
-class CH4Provider(CateCubeSourceProvider):
+class CO2Provider(CateCubeSourceProvider):
     def __init__(self, cube_config, name='ozone', dir=None, resampling_order=None):
         super().__init__(cube_config, name, dir, resampling_order)
         self.old_indices = None
