@@ -95,7 +95,7 @@ setup(
             'lai_fapar_tip = esdl.providers.lai_fapar_tip:LaiFaparTipProvider',
             'albedo_avhrr = esdl.providers.albedo_avhrr:AlbedoAVHRRProvider',
             'ch4 = esdl.providers.ch4:CH4Provider',
-            'co2 = esdl.providers.co2.CO2Provider',
+            'co2 = esdl.providers.co2:CO2Provider',
         ],
     },
     # *Minimum* requirements
