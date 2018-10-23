@@ -58,7 +58,7 @@ target/
 
 # PyCharm / IDEA
 .idea
-.iml
+*.iml
 
 # Ignored ESDL (Data Cube) files
 *.nc
