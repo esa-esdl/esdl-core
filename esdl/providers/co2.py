@@ -15,7 +15,7 @@ class CO2Provider(CateCubeSourceProvider):
     @property
     def variable_descriptors(self):
         return {
-            'ozone': {
+            'xco2': {
                 'source_name': 'xco2',
                 'data_type': numpy.float64,
                 'fill_value': 1e+20,
@@ -79,3 +79,5 @@ class CO2Provider(CateCubeSourceProvider):
         :return: source_image
         """
         return source_image
+
+
