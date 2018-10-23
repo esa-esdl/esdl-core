@@ -15,7 +15,7 @@ class CH4Provider(CateCubeSourceProvider):
     @property
     def variable_descriptors(self):
         return {
-            'ozone': {
+            'xch4': {
                 'source_name': 'xch4',
                 'data_type': numpy.float64,
                 'fill_value': 1e+20,
