@@ -50,8 +50,7 @@ class AerosolsProvider(NetCDFCubeSourceProvider):
         :param source_image: 2D image
         :return: source_image
         """
-        #return numpy.flipud(source_image)
-        return source_image
+        return numpy.flipud(source_image)
 
     @staticmethod
     def day2date(times):
