@@ -12,8 +12,8 @@ from esdl.util import DatasetCache
 
 class CateDatasetCache(DatasetCache):
     """
-    :param name:
-    :param cache_base_dir:
+    :param name: A name for the cache.
+    :param cache_base_dir: Cache base directory. Defaults to ~/.esdl.
     """
 
     def __init__(self, name, cache_base_dir=None):
@@ -38,10 +38,14 @@ class CateDatasetCache(DatasetCache):
 
 class CateCubeSourceProvider(DatasetCubeSourceProvider[CateDatasetCache], metaclass=ABCMeta):
     """
-    :param cube_config:
-    :param name:
-    :param dir_path:
-    :param resampling_order:
+    This Cube Source Provider uses a NetCDFDatasetProvider dataset cache.
+
+    :param cube_config: Specifies the fixed layout and conventions used for the cube.
+    :param name: The provider's registration name.
+    :param dir_path: Source directory to read the files from. If relative path,
+           it will be resolved against the **cube_sources_root** path of the
+           global ESDL configuration (**esdl.util.Config.instance()**).
+    :param resampling_order: The order in which resampling is performed. One of 'time_first', 'space_first'.
     """
 
     def __init__(self, cube_config: CubeConfig, name: str, dir_path: str, resampling_order: str):

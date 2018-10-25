@@ -203,6 +203,10 @@ class DatasetCache(metaclass=ABCMeta):
 
 
 class NetCDFDatasetCache(DatasetCache):
+    """
+    :param name: A name for the cache.
+    :param cache_base_dir: Cache base directory. Defaults to ~/.esdl.
+    """
     def __init__(self, name, cache_base_dir=None):
         super(NetCDFDatasetCache, self).__init__(name, cache_base_dir=cache_base_dir)
 
