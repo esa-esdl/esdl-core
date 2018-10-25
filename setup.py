@@ -58,7 +58,7 @@ setup(
             'cube-gen = esdl.cube_gen:main',
         ],
         'cate_plugins': [
-            'cate_esdc = esdl.cate_plugin.esdc:cate_init',
+            'cate_esdc = esdl.cate.cube_read:cate_init',
         ],
         'esdl.source_providers': [
             'test = esdl.providers:TestCubeSourceProvider',
@@ -94,7 +94,6 @@ setup(
             'water_mask = esdl.providers.water_mask:WaterMaskProvider',
             'lai_fapar_tip = esdl.providers.lai_fapar_tip:LaiFaparTipProvider',
             'albedo_avhrr = esdl.providers.albedo_avhrr:AlbedoAVHRRProvider',
-            'ch4 = esdl.providers.ch4:CH4Provider',
         ],
     },
     # *Minimum* requirements
