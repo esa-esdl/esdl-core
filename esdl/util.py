@@ -10,7 +10,6 @@ from abc import abstractmethod, ABCMeta
 from datetime import datetime, timedelta
 
 import netCDF4
-import xarray
 import numpy
 
 
@@ -217,28 +216,6 @@ class NetCDFDatasetCache(DatasetCache):
     def open_dataset(self, real_file) -> netCDF4.Dataset:
         if os.path.isfile(real_file):
             return netCDF4.Dataset(real_file)
-        else:
-            print('Warning: Input file (\'%s\') does not exist!' %
-                  real_file)
-
-
-class XarrayDatasetCache(DatasetCache):
-    def __init__(self, name, cache_base_dir=None):
-        super().__init__(name, cache_base_dir=cache_base_dir)
-
-    def get_dataset_variable(self, file: str, name: str, time_index: int) -> numpy.ndarray:
-        var = self.get_dataset(file).variables[name]
-        if len(var.shape) == 3:
-            # need to slice in order to get the correct shape of teh return variable
-            var = var[time_index, :, :]
-            return numpy.ma.masked_invalid(var, copy=False)
-        else:
-            raise ValueError("Error: wrong dimension for xarray var. Should be 3 is " + str(len(var.shape)))
-
-    def open_dataset(self, real_file) -> xarray.Dataset:
-        import cate.ops
-        if os.path.isfile(real_file):
-            return cate.ops.read_netcdf(real_file)
         else:
             print('Warning: Input file (\'%s\') does not exist!' %
                   real_file)
