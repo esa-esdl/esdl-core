@@ -5,7 +5,8 @@ from netCDF4 import Dataset, date2num
 from numpy.random import uniform
 from datetime import timedelta
 
-from esdl.util import temporal_weight, NetCDFDatasetCache, XarrayDatasetCache
+from esdl.cate.cube_gen import CateDatasetCache
+from esdl.util import temporal_weight, NetCDFDatasetCache
 from esdl.util import resolve_temporal_range_index
 from esdl.util import aggregate_images
 
@@ -146,7 +147,7 @@ class UtilTest(unittest.TestCase):
     @unittest.skipUnless(module_exists("cate"), "Could not load cate. Skip dataset cache test.")
     def test_datasetcache(self):
         netcdf_cache = NetCDFDatasetCache('test')
-        xarray_cache = XarrayDatasetCache('test')
+        xarray_cache = CateDatasetCache('test')
 
         file_netcdf = generate_test_netcdf4(has_time=False, fn='test_netcdf.nc')
         file_xarray = generate_test_netcdf4(has_time=True, fn='test_xarray.nc')
