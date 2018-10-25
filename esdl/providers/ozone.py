@@ -4,10 +4,10 @@ from datetime import datetime
 import netCDF4
 import numpy
 
-from esdl.cube_provider import CateCubeSourceProvider
+from esdl.cube_provider import NetCDFCubeSourceProvider
 
 
-class OzoneProvider(CateCubeSourceProvider):
+class OzoneProvider(NetCDFCubeSourceProvider):
     def __init__(self, cube_config, name='ozone', dir=None, resampling_order=None):
         super(OzoneProvider, self).__init__(cube_config, name, dir, resampling_order)
         self.old_indices = None
