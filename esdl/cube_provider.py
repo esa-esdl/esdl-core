@@ -10,7 +10,7 @@ import numpy as np
 from typing import Tuple, Dict, Any, TypeVar, Generic, Union
 
 from .cube_config import CubeConfig
-from .util import Config, NetCDFDatasetCache, aggregate_images, temporal_weight, XarrayDatasetCache
+from .util import Config, NetCDFDatasetCache, aggregate_images, temporal_weight
 
 
 def _get_us_method(var_attributes):
@@ -535,53 +535,8 @@ class DatasetCubeSourceProvider(BaseCubeSourceProvider, Generic[C], metaclass=AB
         self._dataset_cache.close_all_datasets()
 
 
-class NetCDFCubeSourceProvider(DatasetCubeSourceProvider[NetCDFDatasetCache]):
+class NetCDFCubeSourceProvider(DatasetCubeSourceProvider[NetCDFDatasetCache], metaclass=ABCMeta):
     def __init__(self, cube_config: CubeConfig, name: str, dir_path: str, resampling_order: str):
         super().__init__(NetCDFDatasetCache(name), cube_config, name, dir_path, resampling_order)
 
-    def variable_descriptors(self) -> Dict[str, Dict[str, Any]]:
-        pass
 
-    def transform_source_image(self, source_image):
-        """
-        Returns the source image. Override to implement transformations if needed.
-        :param source_image: 2D image
-        :return: source_image
-        """
-        return source_image
-
-    def compute_source_time_ranges(self) -> list or None:
-        """
-        Return a sorted list of all time ranges of every source file.
-        Items in this list must be 4-element tuples of the form
-        (time_start: datetime, time_stop: datetime, file: str, time_index: int).
-        The method is called from the **prepare()** method in order to pre-compute all available time ranges.
-        This method must be implemented by derived classes.
-        """
-        return None
-
-
-class CateCubeSourceProvider(DatasetCubeSourceProvider[XarrayDatasetCache]):
-    def __init__(self, cube_config: CubeConfig, name: str, dir_path: str, resampling_order: str):
-        super().__init__(XarrayDatasetCache(name), cube_config, name, dir_path, resampling_order)
-
-    def variable_descriptors(self) -> Dict[str, Dict[str, Any]]:
-        pass
-
-    def transform_source_image(self, source_image: np.ndarray) -> np.ndarray:
-        """
-        Returns the source image. Override to implement transformations if needed.
-        :param source_image: 2D image
-        :return: source_image
-        """
-        return source_image
-
-    def compute_source_time_ranges(self) -> Union[list, None]:
-        """
-        Return a sorted list of all time ranges of every source file.
-        Items in this list must be 4-element tuples of the form
-        (time_start: datetime, time_stop: datetime, file: str, time_index: int).
-        The method is called from the **prepare()** method in order to pre-compute all available time ranges.
-        This method must be implemented by derived classes.
-        """
-        return None
