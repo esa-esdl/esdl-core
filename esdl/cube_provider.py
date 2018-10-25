@@ -423,6 +423,8 @@ class DatasetCubeSourceProvider(BaseCubeSourceProvider, Generic[C], metaclass=AB
     * Uses NetCDF source datasets read from a given **dir_path**
     * Performs temporal aggregation first and then spatial resampling
 
+    :param cache: C: Specifies the date cache type to be used. Can be CateDatasetCache or NetCDFDatasetCache
+           at this stage
     :param cube_config: Specifies the fixed layout and conventions used for the cube.
     :param name: The provider's registration name.
     :param dir_path: Source directory to read the files from. If relative path,
@@ -536,7 +538,18 @@ class DatasetCubeSourceProvider(BaseCubeSourceProvider, Generic[C], metaclass=AB
 
 
 class NetCDFCubeSourceProvider(DatasetCubeSourceProvider[NetCDFDatasetCache], metaclass=ABCMeta):
+    """
+    This Cube Source Provider uses a NetCDFDatasetProvider dataset cache.
+
+    :param cube_config: Specifies the fixed layout and conventions used for the cube.
+    :param name: The provider's registration name.
+    :param dir_path: Source directory to read the files from. If relative path,
+           it will be resolved against the **cube_sources_root** path of the
+           global ESDL configuration (**esdl.util.Config.instance()**).
+    :param resampling_order: The order in which resampling is performed. One of 'time_first', 'space_first'.
+    """
+
     def __init__(self, cube_config: CubeConfig, name: str, dir_path: str, resampling_order: str):
-        super().__init__(NetCDFDatasetCache(name), cube_config, name, dir_path, resampling_order)
+            super().__init__(NetCDFDatasetCache(name), cube_config, name, dir_path, resampling_order)
 
 
