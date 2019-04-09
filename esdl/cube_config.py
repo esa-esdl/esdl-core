@@ -6,9 +6,13 @@ import netCDF4
 
 #: The current version of the data cube's configuration and data model.
 #: The model version is incremented on every change of the cube's data model.
-CUBE_MODEL_VERSION = '1.0.2'
+CUBE_MODEL_VERSION = '2.0.1'
 
 CUBE_CHANGELOG = """
+version 2.0.1
+---------------
+* Switched to zarr data format
+
 
 version 1.0.2
 -------------
@@ -201,17 +205,6 @@ class CubeConfig:
         if model_version is None or model_version < CUBE_MODEL_VERSION:
             print('WARNING: outdated cube model version, current version is %s' % CUBE_MODEL_VERSION)
 
-    def store(self, path):
-        """
-        Store a CubeConfig in a text file.
-
-        :param path: The file's path name.
-        """
-        with open(path, 'w') as fp:
-            for name in self.__dict__:
-                if not (name.startswith('_') or name.endswith('_')):
-                    value = self.__dict__[name]
-                    fp.write('%s = %s\n' % (name, repr(value)))
 
     def _validate(self):
         if self.grid_x0 < 0:

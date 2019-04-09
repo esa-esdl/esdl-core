@@ -32,6 +32,7 @@ requirements = [
     'netCDF4',
     'numpy',
     'xarray',
+    'zarr',
 ]
 
 on_rtd = os.environ.get('READTHEDOCS') == 'True'

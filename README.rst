@@ -113,6 +113,7 @@ Production and test code dependencies
 * netCDF4  >= 1.2
 * numpy >= 1.9
 * gridtools
+* zarr
 
 
 
