@@ -125,7 +125,8 @@ class Cube:
             'standard_name' : 'time',
             'units'         : config.time_units,
             'calendar'      : config.calendar,
-            'bounds'        : 'time_bnds'
+            'bounds'        : 'time_bnds',
+            '_ARRAY_DIMENSIONS' : ['time'],
         }
         time_vals = [sn + temporal_res * (i + 0.5) for sn in start_nums for i in range(num_periods_per_year)]
         # times[-1] = var_time_bnds[-1,0] + (var_time_bnds[-1,1] - var_time_bnds[-1,0]) / 2.
@@ -138,6 +139,7 @@ class Cube:
             'standard_name' : 'longitude',
             'units'         : 'degrees_east',
             'bounds'        : 'lon_bnds',
+            '_ARRAY_DIMENSIONS' : ['lon'],
         }
         lon_bnds_attrs = {'units' : 'degrees_east'}
 
@@ -146,6 +148,7 @@ class Cube:
             'standard_name' : 'latitude',
             'units'         : 'degrees_north',
             'bounds'        : 'lat_bnds',
+            '_ARRAY_DIMENSIONS' : ['lat'],
         }
         
         lat_bnds_attrs = {'units' : 'degrees_north'}
@@ -199,6 +202,10 @@ class Cube:
                 configdict[k] = v
         
         z.attrs['cube.config'] = configdict
+        
+        z['time'].attrs.put(time_attrs)
+        z['lon'].attrs.put(lon_attrs)
+        z['lat'].attrs.put(lat_attrs)
         
         return Cube(base_dir, config)
 
@@ -265,7 +272,8 @@ class Cube:
                 time_1 = time_2
                 i0     = i0 + 1
         if len(imagecache) > 0: 
-            self._write_images(provider, datasets, imagecache, varnames, n_imagecache)  
+            self._write_images(provider, datasets, imagecache, varnames, n_imagecache)
+        provider.close()
                 
                 
     def _write_images(self, provider, datasets, imagecache, varnames, n_imagecache):
