@@ -60,10 +60,10 @@ class Cube:
     @property
     def data(self) -> CubeDataAccess:
         """
-        The cube's data which is a zarr group
+        The cube's data represented as an xarray dataset
         """
         if not self._data:
-            self._data = zarr.open_group(self.base_dir)
+            self._data = xr.open_zarr(self.base_dir)
         return self._data
 
     @staticmethod
@@ -78,8 +78,15 @@ class Cube:
 
         if not os.path.exists(base_dir):
             raise IOError('data cube base directory does not exists: %s' % base_dir)
-        config = CubeConfig.load(os.path.join(base_dir, 'cube.config'))
-        return Cube(base_dir, config)
+        zg = zarr.open_group(base_dir)
+        config = zg.attrs['cube.config']
+        for k in config.keys():
+            if k in ('start_time', 'end_time', 'ref_data'):
+                dt = datetime.strptime(config[k], '%Y-%m-%d %H:%M:%S')
+                config[k] = dt
+                
+        CubeConfig._ensure_compatible_config(config)
+        return Cube(base_dir, CubeConfig(**config))
 
     @staticmethod
     def create(base_dir, config=CubeConfig()):
@@ -107,15 +114,16 @@ class Cube:
         time_bnds_attrs = {
             'units'    : config.time_units,
             'calendar' : config.calendar,
+            '_ARRAY_DIMENSIONS' : ['time', 'bnds']
         }
         def correctub(sn,temporal_res,i,ntot):
             if i==(ntot-1):
-                sn+366
+                return sn+366
             else:
-                sn + temporal_res * (i + 1.0)
+                return sn + temporal_res * (i + 1.0)
 
         lower_bounds = [sn + temporal_res * (i + 0.0) for sn in start_nums for i in range(num_periods_per_year) ]
-        upper_bounds = [correctub(sn,temporal_res,i,num_periods_per_year) for sn in start_nums for i in range(num_periods_per_year) ]
+        upper_bounds = [correctub(sn,temporal_res,i,num_periods_per_year) for sn in start_nums for i in range(num_periods_per_year)]
         time_bnds_vals = np.zeros((len(lower_bounds),2))
         time_bnds_vals[:,0] = lower_bounds
         time_bnds_vals[:,1] = upper_bounds
@@ -141,7 +149,7 @@ class Cube:
             'bounds'        : 'lon_bnds',
             '_ARRAY_DIMENSIONS' : ['lon'],
         }
-        lon_bnds_attrs = {'units' : 'degrees_east'}
+        lon_bnds_attrs = {'units' : 'degrees_east', '_ARRAY_DIMENSIONS' : ['lon', 'bnds']}
 
         lat_attrs = {
             'long_name'     : 'latitude',
@@ -151,7 +159,7 @@ class Cube:
             '_ARRAY_DIMENSIONS' : ['lat'],
         }
         
-        lat_bnds_attrs = {'units' : 'degrees_north'}
+        lat_bnds_attrs = {'units' : 'degrees_north', '_ARRAY_DIMENSIONS': ['lat', 'bnds']}
 
         spatial_res = config.spatial_res
 
@@ -206,6 +214,9 @@ class Cube:
         z['time'].attrs.put(time_attrs)
         z['lon'].attrs.put(lon_attrs)
         z['lat'].attrs.put(lat_attrs)
+        z['time_bnds'].attrs.put(time_bnds_attrs)
+        z['lon_bnds'].attrs.put(lon_bnds_attrs)
+        z['lat_bnds'].attrs.put(lat_bnds_attrs)
         
         return Cube(base_dir, config)
 

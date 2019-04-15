@@ -2,7 +2,7 @@ import os
 import shutil
 from datetime import datetime
 from unittest import TestCase
-
+import zarr
 import numpy as np
 
 from esdl import CubeConfig, Cube
@@ -24,7 +24,12 @@ class CubeTest(TestCase):
     def test_update(self):
         cube = Cube.create(CUBE_DIR, CubeConfig())
         self.assertTrue(os.path.exists(CUBE_DIR))
-        self.assertTrue(os.path.exists(CUBE_DIR + '/CHANGELOG'))
+        self.assertTrue(os.path.exists(CUBE_DIR + '/.zgroup'))
+        # Test if group can be opened using zarr
+        g = zarr.open_group(CUBE_DIR)
+        
+        self.assertTrue(np.allclose(g["lat"][:],np.arange(89.875,-90,-0.25)))
+        self.assertTrue(np.allclose(g["lon"][:],np.arange(-179.875,180.0,0.25)))
 
         provider = CubeSourceProviderMock(cube.config, start_time=datetime(2001, 1, 1), end_time=datetime(2001, 2, 1))
         cube.update(provider)
@@ -35,14 +40,9 @@ class CubeTest(TestCase):
                           (datetime(2001, 1, 25, 0, 0), datetime(2001, 2, 2, 0, 0))],
                          provider.trace)
 
-        self.assertTrue(os.path.exists(CUBE_DIR + "/cube.config"))
-        self.assertTrue(os.path.exists(CUBE_DIR + "/data/LAI/2001_LAI.nc"))
-        self.assertTrue(os.path.exists(CUBE_DIR + "/data/FAPAR/2001_FAPAR.nc"))
-
-        cube.close()
-
-        with self.assertRaises(IOError):
-            cube.update(provider)
+        self.assertTrue(os.path.exists(CUBE_DIR + "/.zattrs"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/LAI/.zarray"))
+        self.assertTrue(os.path.exists(CUBE_DIR + "/FAPAR/.zarray"))
 
         cube2 = Cube.open(CUBE_DIR)
         self.assertEqual(cube.config.spatial_res, cube2.config.spatial_res)
@@ -61,91 +61,78 @@ class CubeTest(TestCase):
                           (datetime(2007, 1, 9, 0, 0), datetime(2007, 1, 17, 0, 0))],  # 8 days
                          provider.trace)
 
-        self.assertTrue(os.path.exists(CUBE_DIR + "/data/LAI/2006_LAI.nc"))
-        self.assertTrue(os.path.exists(CUBE_DIR + "/data/LAI/2007_LAI.nc"))
-        self.assertTrue(os.path.exists(CUBE_DIR + "/data/FAPAR/2006_FAPAR.nc"))
-        self.assertTrue(os.path.exists(CUBE_DIR + "/data/FAPAR/2007_FAPAR.nc"))
         from xarray import Variable
-        try:
-            data = cube2.data
-            self.assertIsNotNone(data)
-            self.assertEqual((2, 11 * 46, 720, 1440), data.shape)
-            self.assertEquals(['FAPAR', 'LAI'], data.variable_names)
+        data = cube2.data
+        self.assertIsNotNone(data)
+        self.assertEqual((11 * 46, 720, 1440), data['LAI'].shape)
+        self.assertTrue('FAPAR' in data.variables.keys())
+        self.assertTrue('LAI' in data.variables.keys())
 
-            lai_var = data.variable('LAI')
-            self.assert_cf_conformant_time_info(data, 'LAI')
-            self.assert_cf_conformant_geospatial_info(data, 'LAI')
-            self.assertIsNotNone(lai_var)
-            self.assertIs(lai_var, data['LAI'])
-            self.assertIs(lai_var, data[1])
-            self.assertIsInstance(lai_var, Variable)
-            self.assertIs(data.variable(1), data[1])
-            array = lai_var[:, :, :]
-            self.assertEqual(array.shape, (138, 720, 1440))
-            scalar = lai_var[3, 320, 720]
-            self.assertEqual(scalar.values, np.array(0.14, dtype=np.float32))
+        lai_var = data.variables['LAI']
+        self.assert_cf_conformant_time_info(data)
+        self.assert_cf_conformant_geospatial_info(data)
+        self.assertIsNotNone(lai_var)
+        self.assertIsInstance(lai_var, Variable)
+        array = lai_var[:, :, :]
+        self.assertEqual(array.shape, (506, 720, 1440))
+        scalar = lai_var[3, 320, 720]
+        self.assertEqual(scalar.values, np.array(0.14, dtype=np.float32))
 
-            fapar_var = data.variable('FAPAR')
-            self.assert_cf_conformant_time_info(data, 'FAPAR')
-            self.assert_cf_conformant_geospatial_info(data, 'FAPAR')
-            self.assertIsNotNone(fapar_var)
-            self.assertIs(fapar_var, data['FAPAR'])
-            self.assertIs(fapar_var, data[0])
-            self.assertIs(data.variable(0), data[0])
-            array = fapar_var[:, :, :]
-            self.assertEqual(array.shape, (138, 720, 1440))
-            scalar = fapar_var[3, 320, 720]
-            self.assertEqual(scalar.values, np.array(0.62, dtype=np.float32))
+        fapar_var = data.variables['FAPAR']
+        self.assert_cf_conformant_time_info(data)
+        self.assert_cf_conformant_geospatial_info(data)
+        self.assertIsNotNone(fapar_var)
+        array = fapar_var[:, :, :]
+        self.assertEqual(array.shape, (506, 720, 1440))
+        scalar = fapar_var[3, 320, 720]
+        self.assertEqual(scalar.values, np.array(0.62, dtype=np.float32))
 
-            result = data.get('FAPAR',
-                              [datetime(2001, 1, 1), datetime(2001, 2, 1)],
-                              [-90, 90],
-                              [-180, +180])
-            self.assertEqual(len(result), 1)
-            self.assertEqual(result[0].shape, (4, 720, 1440))
+        # The following tests are basically testing xarray functionality and are omitted
+#         result = data.get('FAPAR',
+#                             [datetime(2001, 1, 1), datetime(2001, 2, 1)],
+#                             [-90, 90],
+#                             [-180, +180])
+#         self.assertEqual(len(result), 1)
+#         self.assertEqual(result[0].shape, (4, 720, 1440))
 
-            result = data.get(['FAPAR', 'LAI'],
-                              [datetime(2001, 1, 1), datetime(2001, 2, 1)],
-                              [50.0, 60.0],
-                              [10.0, 30.0])
-            self.assertEqual(2, len(result))
-            self.assertEqual(result[0].shape, (4, 40, 80))
-            self.assertEqual(result[1].shape, (4, 40, 80))
+#         result = data.get(['FAPAR', 'LAI'],
+#                             [datetime(2001, 1, 1), datetime(2001, 2, 1)],
+#                             [50.0, 60.0],
+#                             [10.0, 30.0])
+#         self.assertEqual(2, len(result))
+#         self.assertEqual(result[0].shape, (4, 40, 80))
+#         self.assertEqual(result[1].shape, (4, 40, 80))
 
-            result, = data.get(1,
-                               datetime(2001, 1, 20),
-                               0,
-                               0)
-            self.assertEqual(result.shape, ())
-            self.assertEqual(result.values, np.array(0.13, dtype=np.float32))
+#         result, = data.get(1,
+#                             datetime(2001, 1, 20),
+#                             0,
+#                             0)
+#         self.assertEqual(result.shape, ())
+#         self.assertEqual(result.values, np.array(0.13, dtype=np.float32))
 
-            result, = data.get(0,
-                               datetime(2001, 1, 20),
-                               -12.6,
-                               5.9)
-            self.assertEqual(result.shape, ())
-            self.assertEqual(result, np.array(0.615, dtype=np.float32))
+#         result, = data.get(0,
+#                             datetime(2001, 1, 20),
+#                             -12.6,
+#                             5.9)
+#         self.assertEqual(result.shape, ())
+#         self.assertEqual(result, np.array(0.615, dtype=np.float32))
 
-            result = data.get((1, 0),
-                              datetime(2001, 1, 20),
-                              53.4,
-                              13.1)
-            self.assertEqual(len(result), 2)
-            self.assertEqual(result[0].shape, ())
-            self.assertEqual(result[1].shape, ())
-            self.assertEqual(result[0].values, np.array(0.13, dtype=np.float32))
-            self.assertEqual(result[1].values, np.array(0.615, dtype=np.float32))
-        finally:
-            cube2.close()
+#         result = data.get((1, 0),
+#                             datetime(2001, 1, 20),
+#                             53.4,
+#                             13.1)
+#         self.assertEqual(len(result), 2)
+#         self.assertEqual(result[0].shape, ())
+#         self.assertEqual(result[1].shape, ())
+#         self.assertEqual(result[0].values, np.array(0.13, dtype=np.float32))
+#         self.assertEqual(result[1].values, np.array(0.615, dtype=np.float32))
 
-    def assert_cf_conformant_time_info(self, data, var_name):
+    def assert_cf_conformant_time_info(self, data):
         P = 8.  # period = 8d
-        L = 138  # num periods
+        L = 506  # num periods
 
-        ds = data.dataset(var_name)
-
-        self.assertIn('time', ds.variables)
-        time_var = ds.variables['time']
+        self.assertIn('time', data.variables)
+        time_var = data.variables['time']
         self.assertEqual(time_var.attrs['long_name'], 'time')
         self.assertEqual(time_var.attrs['standard_name'], 'time')
         self.assertEqual(time_var.attrs['bounds'], 'time_bnds')
@@ -154,27 +141,25 @@ class CubeTest(TestCase):
         self.assertEqual(time_var.shape, (L,))
         # for i in range(L):
         #    print(i, i / P, time_var[i])
-        self.assertEqual(time_var.values[0], np.datetime64('2001-01-05T01:00:00.000000000+0100'))
-        self.assertEqual(time_var.values[46], np.datetime64('2006-01-05T01:00:00.000000000+0100'))
-        self.assertIn('time_bnds', ds.variables)
-        time_bnds_var = ds.variables['time_bnds']
+        self.assertEqual(time_var.values[0], np.datetime64('2001-01-05T00:00:00'))
+        self.assertEqual(time_var.values[46], np.datetime64('2002-01-05T00:00:00'))
+        self.assertIn('time_bnds', data.variables)
+        time_bnds_var = data.variables['time_bnds']
         # self.assertEqual(time_bnds_var.calendar, 'gregorian')
         # self.assertEqual(time_bnds_var.units, 'days since 2001-01-01 00:00')
         self.assertEqual(time_bnds_var.shape, (L, 2), )
-        self.assertEqual(time_bnds_var.values[0, 0], np.datetime64('2001-01-01T01:00:00.000000000+0100'))
-        self.assertEqual(time_bnds_var.values[0, 1], np.datetime64('2001-01-09T01:00:00.000000000+0100'))
+        self.assertEqual(time_bnds_var.values[0, 0], np.datetime64('2001-01-01T00:00:00'))
+        self.assertEqual(time_bnds_var.values[0, 1], np.datetime64('2001-01-09T00:00:00'))
 
-    def assert_cf_conformant_geospatial_info(self, data, var_name):
+    def assert_cf_conformant_geospatial_info(self, data):
         W = 1440  # width in lon
         H = 720  # height in lat
 
         RES = 360.0 / W
         RES05 = 0.5 * RES
 
-        ds = data.dataset(var_name)
-
-        self.assertIn('lat', ds.variables)
-        lat_var = ds.variables['lat']
+        self.assertIn('lat', data.variables)
+        lat_var = data.variables['lat']
         self.assertEqual(lat_var.attrs['long_name'], 'latitude')
         self.assertEqual(lat_var.attrs['standard_name'], 'latitude')
         self.assertEqual(lat_var.attrs['units'], 'degrees_north')
@@ -183,8 +168,8 @@ class CubeTest(TestCase):
         self.assertEqual(+90. - RES05, lat_var[0])
         self.assertEqual(-90. + RES05, lat_var[H - 1])
 
-        self.assertIn('lon', ds.variables)
-        lon_var = ds.variables['lon']
+        self.assertIn('lon', data.variables)
+        lon_var = data.variables['lon']
         self.assertEqual(lon_var.attrs['long_name'], 'longitude')
         self.assertEqual(lon_var.attrs['standard_name'], 'longitude')
         self.assertEqual(lon_var.attrs['units'], 'degrees_east')
@@ -193,8 +178,8 @@ class CubeTest(TestCase):
         self.assertEqual(-180. + RES05, lon_var.values[0])
         self.assertEqual(+180. - RES05, lon_var.values[W - 1])
 
-        self.assertIn('lat_bnds', ds.variables)
-        lat_bnds_var = ds.variables['lat_bnds']
+        self.assertIn('lat_bnds', data.variables)
+        lat_bnds_var = data.variables['lat_bnds']
         self.assertEqual(lat_bnds_var.attrs['units'], 'degrees_north')
         self.assertEqual((H, 2), lat_bnds_var.shape)
         self.assertEqual(+90. - RES, lat_bnds_var.values[0, 0])
@@ -202,8 +187,8 @@ class CubeTest(TestCase):
         self.assertEqual(-90., lat_bnds_var.values[H - 1, 0])
         self.assertEqual(-90. + RES, lat_bnds_var.values[H - 1, 1])
 
-        self.assertIn('lon_bnds', ds.variables)
-        lon_bnds = ds.variables['lon_bnds']
+        self.assertIn('lon_bnds', data.variables)
+        lon_bnds = data.variables['lon_bnds']
         self.assertEqual(lon_bnds.attrs['units'], 'degrees_east')
         self.assertEqual((W, 2), lon_bnds.shape)
         self.assertEqual(-180., lon_bnds[0, 0])
