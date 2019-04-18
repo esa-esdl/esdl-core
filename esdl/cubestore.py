@@ -28,39 +28,39 @@ import zarr
 
 
 class CubesStore:
-    client_kwargs = {'endpoint_url': "https://obs.eu-de.otc.t-systems.com", 'region_name': "eu-de"}
-    s3 = s3fs.S3FileSystem(anon=True, client_kwargs=client_kwargs)
-
-    with s3.open('obs-esdc-configs/datacube_paths.json') as json_data_file:
-        _CUBE_CONFIG = json.load(json_data_file)
 
     def __init__(self):
+        client_kwargs = {'endpoint_url': "https://obs.eu-de.otc.t-systems.com", 'region_name': "eu-de"}
+        s3 = s3fs.S3FileSystem(anon=True, client_kwargs=client_kwargs)
+
+        with s3.open('obs-esdc-configs/datacube_paths.json') as json_data_file:
+            self._cube_config = json.load(json_data_file)
         self._dataset_cache = dict()
 
     def _repr_html_(self):
         html = ""
-        for name, props in self._CUBE_CONFIG.items():
+        for name, props in self._cube_config.items():
             description = props["description"]
-            html += ("<tr><td>%s</td><td>%s</td></tr>" % (str(name), str(description)))
+            html += f"<tr><td>{name}</td><td>{description}</td></tr>"
 
         return "<table>" + html + "</table>"
 
     def __getattr__(self, name: str) -> Any:
-        if name in self._CUBE_CONFIG:
+        if name in self._cube_config:
             if name in self._dataset_cache:
                 return self._dataset_cache[name]
             else:
 
-                dataset_descriptor = self._CUBE_CONFIG[name]
+                dataset_descriptor = self._cube_config[name]
                 fs_type = dataset_descriptor.get("FileSystem", "local")
                 path = dataset_descriptor.get('Path')
 
                 if not path:
-                    print("Missing 'path' entry in dataset descriptor")
+                    print(f"Missing 'path' entry in dataset descriptor")
                 if fs_type == 'obs':
                     data_format = dataset_descriptor.get('Format', 'zarr')
                     if data_format != 'zarr':
-                        print("Invalid format=%s in dataset descriptor" % data_format)
+                        print(f"Invalid format={data_format!r} in dataset descriptor ")
                     client_kwargs = {}
                     if 'Endpoint' in dataset_descriptor:
                         client_kwargs['endpoint_url'] = dataset_descriptor['Endpoint']
@@ -79,7 +79,7 @@ class CubesStore:
                     elif data_format == 'zarr':
                         ds = xr.open_zarr(path)
                     else:
-                        print("Invalid format=%s in dataset descriptor" % data_format)
+                        print(f"Invalid format={data_format!r} in dataset descriptor")
                 self._dataset_cache[name] = ds
             return ds
         return super().__getattribute__(name)
