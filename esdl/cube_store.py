@@ -25,16 +25,21 @@ from typing import Any
 import s3fs
 import xarray as xr
 import zarr
+import urllib
 
 
 class CubesStore:
 
-    def __init__(self):
-        client_kwargs = {'endpoint_url': "https://obs.eu-de.otc.t-systems.com", 'region_name': "eu-de"}
-        s3 = s3fs.S3FileSystem(anon=True, client_kwargs=client_kwargs)
+    def __init__(self, config: str):
 
-        with s3.open('obs-esdc-configs/datacube_paths.json') as json_data_file:
-            self._cube_config = json.load(json_data_file)
+        if "http://" in config or "https://" in config:
+            with urllib.request.urlopen(config) as json_data_file:
+                self._cube_config = json.load(json_data_file)
+
+        elif os.path.isfile(config):
+            with open(config) as json_data_file:
+                self._cube_config = json.load(json_data_file)
+
         self._dataset_cache = dict()
 
     def _repr_html_(self):
@@ -85,4 +90,3 @@ class CubesStore:
         return super().__getattribute__(name)
 
 
-store = CubesStore()
