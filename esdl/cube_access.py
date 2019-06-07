@@ -170,8 +170,10 @@ class CubeDataAccess:
         lon_1, lon_2 = self._get_lon_range(longitude)
 
         config = self._cube_config
-        time_index_1 = int(math.floor(((time_1 - config.ref_time) / timedelta(days=config.temporal_res))))
-        time_index_2 = int(math.floor(((time_2 - config.ref_time) / timedelta(days=config.temporal_res))))
+        time_index_1 = int(math.floor(
+            ((time_1 - config.ref_time) / timedelta(days=config.temporal_res))))
+        time_index_2 = int(math.floor(
+            ((time_2 - config.ref_time) / timedelta(days=config.temporal_res))))
         grid_y1 = int(round((90.0 - lat_2) / (180 / config.grid_height))) - config.grid_y0
         grid_y2 = int(round((90.0 - lat_1) / (180 / config.grid_height))) - config.grid_y0
         grid_x1 = int(round((180.0 + lon_1) / (360 / config.grid_width))) - config.grid_x0
@@ -191,8 +193,10 @@ class CubeDataAccess:
             grid_x21 = 0
             grid_x22 = grid_x2
             # TODO (forman, 20151102) - Handle data requests intersecting the dateline, see issue #15
-            print('dateline intersection! grid_x: %d-%d, %d-%d' % (grid_x11, grid_x12, grid_x21, grid_x22))
-            raise ValueError('illegal longitude: %s: dateline intersection not yet implemented' % longitude)
+            print('dateline intersection! grid_x: %d-%d, %d-%d' %
+                  (grid_x11, grid_x12, grid_x21, grid_x22))
+            raise ValueError(
+                'illegal longitude: %s: dateline intersection not yet implemented' % longitude)
 
         # TODO (forman, 20151102) - Fill in NaN, where a variable does not provide any data, see issue #17
         result = []

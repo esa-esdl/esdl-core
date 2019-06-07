@@ -69,7 +69,8 @@ def main(args=None):
     cube-gen "esdc-31d-1deg-1x180x360-1.0.1_1" "evaporative_stress:dir=data-source/evaporative_stress:var=S"
     cube-gen "esdc-31d-1deg-1x180x360-1.0.1_1" "soil_moisture:dir=data-source/ECV_sm:resampling_order=space_first"
     """
-    parser = argparse.ArgumentParser(description='Generates a new ESDL data cube or updates an existing one.')
+    parser = argparse.ArgumentParser(
+        description='Generates a new ESDL data cube or updates an existing one.')
     parser.add_argument('-l', '--list', action='store_true',
                         help="list all available source providers")
     parser.add_argument('-G', '--dont-clear-cache', action='store_true',
@@ -105,7 +106,8 @@ def main(args=None):
                 parser.error(source_error_msg)
             source_class = SOURCE_PROVIDERS.get(source_name)
             if source_class:
-                source_provider_infos.append((source_name, source_class, source_args, source_kwargs))
+                source_provider_infos.append(
+                    (source_name, source_class, source_args, source_kwargs))
             else:
                 parser.error("no source provider installed with name '%s'" % source_name)
 
