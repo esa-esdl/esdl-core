@@ -38,7 +38,7 @@ on_rtd = os.environ.get('READTHEDOCS') == 'True'
 if on_rtd:
     # On READTHEDOCS, all dependencies are mocked (except tornado)
     # see doc/source/conf.py and readthedocs-env.yml
-    requirements = ['gridtools']
+    requirements = ['gridtools', 'xarray', 'zarr', 's3fs']
 
 packages = find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
 

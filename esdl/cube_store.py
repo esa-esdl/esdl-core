@@ -30,11 +30,11 @@ import urllib
 
 class CubesStore:
 
-    def __init__(self, config: str):
+    def __init__(self, config: str = 'https://obs-esdc-configs.obs.eu-de.otc.t-systems.com/datacube_paths.json'):
 
         if "http://" in config or "https://" in config:
-            with urllib.request.urlopen(config) as json_data_file:
-                self._cube_config = json.load(json_data_file)
+            with urllib.request.urlopen(config) as response:
+                self._cube_config = json.loads(response.read().decode("utf-8", "strict"))
 
         elif os.path.isfile(config):
             with open(config) as json_data_file:
@@ -46,9 +46,20 @@ class CubesStore:
         html = ""
         for name, props in self._cube_config.items():
             description = props["description"]
-            html += f"<tr><td>{name}</td><td>{description}</td></tr>"
+            html += "<tr><td>" + name + "</td><td>" + description + "</td></tr>"
 
         return "<table>" + html + "</table>"
+
+    def __str__(self):
+        html = ""
+        for name, props in self._cube_config.items():
+            description = props["description"]
+            html += "<tr><td>" + name + "</td><td>" + description + "</td></tr>"
+
+        return "<table>" + html + "</table>"
+
+    def __getitem__(self, item):
+        return self.__getattr__(item)
 
     def __getattr__(self, name: str) -> Any:
         if name in self._cube_config:
@@ -61,11 +72,11 @@ class CubesStore:
                 path = dataset_descriptor.get('Path')
 
                 if not path:
-                    print(f"Missing 'path' entry in dataset descriptor")
+                    print("Missing 'path' entry in dataset descriptor")
                 if fs_type == 'obs':
                     data_format = dataset_descriptor.get('Format', 'zarr')
                     if data_format != 'zarr':
-                        print(f"Invalid format={data_format!r} in dataset descriptor ")
+                        print("Invalid format=" + data_format + "!r} in dataset descriptor ")
                     client_kwargs = {}
                     if 'Endpoint' in dataset_descriptor:
                         client_kwargs['endpoint_url'] = dataset_descriptor['Endpoint']
@@ -84,7 +95,7 @@ class CubesStore:
                     elif data_format == 'zarr':
                         ds = xr.open_zarr(path)
                     else:
-                        print(f"Invalid format={data_format!r} in dataset descriptor")
+                        print("Invalid format=" + data_format + "!r} in dataset descriptor")
                 self._dataset_cache[name] = ds
             return ds
         return super().__getattribute__(name)
