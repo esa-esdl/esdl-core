@@ -4,24 +4,23 @@ channels:
   - cablab
   - ioos
 dependencies:
-  - dask=0.14.1
-  - gridtools=0.4.1
-  - h5netcdf=0.2.2
-  - h5py=2.6.0
-  - llvmlite=0.13.0
-  - netcdf4=1.2.2
-  - numba=0.28.1
-  - pandas=0.19.0
-  - pip=9.0.1
-  - python-dateutil=2.5.3
-  - pytz=2016.6.1
-  - scikit-image=0.12.3
-  - setuptools=27.2.0
-  - six=1.10.0
-  - wheel=0.29.0
-  - xarray=0.10.3
-  - zarr=2.2.0
-  - s3fs=0.2.1
+  - dask
+  - gridtools
+  - h5netcdf
+  - h5py
+  - llvmlite
+  - netcdf4
+  - numba
+  - pandas
+  - python-dateutil
+  - pytz
+  - scikit-image
+  - setuptools
+  - six
+  - wheel
+  - xarray
+  - zarr
+  - s3fs
   #
   # for testing only
   #

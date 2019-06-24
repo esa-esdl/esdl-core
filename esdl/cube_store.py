@@ -35,10 +35,11 @@ class CubesStore:
         if "http://" in config or "https://" in config:
             with urllib.request.urlopen(config) as response:
                 self._cube_config = json.loads(response.read().decode("utf-8", "strict"))
-
         elif os.path.isfile(config):
             with open(config) as json_data_file:
                 self._cube_config = json.load(json_data_file)
+        else:
+            raise FileNotFoundError('Cannot open ' + config + '.')
 
         self._dataset_cache = dict()
 

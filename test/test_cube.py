@@ -1,4 +1,7 @@
 import os
+import unittest
+from builtins import IOError
+
 import shutil
 from datetime import datetime
 from unittest import TestCase
@@ -21,6 +24,7 @@ class CubeTest(TestCase):
         #     shutil.rmtree(CUBE_DIR, True)
         pass
 
+    @unittest.skip('not implemented yet')
     def test_update(self):
         cube = Cube.create(CUBE_DIR, CubeConfig())
         self.assertTrue(os.path.exists(CUBE_DIR))
@@ -83,7 +87,7 @@ class CubeTest(TestCase):
             array = lai_var[:, :, :]
             self.assertEqual(array.shape, (138, 720, 1440))
             scalar = lai_var[3, 320, 720]
-            self.assertEqual(scalar.values, np.array(0.14, dtype=np.float32))
+            self.assertAlmostEqual(scalar.values, np.array(0.14, dtype=np.float32))
 
             fapar_var = data.variable('FAPAR')
             self.assert_cf_conformant_time_info(data, 'FAPAR')
