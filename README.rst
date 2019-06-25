@@ -16,6 +16,7 @@ Components
 
 * ``esdl`` - Public ESDL API
 * ``esdl.cube`` - Data Cube Generation and Access (protected, public parts expr)
+* ``esdl.cube_store`` - Access to Data Cubes in Object Storage via a configuration file
 * ``esdl.cube_cli`` - Command-line interface (protected)
 * ``esdl.util`` - Common utility functions (protected)
 
@@ -97,6 +98,22 @@ To generate a default data cube with a 0.25 degree resolution and variables 'Bur
 It's usage is::
 
     > cube-gen <cube-dir> [<provider-key>:dir=<source-path> ...]
+
+How to access the cube store in jupyter notebook
+-------------------------------------------------
+
+Import ``esdl.cube_store`` in your jupyter notebook::
+
+    from esdl.cube_store import CubesStore
+
+
+Then set the path to your configuration file, which contains details about the data cubes. e.g.::
+
+    config = 'https://obs-esdc-configs.obs.eu-de.otc.t-systems.com/datacube_paths.json'
+
+To access different functions provided by the CubeStore write::
+
+    CubesStore(config)
 
 ------------
 Dependencies

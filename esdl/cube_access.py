@@ -325,7 +325,7 @@ class CubeDataAccess:
         # Convert specific data variables to coordinate variables
         for var_name in EXTRA_COORDS_VAR_NAMES:
             if var_name in ds.data_vars:
-                ds.set_coords(var_name, inplace=True)
+                ds.set_coords(var_name)
         # print(ds)
         return ds
 
