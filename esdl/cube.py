@@ -2,6 +2,7 @@ import math
 import os
 from datetime import datetime, timedelta
 
+import warnings
 import netCDF4
 import numpy as np
 import esdl
@@ -79,11 +80,13 @@ class Cube:
         if not os.path.exists(base_dir):
             raise IOError('data cube base directory does not exists: %s' % base_dir)
         zg = zarr.open_group(base_dir)
+
+        #Construct a CubeConfig object from the zarr attributes.
+        #datetime values have to be parsed
         config = zg.attrs['cube.config']
-        for k in config.keys():
-            if k in ('start_time', 'end_time', 'ref_data'):
-                dt = datetime.strptime(config[k], '%Y-%m-%d %H:%M:%S')
-                config[k] = dt
+        for k in ('start_time', 'end_time', 'ref_time'):
+            dt = datetime.strptime(config[k], '%Y-%m-%d %H:%M:%S')
+            config[k] = dt
 
         CubeConfig._ensure_compatible_config(config)
         return Cube(base_dir, CubeConfig(**config))
@@ -184,27 +187,28 @@ class Cube:
             lat_bnds_vals[i, 0] = lat - spatial_res
             lat_bnds_vals[i, 1] = lat
 
-        time_dim = ('time', time_vals)
-        lat_dim = ('lat', lat_vals)
-        lon_dim = ('lon', lon_vals)
-
-        time_bnds_var = xr.DataArray(time_bnds_vals, coords={
-                                     'time': time_dim, 'bnds': bndsdim}, dims=['time', 'bnds'])
-        lat_bnds_var = xr.DataArray(lat_bnds_vals, coords={
-                                    'lat': lat_dim, 'bnds': bndsdim}, dims=['lat', 'bnds'])
-        lon_bnds_var = xr.DataArray(lon_bnds_vals, coords={
-                                    'lon': lon_dim, 'bnds': bndsdim}, dims=['lon', 'bnds'])
-
-        ds = xr.Dataset({'time_bnds': time_bnds_var,
-                         'lat_bnds': lat_bnds_var,
-                         'lon_bnds': lon_bnds_var,
+        ds = xr.Dataset(coords = {
+                         'time': time_vals,
+                         'lat' : lat_vals,
+                         'lon' : lon_vals,
+                         'time_bnds': (['time', 'bnds'], time_bnds_vals),
+                         'lat_bnds': (['lat', 'bnds'], lat_bnds_vals),
+                         'lon_bnds': (['lon', 'bnds'], lon_bnds_vals),
                          })
+
+        ds.attrs['CHANGELOG'] = CUBE_CHANGELOG
+
+        ds.coords['time'].attrs.update(time_attrs)
+        ds.coords['lon'].attrs.update(lon_attrs)
+        ds.coords['lat'].attrs.update(lat_attrs)
+        ds.coords['time_bnds'].attrs.update(time_bnds_attrs)
+        ds.coords['lon_bnds'].attrs.update(lon_bnds_attrs)
+        ds.coords['lat_bnds'].attrs.update(lat_bnds_attrs)
 
         dsz = ds.to_zarr(base_dir)
 
-        # Write group attributes
-        z = zarr.open_group(base_dir)
-        z.attrs['CHANGELOG'] = CUBE_CHANGELOG
+        #Write the cubeconfig attribute directly to zarr because this is a nested
+        #dict and not NetCDF compatible, so xarray won't accept this
         configdict = {}
 
         # Convert datetimes to string for JSON repr
@@ -214,16 +218,13 @@ class Cube:
             else:
                 configdict[k] = v
 
+        z = zarr.open_group(base_dir)
         z.attrs['cube.config'] = configdict
 
-        z['time'].attrs.put(time_attrs)
-        z['lon'].attrs.put(lon_attrs)
-        z['lat'].attrs.put(lat_attrs)
-        z['time_bnds'].attrs.put(time_bnds_attrs)
-        z['lon_bnds'].attrs.put(lon_bnds_attrs)
-        z['lat_bnds'].attrs.put(lat_bnds_attrs)
-
         return Cube(base_dir, config)
+
+    def close(self):
+        warnings.warn("This function is deprecated. Zarr cubes do not have to be closed.", DeprecationWarning)
 
     def update(self, provider: 'CubeSourceProvider', n_imagecache=10):
         """
