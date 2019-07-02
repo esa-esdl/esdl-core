@@ -167,25 +167,19 @@ class Cube:
 
         lat_bnds_attrs = {'units': 'degrees_north', '_ARRAY_DIMENSIONS': ['lat', 'bnds']}
 
-        spatial_res = config.spatial_res
-
-        lon0 = config.easting
         lon_vals = np.zeros(config.grid_width)
         lon_bnds_vals = np.zeros((config.grid_width, 2))
-        for i in range(config.grid_width):
-            lon = lon0 + i * spatial_res
-            lon_vals[i] = lon + 0.5 * spatial_res
-            lon_bnds_vals[i, 0] = lon
-            lon_bnds_vals[i, 1] = lon + spatial_res
+        lon_breakpoints = np.linspace(config.lon0, config.lon1, config.grid_width+1, True)
+        lon_bnds_vals[:, 0] = lon_breakpoints[0:config.grid_width]
+        lon_bnds_vals[:, 1] = lon_breakpoints[1:config.grid_width+1]
+        lon_vals            = (lon_bnds_vals[:, 0] + lon_bnds_vals[:, 1])/2
 
-        lat0 = config.northing
         lat_vals = np.zeros(config.grid_height)
         lat_bnds_vals = np.zeros((config.grid_height, 2))
-        for i in range(config.grid_height):
-            lat = lat0 - i * spatial_res
-            lat_vals[i] = lat - 0.5 * spatial_res
-            lat_bnds_vals[i, 0] = lat - spatial_res
-            lat_bnds_vals[i, 1] = lat
+        lat_breakpoints = np.linspace(config.lat0, config.lat1, config.grid_height+1, True)
+        lat_bnds_vals[:, 0] = lat_breakpoints[0:config.grid_height]
+        lat_bnds_vals[:, 1] = lat_breakpoints[1:config.grid_height+1]
+        lat_vals            = (lat_bnds_vals[:, 0] + lat_bnds_vals[:, 1])/2
 
         ds = xr.Dataset(coords = {
                          'time': time_vals,
@@ -226,7 +220,7 @@ class Cube:
     def close(self):
         warnings.warn("This function is deprecated. Zarr cubes do not have to be closed.", DeprecationWarning)
 
-    def update(self, provider: 'CubeSourceProvider', n_imagecache=10):
+    def update(self, provider: 'CubeSourceProvider', n_imagecache=12):
         """
         Updates the data cube with source data from the given image provider.
 
@@ -271,6 +265,7 @@ class Cube:
             time_max = datetime(target_year + 1, 1, 1)
             d_time = timedelta(days=cube_temporal_res)
             time_1 = time_min
+            print(num_periods_per_year)
             for time_index in range(num_periods_per_year):
                 time_2 = time_1 + d_time
                 if time_2 > time_max:
@@ -281,8 +276,11 @@ class Cube:
                     var_name_to_image = provider.compute_variable_images(time_1, time_2)
                     if var_name_to_image:
                         imagecache.append((i0, var_name_to_image))
+                print("t1: ", time_1, " t2: ", time_2)
                 if i0-ilast >= n_imagecache:
+                    print("i0 ilast", i0, ilast)
                     if len(imagecache) > 0:
+                        print(datasets)
                         self._write_images(provider, datasets, imagecache, varnames, n_imagecache)
                     imagecache = []
                     ilast = i0
@@ -353,7 +351,6 @@ class Cube:
             'history': time.ctime(time.time()) + ' - ESDL data cube generation',
             'northing': '%s degrees' % self.config.northing,
             'easting': '%s degrees' % self.config.easting,
-            'spatial_res': '%s degrees' % self.config.spatial_res,
             'source_attributes': source_attributes,
             # This is actually mangling with xarray-internals to tell xarray about the dimension variables
             # This will have to change in the future, once there is something like a NetZDF zarr extension
