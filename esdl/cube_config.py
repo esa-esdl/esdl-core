@@ -223,17 +223,6 @@ class CubeConfig:
 
 
     def _validate(self):
-
-        lat1 = self.lat1
-        lat2 = self.lat0
-        if lat1 >= lat2 or lat1 < -90 or lat1 > 90 or lat2 < -90 or lat2 > 90:
-            raise ValueError('illegal combination of grid_y0, grid_height, spatial_res values')
-
-        lon1 = self.lon0
-        lon2 = self.lon1
-        if lon1 >= lon2 or lon1 < -180 or lon1 > 180 or lon2 < -180 or lon2 > 180:
-            raise ValueError('illegal combination of grid_x0, grid_width, spatial_res values')
-
         if self.chunk_sizes is not None and len(self.chunk_sizes) != 3:
             raise ValueError('chunk_sizes must be a sequence of three integers: <time-size>, <lat-size>, <lon-size>')
 
