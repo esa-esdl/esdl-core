@@ -25,7 +25,7 @@ from typing import Any
 import s3fs
 import xarray as xr
 import zarr
-import urllib
+from urllib import request
 
 
 class CubeStore:
@@ -33,7 +33,7 @@ class CubeStore:
     def __init__(self, config: str = 'https://obs-esdc-configs.obs.eu-de.otc.t-systems.com/datacube_paths.json'):
 
         if "http://" in config or "https://" in config:
-            with urllib.request.urlopen(config) as response:
+            with request.urlopen(config) as response:
                 self._cube_config = json.loads(response.read().decode("utf-8", "strict"))
         elif os.path.isfile(config):
             with open(config) as json_data_file:
@@ -106,5 +106,5 @@ class CubeStore:
 class CubesStore(CubeStore):
     def __init__(self, config: str = 'https://obs-esdc-configs.obs.eu-de.otc.t-systems.com/datacube_paths.json'):
         super().__init__(config)
-        print(DeprecationWarning("CubesStore() has been renamed; use CubeStore()."))
+        print(DeprecationWarning("CubesStore has been renamed. Please use CubeStore in teh future."))
 

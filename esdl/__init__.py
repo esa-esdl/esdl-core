@@ -28,6 +28,10 @@ from .cube_config import CubeConfig
 # from .cube_provider import NetCDFStaticCubeSourceProvider
 # from .cube_provider import TestCubeSourceProvider
 
+from .cube_store import CubeStore
+from .cube_store import CubesStore
+from .cube_provider import CubeSourceProvider
+
 __author__ = 'Brockmann Consult GmbH'
 
 __all__ = [
@@ -39,5 +43,7 @@ __all__ = [
     'CUBE_MODEL_VERSION',
     'Cube',
     'CubeConfig',
+    'CubeStore',
+    'CubesStore',
     'CubeSourceProvider',
 ]
