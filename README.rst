@@ -15,7 +15,7 @@ Components
 ----------
 
 * ``esdl`` - Public ESDL API
-* ``esdl.cube`` - Data Cube Generation and Access (protected, public parts expr)
+* ``esdl.cube`` - Deprecated! Please use xarray and the cube_store instead. -- Data Cube Generation and Access (protected, public parts expr)
 * ``esdl.cube_store`` - Access to Data Cubes in Object Storage via a configuration file
 * ``esdl.cube_cli`` - Command-line interface (protected)
 * ``esdl.util`` - Common utility functions (protected)
