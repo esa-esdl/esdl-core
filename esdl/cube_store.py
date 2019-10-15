@@ -100,5 +100,3 @@ class CubesStore:
                 self._dataset_cache[name] = ds
             return ds
         return super().__getattribute__(name)
-
-

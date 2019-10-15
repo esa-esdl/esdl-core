@@ -10,11 +10,12 @@ which are used to represent the ESDC data.
 
 import xarray as xr
 
+
 def corrcf(ds, var1=None, var2=None, dim='time'):
     '''
     Function calculating the correlation coefficient of two variables **var1** and **var2** in one `xarray.Dataset`_
     **ds**.
-    
+
     :param ds: an `xarray.Dataset`_
     :param var1: Variable 1
     :param var2: Variable 2, both have to be of identical size
@@ -43,7 +44,7 @@ def corrcf(ds, var1=None, var2=None, dim='time'):
 def map_plot(ds, var=None, time=0, title_str='No title', projection='kav7', lon_0=0, resolution=None, **kwargs):
     '''
     Function plotting a projected map for a variable **var** in `xarray.Dataset`_ **ds**.
-    
+
     :param ds: an `xarray.Dataset`_
     :param var: variable to plot
     :param time: time step or datetime date to plot
@@ -89,7 +90,8 @@ def map_plot(ds, var=None, time=0, title_str='No title', projection='kav7', lon_
     m.drawmapboundary(fill_color='0.3')
     ccmap = plt.cm.jet
     ccmap.set_bad("gray", 1.)
-    im = m.pcolormesh(lons, lats, ma_res, shading='flat', cmap=ccmap, latlon=True, vmin=vmin, vmax=vmax, **kwargs)
+    im = m.pcolormesh(lons, lats, ma_res, shading='flat', cmap=ccmap,
+                      latlon=True, vmin=vmin, vmax=vmax, **kwargs)
     # lay-out
     m.drawparallels(np.arange(-90., 99., 30.))
     m.drawmeridians(np.arange(-180., 180., 60.))

@@ -32,10 +32,11 @@ class CubeTest(TestCase):
         # Test if group can be opened using zarr
         g = zarr.open_group(CUBE_DIR)
 
-        self.assertTrue(np.allclose(g["lat"][:],np.arange(89.875,-90,-0.25)))
-        self.assertTrue(np.allclose(g["lon"][:],np.arange(-179.875,180.0,0.25)))
+        self.assertTrue(np.allclose(g["lat"][:], np.arange(89.875, -90, -0.25)))
+        self.assertTrue(np.allclose(g["lon"][:], np.arange(-179.875, 180.0, 0.25)))
 
-        provider = CubeSourceProviderMock(cube.config, start_time=datetime(2001, 1, 1), end_time=datetime(2001, 2, 1))
+        provider = CubeSourceProviderMock(cube.config, start_time=datetime(
+            2001, 1, 1), end_time=datetime(2001, 2, 1))
         cube.update(provider)
 
         self.assertEqual([(datetime(2001, 1, 1, 0, 0), datetime(2001, 1, 9, 0, 0)),

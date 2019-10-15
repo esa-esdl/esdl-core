@@ -98,10 +98,10 @@ class CubeConfig:
                  spatial_res=0.25,
                  grid_x0=0,
                  grid_y0=0,
-                 lon0 = None,
-                 lon1 = None,
-                 lat0 = None,
-                 lat1 = None,
+                 lon0=None,
+                 lon1=None,
+                 lat0=None,
+                 lat1=None,
                  grid_width=1440,
                  grid_height=720,
                  temporal_res=8,
@@ -117,7 +117,7 @@ class CubeConfig:
                  static_data=False,
                  model_version=CUBE_MODEL_VERSION):
         self.model_version = model_version
-        if  (not lon0) | (not lon1) | (not lat0) | (not lat1):
+        if (not lon0) | (not lon1) | (not lat0) | (not lat1):
             lon0 = -180 + grid_x0 * spatial_res
             lat0 = 90 - grid_y0 * spatial_res
             lon1 = -180 + (grid_x0 + grid_width) * spatial_res
@@ -221,7 +221,6 @@ class CubeConfig:
         if model_version is None or model_version < CUBE_MODEL_VERSION:
             print('WARNING: outdated cube model version, current version is %s' % CUBE_MODEL_VERSION)
 
-
     def _validate(self):
         if (self.lon0 < -180) | (self.lon0 > 180.0):
             raise ValueError('illegal lon0 value')
@@ -233,13 +232,15 @@ class CubeConfig:
             raise ValueError('illegal lat1 value')
 
         if self.lat0 <= self.lat1:
-            raise ValueError('illegal combination of grid_y0, grid_height, spatial_res values. Latitude must be given in descending orders')
+            raise ValueError(
+                'illegal combination of grid_y0, grid_height, spatial_res values. Latitude must be given in descending orders')
 
         if self.lon0 >= self.lon1:
             raise ValueError('illegal combination of grid_x0, grid_width, spatial_res values')
 
         if self.chunk_sizes is not None and len(self.chunk_sizes) != 3:
-            raise ValueError('chunk_sizes must be a sequence of three integers: <time-size>, <lat-size>, <lon-size>')
+            raise ValueError(
+                'chunk_sizes must be a sequence of three integers: <time-size>, <lat-size>, <lon-size>')
 
         if self.comp_level is not None and (self.comp_level < 1 or self.comp_level > 9):
             raise ValueError('comp_level must be an integer in the range 1 to 9')
