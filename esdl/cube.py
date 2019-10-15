@@ -10,7 +10,6 @@ import xarray as xr
 import esdl.util
 import zarr
 from numcodecs import Blosc
-from .cube_access import CubeDataAccess
 from .cube_config import CubeConfig, CUBE_CHANGELOG
 # from .cube_provider import CubeSourceProvider
 from .version import version as __version__
@@ -59,7 +58,7 @@ class Cube:
         return self._closed
 
     @property
-    def data(self) -> CubeDataAccess:
+    def data(self):
         """
         The cube's data represented as an xarray dataset
         """
@@ -177,8 +176,8 @@ class Cube:
         lat_vals = np.zeros(config.grid_height)
         lat_bnds_vals = np.zeros((config.grid_height, 2))
         lat_breakpoints = np.linspace(config.lat0, config.lat1, config.grid_height+1, True)
-        lat_bnds_vals[:, 0] = lat_breakpoints[0:config.grid_height]
-        lat_bnds_vals[:, 1] = lat_breakpoints[1:config.grid_height+1]
+        lat_bnds_vals[:, 1] = lat_breakpoints[0:config.grid_height]
+        lat_bnds_vals[:, 0] = lat_breakpoints[1:config.grid_height+1]
         lat_vals            = (lat_bnds_vals[:, 0] + lat_bnds_vals[:, 1])/2
 
         ds = xr.Dataset(coords = {
@@ -265,7 +264,6 @@ class Cube:
             time_max = datetime(target_year + 1, 1, 1)
             d_time = timedelta(days=cube_temporal_res)
             time_1 = time_min
-            print(num_periods_per_year)
             for time_index in range(num_periods_per_year):
                 time_2 = time_1 + d_time
                 if time_2 > time_max:
@@ -276,11 +274,11 @@ class Cube:
                     var_name_to_image = provider.compute_variable_images(time_1, time_2)
                     if var_name_to_image:
                         imagecache.append((i0, var_name_to_image))
-                print("t1: ", time_1, " t2: ", time_2)
+                #print("t1: ", time_1, " t2: ", time_2)
                 if i0-ilast >= n_imagecache:
-                    print("i0 ilast", i0, ilast)
+                    #print("i0 ilast", i0, ilast)
                     if len(imagecache) > 0:
-                        print(datasets)
+                        #print(datasets)
                         self._write_images(provider, datasets, imagecache, varnames, n_imagecache)
                     imagecache = []
                     ilast = i0

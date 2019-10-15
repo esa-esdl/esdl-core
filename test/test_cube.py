@@ -49,7 +49,12 @@ class CubeTest(TestCase):
         self.assertTrue(os.path.exists(CUBE_DIR + "/FAPAR/.zarray"))
 
         cube2 = Cube.open(CUBE_DIR)
-        self.assertEqual(cube.config.spatial_res, cube2.config.spatial_res)
+        self.assertEqual(cube.config.grid_width, cube2.config.grid_width)
+        self.assertEqual(cube.config.grid_height, cube2.config.grid_height)
+        self.assertEqual(cube.config.lon0, cube2.config.lon0)
+        self.assertEqual(cube.config.lat0, cube2.config.lat0)
+        self.assertEqual(cube.config.lon1, cube2.config.lon1)
+        self.assertEqual(cube.config.lat1, cube2.config.lat1)
         self.assertEqual(cube.config.temporal_res, cube2.config.temporal_res)
         self.assertEqual(cube.config.file_format, cube2.config.file_format)
         self.assertEqual(cube.config.compression, cube2.config.compression)
@@ -186,6 +191,7 @@ class CubeTest(TestCase):
         lat_bnds_var = data.variables['lat_bnds']
         self.assertEqual(lat_bnds_var.attrs['units'], 'degrees_north')
         self.assertEqual((H, 2), lat_bnds_var.shape)
+        print(lat_bnds_var.values)
         self.assertEqual(+90. - RES, lat_bnds_var.values[0, 0])
         self.assertEqual(+90., lat_bnds_var.values[0, 1])
         self.assertEqual(-90., lat_bnds_var.values[H - 1, 0])

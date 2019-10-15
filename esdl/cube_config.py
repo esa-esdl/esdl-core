@@ -169,8 +169,8 @@ class CubeConfig:
         """
         The geographical boundary given as ((LL-lon, LL-lat), (UR-lon, UR-lat)).
         """
-        return ((self.grid_lon0, self.grid_lat1),
-                (self.grid_lon1, self.grid_lat0))
+        return ((self.lon0, self.lat1),
+                (self.lon1, self.lat0))
 
     @property
     def time_units(self) -> str:
@@ -223,6 +223,21 @@ class CubeConfig:
 
 
     def _validate(self):
+        if (self.lon0 < -180) | (self.lon0 > 180.0):
+            raise ValueError('illegal lon0 value')
+        if (self.lon1 < -180) | (self.lon1 > 180.0):
+            raise ValueError('illegal lon1 value')
+        if (self.lat0 < -90) | (self.lat0 > 90):
+            raise ValueError('illegal lat0 value')
+        if (self.lat1 < -90) | (self.lat1 > 90.0):
+            raise ValueError('illegal lat1 value')
+
+        if self.lat0 <= self.lat1:
+            raise ValueError('illegal combination of grid_y0, grid_height, spatial_res values. Latitude must be given in descending orders')
+
+        if self.lon0 >= self.lon1:
+            raise ValueError('illegal combination of grid_x0, grid_width, spatial_res values')
+
         if self.chunk_sizes is not None and len(self.chunk_sizes) != 3:
             raise ValueError('chunk_sizes must be a sequence of three integers: <time-size>, <lat-size>, <lon-size>')
 
