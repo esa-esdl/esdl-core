@@ -220,7 +220,7 @@ class Cube:
         warnings.warn(
             "This function is deprecated. Zarr cubes do not have to be closed.", DeprecationWarning)
 
-    def update(self, provider: 'CubeSourceProvider', n_imagecache=12):
+    def update(self, provider: 'CubeSourceProvider', image_cache_size=12):
         """
         Updates the data cube with source data from the given image provider.
 
@@ -276,20 +276,21 @@ class Cube:
                     if var_name_to_image:
                         imagecache.append((i0, var_name_to_image))
                 #print("t1: ", time_1, " t2: ", time_2)
-                if i0-ilast >= n_imagecache:
+                if i0-ilast >= image_cache_size:
                     #print("i0 ilast", i0, ilast)
                     if len(imagecache) > 0:
                         # print(datasets)
-                        self._write_images(provider, datasets, imagecache, varnames, n_imagecache)
+                        self._write_images(provider, datasets, imagecache,
+                                           varnames, image_cache_size)
                     imagecache = []
                     ilast = i0
                 time_1 = time_2
                 i0 = i0 + 1
         if len(imagecache) > 0:
-            self._write_images(provider, datasets, imagecache, varnames, n_imagecache)
+            self._write_images(provider, datasets, imagecache, varnames, image_cache_size)
         provider.close()
 
-    def _write_images(self, provider, datasets, imagecache, varnames, n_imagecache):
+    def _write_images(self, provider, datasets, imagecache, varnames, image_cache_size):
         # First we unpack the data into 3d-numpy arrays
         for var_name in varnames:
             ds = datasets[var_name]
