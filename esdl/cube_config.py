@@ -181,12 +181,11 @@ class CubeConfig:
         return 'days since %4d-%02d-%02d %02d:%02d' % \
                (ref_time.year, ref_time.month, ref_time.day, ref_time.hour, ref_time.minute)
 
-    @property
-    def num_periods_per_year(self) -> float:
+    def num_periods_per_year(self, ndays=365.0) -> float:
         """
         Return the integer number of target periods per year.
         """
-        return math.ceil(365.0 / self.temporal_res)
+        return math.ceil(ndays / self.temporal_res)
 
     def date2num(self, date) -> float:
         """

@@ -13,6 +13,7 @@ from numcodecs import Blosc
 from .cube_config import CubeConfig, CUBE_CHANGELOG
 # from .cube_provider import CubeSourceProvider
 from .version import version as __version__
+from calendar import isleap
 
 
 class Cube:
@@ -104,13 +105,14 @@ class Cube:
         if os.path.exists(base_dir):
             raise IOError('data cube base directory exists: %s' % base_dir)
 
-        num_periods_per_year = config.num_periods_per_year
         bndsdim = ('bnds', [0, 1])
 
         temporal_res = config.temporal_res
         start_year = config.start_time.year
         end_year = config.end_time.year
         start_nums = [config.date2num(datetime(yr, 1, 1)) for yr in range(start_year, end_year)]
+        n_time_steps_per_year = [config.num_periods_per_year(
+            366 if isleap(yr) else 365) for yr in range(start_year, end_year)]
 
         time_bnds_attrs = {
             'units': config.time_units,
@@ -124,10 +126,10 @@ class Cube:
             else:
                 return sn + temporal_res * (i + 1.0)
 
-        lower_bounds = [sn + temporal_res * (i + 0.0)
-                        for sn in start_nums for i in range(num_periods_per_year)]
-        upper_bounds = [correctub(sn, temporal_res, i, num_periods_per_year)
-                        for sn in start_nums for i in range(num_periods_per_year)]
+        lower_bounds = [start_nums[j] + temporal_res * (i + 0.0)
+                        for j in range(len(start_nums)) for i in range(n_time_steps_per_year[j])]
+        upper_bounds = [correctub(start_nums[j], temporal_res, i, n_time_steps_per_year[j])
+                        for j in range(len(start_nums)) for i in range(n_time_steps_per_year[j])]
         time_bnds_vals = np.zeros((len(lower_bounds), 2))
         time_bnds_vals[:, 0] = lower_bounds
         time_bnds_vals[:, 1] = upper_bounds
@@ -140,8 +142,8 @@ class Cube:
             'bounds': 'time_bnds',
             '_ARRAY_DIMENSIONS': ['time'],
         }
-        time_vals = [sn + temporal_res * (i + 0.5)
-                     for sn in start_nums for i in range(num_periods_per_year)]
+        time_vals = [start_nums[j] + temporal_res * (i + 0.5)
+                     for j in range(len(start_nums)) for i in range(n_time_steps_per_year[j])]
         # times[-1] = var_time_bnds[-1,0] + (var_time_bnds[-1,1] - var_time_bnds[-1,0]) / 2.
         # Thus, we keep date of the last time range always at Julian day 364, not in the center of the period.
         # The time bounds then specify the real extent of the period.
@@ -247,45 +249,45 @@ class Cube:
                 self._init_variable_dataset(provider, varname)
 
         varnames = provider.variable_descriptors.keys()
-        target_year_1 = target_start_time.year
-        target_year_2 = target_end_time.year
-        cube_temporal_res = self._config.temporal_res
-        num_periods_per_year = self._config.num_periods_per_year
         datasets = {varname: dsgroup[varname] for varname in provider.variable_descriptors}
-        imagecache = []
+
+        # We get a bit more principled here. Instead of repeating the dates calculation
+        # we use exactly the time bounds that are written into the metadata. This enables
+        # us to process arbitrary time axes
+        time_bnds = xr.open_zarr(self.base_dir).time_bnds.values
+        n_time_steps = time_bnds.shape[0]
 
         # Preallocate cache so that multiple images may be written at once,
         # This should be much faster when writing time series
+        imagecache = []
 
         # Initial index inside zarr array to write to
-        i0 = (target_year_1-self._config.start_time.year)*num_periods_per_year
+        istart = np.searchsorted(time_bnds[:, 0], np.datetime64(target_start_time))
+        iend = np.searchsorted(time_bnds[:, 1], np.datetime64(target_end_time))
+
+        i0 = istart
         ilast = i0-1
-        for target_year in range(target_year_1, target_year_2+1):
-            time_min = datetime(target_year, 1, 1)
-            time_max = datetime(target_year + 1, 1, 1)
-            d_time = timedelta(days=cube_temporal_res)
-            time_1 = time_min
-            for time_index in range(num_periods_per_year):
-                time_2 = time_1 + d_time
-                if time_2 > time_max:
-                    time_2 = time_max
-                weight = esdl.util.temporal_weight(
-                    time_1, time_2, target_start_time, target_end_time)
-                if weight > 0.0:
-                    var_name_to_image = provider.compute_variable_images(time_1, time_2)
-                    if var_name_to_image:
-                        imagecache.append((i0, var_name_to_image))
-                #print("t1: ", time_1, " t2: ", time_2)
+        for time_index in range(istart, iend):
+            time_1 = time_bnds[time_index, 0]
+            time_2 = time_bnds[time_index, 1]
+            print(time_bnds[time_index, :])
+            print(type(time_1.astype(datetime)))
+            print(type(target_start_time))
+            weight = esdl.util.temporal_weight(
+                time_1, time_2, target_start_time, target_end_time)
+            if weight > 0.0:
+                var_name_to_image = provider.compute_variable_images(time_1, time_2)
+                if var_name_to_image:
+                    imagecache.append((time_index, var_name_to_image))
+                # print("t1: ", time_1, " t2: ", time_2)
                 if i0-ilast >= image_cache_size:
-                    #print("i0 ilast", i0, ilast)
+                    # print("i0 ilast", i0, ilast)
                     if len(imagecache) > 0:
                         # print(datasets)
                         self._write_images(provider, datasets, imagecache,
                                            varnames, image_cache_size)
                     imagecache = []
-                    ilast = i0
-                time_1 = time_2
-                i0 = i0 + 1
+                    ilast = time_index
         if len(imagecache) > 0:
             self._write_images(provider, datasets, imagecache, varnames, image_cache_size)
         provider.close()
