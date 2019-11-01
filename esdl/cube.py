@@ -113,6 +113,7 @@ class Cube:
         start_nums = [config.date2num(datetime(yr, 1, 1)) for yr in range(start_year, end_year)]
         n_time_steps_per_year = [config.num_periods_per_year(
             366 if isleap(yr) else 365) for yr in range(start_year, end_year)]
+        n_days_per_year = [366 if isleap(yr) else 365 for yr in range(start_year, end_year)]
 
         time_bnds_attrs = {
             'units': config.time_units,
@@ -120,15 +121,15 @@ class Cube:
             '_ARRAY_DIMENSIONS': ['time', 'bnds']
         }
 
-        def correctub(sn, temporal_res, i, ntot):
+        def correctub(sn, temporal_res, i, ntot, ndays):
             if i == (ntot-1):
-                return sn+366
+                return sn+ndays
             else:
                 return sn + temporal_res * (i + 1.0)
 
         lower_bounds = [start_nums[j] + temporal_res * (i + 0.0)
                         for j in range(len(start_nums)) for i in range(n_time_steps_per_year[j])]
-        upper_bounds = [correctub(start_nums[j], temporal_res, i, n_time_steps_per_year[j])
+        upper_bounds = [correctub(start_nums[j], temporal_res, i, n_time_steps_per_year[j], n_days_per_year[j])
                         for j in range(len(start_nums)) for i in range(n_time_steps_per_year[j])]
         time_bnds_vals = np.zeros((len(lower_bounds), 2))
         time_bnds_vals[:, 0] = lower_bounds
@@ -265,29 +266,25 @@ class Cube:
         istart = np.searchsorted(time_bnds[:, 0], np.datetime64(target_start_time))
         iend = np.searchsorted(time_bnds[:, 1], np.datetime64(target_end_time))
 
-        i0 = istart
-        ilast = i0-1
+        ilast = istart-1
         for time_index in range(istart, iend):
-            time_1 = time_bnds[time_index, 0]
-            time_2 = time_bnds[time_index, 1]
-            print(time_bnds[time_index, :])
-            print(type(time_1.astype(datetime)))
-            print(type(target_start_time))
+            time_1 = datetime.utcfromtimestamp(time_bnds[time_index, 0].astype(int)/1e9)
+            time_2 = datetime.utcfromtimestamp(time_bnds[time_index, 1].astype(int)/1e9)
             weight = esdl.util.temporal_weight(
                 time_1, time_2, target_start_time, target_end_time)
             if weight > 0.0:
                 var_name_to_image = provider.compute_variable_images(time_1, time_2)
                 if var_name_to_image:
                     imagecache.append((time_index, var_name_to_image))
-                # print("t1: ", time_1, " t2: ", time_2)
-                if i0-ilast >= image_cache_size:
+                print("t1: ", time_1, " t2: ", time_2)
+                if time_index-ilast >= image_cache_size:
                     # print("i0 ilast", i0, ilast)
                     if len(imagecache) > 0:
                         # print(datasets)
                         self._write_images(provider, datasets, imagecache,
                                            varnames, image_cache_size)
-                    imagecache = []
-                    ilast = time_index
+                        imagecache = []
+                        ilast = time_index
         if len(imagecache) > 0:
             self._write_images(provider, datasets, imagecache, varnames, image_cache_size)
         provider.close()
