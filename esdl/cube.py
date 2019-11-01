@@ -276,7 +276,7 @@ class Cube:
                 var_name_to_image = provider.compute_variable_images(time_1, time_2)
                 if var_name_to_image:
                     imagecache.append((time_index, var_name_to_image))
-                print("t1: ", time_1, " t2: ", time_2)
+                #print("t1: ", time_1, " t2: ", time_2)
                 if time_index-ilast >= image_cache_size:
                     # print("i0 ilast", i0, ilast)
                     if len(imagecache) > 0:
