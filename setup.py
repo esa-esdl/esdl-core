@@ -59,7 +59,7 @@ setup(
             'cube-gen = esdl.cube_gen:main',
         ],
         'cate_plugins': [
-            'cate_esdc = esdl.cate.esdc:cate_init',
+            'cate_esdc = esdl.cate.:cate_init',
         ],
         'esdl.source_providers': [
             'test = esdl.providers:TestCubeSourceProvider',

@@ -1,4 +1,4 @@
-name: esdl
+name: esdl-rtd
 channels:
   - conda-forge
   - forman

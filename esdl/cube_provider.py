@@ -410,12 +410,13 @@ class NetCDFStaticCubeSourceProvider(BaseStaticCubeSourceProvider, metaclass=ABC
         return var_image
 
 
-class NetCDFCubeSourceProvider(BaseCubeSourceProvider, metaclass=ABCMeta):
+class DatasetCubeSourceProvider(BaseCubeSourceProvider, Generic[C], metaclass=ABCMeta):
     """
     A BaseCubeSourceProvider that
     * Uses NetCDF source datasets read from a given **dir_path**
     * Performs temporal aggregation first and then spatial resampling
-
+    :param cache: C: Specifies the date cache type to be used. Can be CateDatasetCache or NetCDFDatasetCache
+           at this stage
     :param cube_config: Specifies the fixed layout and conventions used for the cube.
     :param name: The provider's registration name.
     :param dir_path: Source directory to read the files from. If relative path,
@@ -424,8 +425,8 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider, metaclass=ABCMeta):
     :param resampling_order: The order in which resampling is performed. One of 'time_first', 'space_first'.
     """
 
-    def __init__(self, cube_config: CubeConfig, name: str, dir_path: str, resampling_order: str):
-        super(NetCDFCubeSourceProvider, self).__init__(cube_config, name)
+    def __init__(self, cache: C, cube_config: CubeConfig, name: str, dir_path: str, resampling_order: str):
+        super().__init__(cube_config, name)
 
         if dir_path is None:
             raise ValueError('dir_path expected')
@@ -441,15 +442,15 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider, metaclass=ABCMeta):
         else:
             self._dir_path = dir_path
         self._resampling_order = resampling_order
-        self._dataset_cache = NetCDFDatasetCache(name)
+        self._dataset_cache = cache
         self._old_indices = None
 
     @property
-    def dir_path(self):
+    def dir_path(self) -> str:
         return self._dir_path
 
     @property
-    def dataset_cache(self):
+    def dataset_cache(self) -> C:
         return self._dataset_cache
 
     def compute_variable_images_from_sources(self, index_to_weight):
@@ -465,14 +466,9 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider, metaclass=ABCMeta):
             for i in new_indices:
                 file, time_index = self._get_file_and_time_index(i)
                 source_name = var_attributes.get('source_name', var_name)
-                variable = self._dataset_cache.get_dataset(file).variables[source_name]
-                if len(variable.shape) == 3:
-                    var_image = variable[time_index, :, :]
-                elif len(variable.shape) == 2:
-                    var_image = variable[:, :]
-                else:
-                    raise ValueError("unexpected shape for variable '%s'" % var_name)
+                var_image = self._dataset_cache.get_dataset_variable(file, source_name, time_index)
                 var_image = self.transform_source_image(var_image)
+
                 if self._resampling_order == 'space_first':
                     var_image = gtr.resample_2d(var_image,
                                                 self.cube_config.grid_width,
@@ -516,7 +512,6 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider, metaclass=ABCMeta):
         """
         Close all datasets that wont be used anymore w.r.t. the given **index_to_weight** dictionary passed to the
         **compute_variable_images_from_sources()** method.
-
         :param index_to_weight: A dictionary mapping time indexes --> weight values.
         :return: set of time indexes into currently active files w.r.t. the given **index_to_weight** parameter.
         """
@@ -531,3 +526,18 @@ class NetCDFCubeSourceProvider(BaseCubeSourceProvider, metaclass=ABCMeta):
 
     def close(self):
         self._dataset_cache.close_all_datasets()
+
+
+class NetCDFCubeSourceProvider(DatasetCubeSourceProvider[NetCDFDatasetCache], metaclass=ABCMeta):
+    """
+    This Cube Source Provider uses a NetCDFDatasetProvider dataset cache.
+    :param cube_config: Specifies the fixed layout and conventions used for the cube.
+    :param name: The provider's registration name.
+    :param dir_path: Source directory to read the files from. If relative path,
+           it will be resolved against the **cube_sources_root** path of the
+           global ESDL configuration (**esdl.util.Config.instance()**).
+    :param resampling_order: The order in which resampling is performed. One of 'time_first', 'space_first'.
+    """
+
+    def __init__(self, cube_config: CubeConfig, name: str, dir_path: str, resampling_order: str):
+        super().__init__(NetCDFDatasetCache(name), cube_config, name, dir_path, resampling_order)

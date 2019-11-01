@@ -18,6 +18,7 @@
 .. _ESDL community repository: https://github.com/esa-esdl/esdl-shared
 .. _ESDL community notebooks: https://github.com/esa-esdl/esdl-shared/tree/master/notebooks
 
+.. _OBS Cube configuration: https://obs-esdc-configs.obs.eu-de.otc.t-systems.com/datacube_paths.json
 
 ===========
 ESDC Access
@@ -26,32 +27,11 @@ ESDC Access
 As introduced in the last section, the ESDC physically consists of a set of NetCDF_ files on disk,
 which can be accessed in a number of different ways which are described in this section.
 
-Download ESDC Data
-==================
-
-The simplest approach to access the ESDC data is downloading it to you computer using the `ESDL FTP server`_.
-
-Since the ESDC is basically a directory of NetCDF_ files, you can use a variety of software packages and programming
-languages to access the data. In each cube directory, you find a text file ``cube.config`` which describes the overall
-data cube layout.
-
-Within the :ref:`esdc_project`, dedicated data access packages have been developed for the Python and Julia
-programming languages. These packages "understand" the ESDC's ``cube.config`` files and represent the cube data
-by a convenient data structures. The section :ref:`data_access_py` describes how to access the data from Python.
 
 OPeNDAP and WCS Services
 ========================
 
-The ESDC' data variables can also be accessed via a dedicated `ESDL THREDDS server`_.
-
-The server supports the `OPeNDAP`_ and OGC-compliant `Web Coverage Service (WCS)`_ data access protocols.
-You can use it for accessing subsets of the ESDC's data variables and also for visual exploration of the data,
-and finally for downloading the data as a NetCDF_ file or of plain text.
-
-Depending on the variable subsets, and the region and time period of interest, the transferred data volume
-might be much lower than a complete download of the ESDC via FTP. However, the disadvantage of using OPeNDAP
-and WCS is that the actual structure of the ESDC gets lost, so that it can't be accessed anymore using
-the aforementioned ESDC Python/Julia data access packages.
+Replaced by an S3 object store (OBS). Please refer to the Usage section.
 
 E-Laboratory
 ============
@@ -115,17 +95,11 @@ The following command will create a new Python 3.5 environment named ``esdl`` wi
 
     $ conda env create environment.yml
 
-To active new Python environment named ``esdl`` you must source on Linux/Darwin
+To active new Python environment named ``esdl`` you must execute the following command:
 
 .. code-block:: bash
 
-    $ source activate.sh esdl
-
-on Windows:
-
-.. code-block:: bat
-
-    > activate esdl
+    $ conda activate esdl
 
 Now change into new folder ``esdl-core`` and install the ``esdl`` Python package using the ``develop`` target:
 
@@ -157,103 +131,68 @@ data chunks of different sizes for further analysis.
 
 **Open a cube**
 
-.. code:: python
-
-    from esdl import Cube
-    from datetime import datetime
-    import numpy as np
-
-    cube = Cube.open("/path/to/datacube")
-
-
-Note, in order to work properly the ``/path/to/datacube/`` passed to ``Cube.open()``
-must be the path to an existing ESDC cube directory which contains a valid configuration file named ``cube.config``.
-It contains essential metadata about the ESDC to be opened.
-
+First get a list of available Cubes:
 
 .. code:: python
 
-    cube.data.variable_names
+    from esdl.cube_store import CubeStore
+    cs = CubesStore()
+    cs
 
-.. code-block:: python
+.. parsed-literal::
 
-    ['aerosol_optical_thickness_1610',
-     'aerosol_optical_thickness_550',
-     'aerosol_optical_thickness_555',
-     'aerosol_optical_thickness_659',
-     'aerosol_optical_thickness_865',
-     'air_temperature_2m',
-     'bare_soil_evaporation',
-     'black_sky_albedo',
-     'burnt_area',
-     'country_mask',
-     'c_emissions',
-     ...]
+    CUBE_V2.0.0_global_spatially_optimized_0.25deg_supplement ...
+    CUBE_V2.0.0_global_spatially_optimized_0.25deg ...
+    CUBE_V2.0.0_global_time_optimized_0.25deg ...
+    CUBE_V2.0.0_colombia_spatially_optimized_0.083deg ...
+    ...
 
-After successful opening the ESDC, chunks of data or the entire data set can be accessed via the
-``dataset()`` and ``get()`` functions. The first returns a `xarray.Dataset`_ object in which all
-cube variables are represented as `xarray.DataArray`_ objects. More about these objects can also be
-found in :doc:`dat_python` section. The second function can be used to read subsets of the data.
-In contrast it returns a list of `Numpy ndarray`_ arrays, one for each requested variable.
+Obtain a Cube by using the Cube's name:
 
-The corresponding API for Julia is very similar and illustrated in :doc:`dat_julia`.
+.. code:: python
+
+    ds = cs['CUBE_V2.0.0_global_spatially_optimized_0.25deg']
+    ds.data_vars
+
+.. parsed-literal::
+
+    Data variables:
+    Rg                                 (time, lat, lon) float32 dask.array<shape=(1702, 720, 1440), chunksize=(1, 720, 1440)>
+    aerosol_optical_thickness_1600     (time, lat, lon) float32 dask.array<shape=(1702, 720, 1440), chunksize=(1, 720, 1440)>
+    aerosol_optical_thickness_550      (time, lat, lon) float32 dask.array<shape=(1702, 720, 1440), chunksize=(1, 720, 1440)>
+    aerosol_optical_thickness_670      (time, lat, lon) float32 dask.array<shape=(1702, 720, 1440), chunksize=(1, 720, 1440)>
+    aerosol_optical_thickness_870      (time, lat, lon) float32 dask.array<shape=(1702, 720, 1440), chunksize=(1, 720, 1440)>
+    air_temperature_2m                 (time, lat, lon) float32 dask.array<shape=(1702, 720, 1440), chunksize=(1, 720, 1440)>
+    ...
 
 **Accessing the cube data**
 
-The ``cube.data.dataset()`` has an optional argument which is a list of variable names to include in the returned
-`xarray.DataArray`_ object. If omitted, all variables will be included. Note it can take up to a few seconds to open
-generate the dataset object with all variables.
+An `xarray.DataArray`_ object can be retrieved by accessing the datasets variable by
+variable name.
 
 .. code:: python
-
-    ds = cube.data.dataset()
-    ds
+    lst = ds.aerosol_optical_thickness_1610
 
 .. parsed-literal::
 
-    <`xarray.Dataset`_>
-    Dimensions:                            (bnds: 2, lat: 720, lon: 1440, time: 506)
+    <xarray.DataArray 'Rg' (time: 1702, lat: 720, lon: 1440)>
+    dask.array<shape=(1702, 720, 1440), dtype=float32, chunksize=(1, 720, 1440)>
     Coordinates:
-      * time                               (time) datetime64[ns] 2001-01-05 ...
-      * lon                                (lon) float32 -179.875 -179.625 ...
-        lon_bnds                           (lon, bnds) float32 -180.0 -179.75 ...
-        lat_bnds                           (lat, bnds) float32 89.75 90.0 89.5 ...
-      * lat                                (lat) float32 89.875 89.625 89.375 ...
-        time_bnds                          (time, bnds) datetime64[ns] 2001-01-01 ...
-    Dimensions without coordinates: bnds
-    Data variables:
-        aerosol_optical_thickness_1610     (time, lat, lon) float64 nan nan nan ...
-        aerosol_optical_thickness_550      (time, lat, lon) float64 nan nan nan ...
-        aerosol_optical_thickness_555      (time, lat, lon) float64 nan nan nan ...
-        aerosol_optical_thickness_659      (time, lat, lon) float64 nan nan nan ...
-        aerosol_optical_thickness_865      (time, lat, lon) float64 nan nan nan ...
-        air_temperature_2m                 (time, lat, lon) float64 243.4 243.4 ...
-        bare_soil_evaporation              (time, lat, lon) float64 nan nan nan ...
-        black_sky_albedo                   (time, lat, lon) float64 nan nan nan ...
-        burnt_area                         (time, lat, lon) float64 0.0 0.0 0.0 ...
-        country_mask                       (time, lat, lon) float64 nan nan nan ...
-        ...
-
-.. code:: python
-
-    lst = ds['land_surface_temperature']
-    lst
-
-.. parsed-literal::
-
-    <`xarray.DataArray`_ 'land_surface_temperature' (time: 506, lat: 720, lon: 1440)>
-    dask.array<concatenate, shape=(506, 720, 1440), dtype=float64, chunksize=(46, 720, 1440)>
-    Coordinates:
-      * time     (time) datetime64[ns] 2001-01-05 2001-01-13 2001-01-21 ...
-      * lon      (lon) float32 -179.875 -179.625 -179.375 -179.125 -178.875 ...
-      * lat      (lat) float32 89.875 89.625 89.375 89.125 88.875 88.625 88.375 ...
+      * lat      (lat) float32 89.875 89.625 89.375 ... -89.375 -89.625 -89.875
+      * lon      (lon) float32 -179.875 -179.625 -179.375 ... 179.625 179.875
+      * time     (time) datetime64[ns] 1980-01-05 1980-01-13 ... 2016-12-30
     Attributes:
-        url:            http://data.globtemperature.info/
-        long_name:      land surface temperature
-        source_name:    LST
-        standard_name:  surface_temperature
-        comment:        Advanced Along Track Scanning Radiometer pixel land surfa...
-        units:          K
+        ID:                        2
+        esa_cci_path:              nan
+        long_name:                 Downwelling shortwave radiation
+        orig_attrs:                {'long_name': 'Downwelling shortwave radiation...
+        orig_version:              15.10.2017
+        project_name:              BESS
+        time_coverage_end:         2010-12-31
+        time_coverage_resolution:  P8D
+        time_coverage_start:       2000-03-01
+        url:                       http://environment.snu.ac.kr/bess_rad/
+
 
 The variable ``lst`` can now be used like a `Numpy ndarray`_. Howver, using ``xarray`` there are a
 number of more convenient data access methods that take care of the actual coordinates provided for every
@@ -289,15 +228,31 @@ Data arrays also have a handy ``plot()`` method. Try:
     lst.sel(lon=11, method='nearest').plot()
     lst.sel(lat=53, method='nearest').plot()
 
-**Closing the cube**
 
-If you no longer require access to the cube, it should be closed to release file handles and reserved memory.
+**Downloading a Cube**
+
+The data cubes are available from an S3 Object Storage (OBS). There are two ways of accessing the data:
+
+- Use the esdl-core Cubestore class
+- Or use you own S3 libraries
+
+To download the data locally use:
 
 .. code:: python
 
-    cube.close()
+    from esdl.cube_store import CubeStore
+    cs = CubesStore()
+    ds = cs['CUBE_V2.0.1_colombia_time_optimized_0.0083deg']
 
-Some more demonstrations are included in the `ESDL community notebooks`_.
+    ds.to_zarr('CUBE_V2.0.1_colombia_time_optimized_0.0083deg.zarr')
+
+Please be aware that downloading a whole cube may take a substantial
+amount of time.
+
+You might use a different programming language. In that case
+You can access a configuration file with all information like endpoints,
+regions etc. using the following URL: `OBS Cube configuration`_
+
 
 Using Julia
 ===========
