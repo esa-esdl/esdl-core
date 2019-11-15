@@ -26,9 +26,10 @@ import s3fs
 import xarray as xr
 import zarr
 import urllib
+from urllib import request
 
 
-class CubesStore:
+class CubeStore:
 
     def __init__(self, config: str = 'https://obs-esdc-configs.obs.eu-de.otc.t-systems.com/datacube_paths.json'):
 
@@ -52,12 +53,12 @@ class CubesStore:
         return "<table>" + html + "</table>"
 
     def __str__(self):
-        html = ""
+        txt = ""
         for name, props in self._cube_config.items():
             description = props["description"]
-            html += "<tr><td>" + name + "</td><td>" + description + "</td></tr>"
+            txt += name + " - " + description + "\n"
 
-        return "<table>" + html + "</table>"
+        return txt
 
     def __getitem__(self, item):
         return self.__getattr__(item)
@@ -71,7 +72,7 @@ class CubesStore:
                 dataset_descriptor = self._cube_config[name]
                 fs_type = dataset_descriptor.get("FileSystem", "local")
                 path = dataset_descriptor.get('Path')
-
+                ds = None
                 if not path:
                     print("Missing 'path' entry in dataset descriptor")
                 if fs_type == 'obs':
@@ -101,4 +102,10 @@ class CubesStore:
             return ds
         return super().__getattribute__(name)
 
+
+# Legacy class in case someone has used the class CubesStore in a script
+class CubesStore(CubeStore):
+    def __init__(self, config: str = 'https://obs-esdc-configs.obs.eu-de.otc.t-systems.com/datacube_paths.json'):
+        super().__init__(config)
+        print(DeprecationWarning("CubesStore() has been renamed; use CubeStore()."))
 

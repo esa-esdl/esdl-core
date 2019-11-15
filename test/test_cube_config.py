@@ -35,7 +35,8 @@ class CubeConfigTest(TestCase):
         self.assertEqual(90, config.northing)
         self.assertEqual(((-180, -90), (180, 90)), config.geo_bounds)
 
-        config = CubeConfig(grid_x0=430, grid_y0=28, grid_width=100, grid_height=100, spatial_res=0.5)
+        config = CubeConfig(grid_x0=430, grid_y0=28, grid_width=100,
+                            grid_height=100, spatial_res=0.5)
         self.assertEqual(35.0, config.easting)
         self.assertEqual(76.0, config.northing)
         self.assertEqual(((35.0, 26.0), (85.0, 76.0)), config.geo_bounds)

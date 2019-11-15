@@ -6,9 +6,19 @@ import netCDF4
 
 #: The current version of the data cube's configuration and data model.
 #: The model version is incremented on every change of the cube's data model.
-CUBE_MODEL_VERSION = '1.0.2'
+CUBE_MODEL_VERSION = '2.0.2'
 
 CUBE_CHANGELOG = """
+version 2.0.2
+---------------
+* added new parameter to cube_config: lon0, lat0, lon1, lat1 to specify upper left corner of
+the upper left grid cell and the lower right corner of the lower right grid cell.
+
+
+version 2.0.1
+---------------
+* Switched to zarr data format
+
 
 version 1.0.2
 -------------
@@ -60,8 +70,10 @@ class CubeConfig:
     A data cube's static configuration information.
 
     :param spatial_res: The spatial image resolution in degree.
-    :param grid_x0: The fixed grid X offset (longitude direction).
-    :param grid_y0: The fixed grid Y offset (latitude direction).
+    :param lon0: Left border of the most left grid cell
+    :param lon1: Right border of the most right grid cell
+    :param lat0: Upper border of the uppermost grid cell
+    :param lat1: Lower border of the lowermost grid cell
     :param grid_width: The fixed grid width in pixels (longitude direction).
     :param grid_height: The fixed grid height in pixels (latitude direction).
     :param temporal_res: The temporal resolution in days.
@@ -86,6 +98,10 @@ class CubeConfig:
                  spatial_res=0.25,
                  grid_x0=0,
                  grid_y0=0,
+                 lon0=None,
+                 lon1=None,
+                 lat0=None,
+                 lat1=None,
                  grid_width=1440,
                  grid_height=720,
                  temporal_res=8,
@@ -101,9 +117,15 @@ class CubeConfig:
                  static_data=False,
                  model_version=CUBE_MODEL_VERSION):
         self.model_version = model_version
-        self.spatial_res = spatial_res
-        self.grid_x0 = grid_x0
-        self.grid_y0 = grid_y0
+        if (not lon0) | (not lon1) | (not lat0) | (not lat1):
+            lon0 = -180 + grid_x0 * spatial_res
+            lat0 = 90 - grid_y0 * spatial_res
+            lon1 = -180 + (grid_x0 + grid_width) * spatial_res
+            lat1 = 90 - (grid_y0 + grid_height) * spatial_res
+        self.lon0 = lon0
+        self.lon1 = lon1
+        self.lat0 = lat0
+        self.lat1 = lat1
         self.grid_width = grid_width
         self.grid_height = grid_height
         self.temporal_res = temporal_res
@@ -120,10 +142,8 @@ class CubeConfig:
         self._validate()
 
     def __repr__(self):
-        return 'CubeConfig(spatial_res=%f, grid_x0=%d, grid_y0=%d, grid_width=%d, grid_height=%d, ' \
+        return 'CubeConfig(grid_width=%d, grid_height=%d, ' \
                'temporal_res=%d, ref_time=%s)' % (
-                   self.spatial_res,
-                   self.grid_x0, self.grid_y0,
                    self.grid_width, self.grid_height,
                    self.temporal_res,
                    repr(self.ref_time))
@@ -134,7 +154,7 @@ class CubeConfig:
         The longitude position of the upper-left-most corner of the upper-left-most grid cell
         given by (grid_x0, grid_y0).
         """
-        return 90.0 - self.grid_y0 * self.spatial_res
+        return self.lat0
 
     @property
     def easting(self) -> float:
@@ -142,15 +162,15 @@ class CubeConfig:
         The latitude position of the upper-left-most corner of the upper-left-most grid cell
         given by (grid_x0, grid_y0).
         """
-        return -180.0 + self.grid_x0 * self.spatial_res
+        return self.lon0
 
     @property
     def geo_bounds(self) -> Tuple[Tuple[float, float], Tuple[float, float]]:
         """
         The geographical boundary given as ((LL-lon, LL-lat), (UR-lon, UR-lat)).
         """
-        return ((self.easting, self.northing - self.grid_height * self.spatial_res),
-                (self.easting + self.grid_width * self.spatial_res, self.northing))
+        return ((self.lon0, self.lat1),
+                (self.lon1, self.lat0))
 
     @property
     def time_units(self) -> str:
@@ -201,37 +221,26 @@ class CubeConfig:
         if model_version is None or model_version < CUBE_MODEL_VERSION:
             print('WARNING: outdated cube model version, current version is %s' % CUBE_MODEL_VERSION)
 
-    def store(self, path):
-        """
-        Store a CubeConfig in a text file.
-
-        :param path: The file's path name.
-        """
-        with open(path, 'w') as fp:
-            for name in self.__dict__:
-                if not (name.startswith('_') or name.endswith('_')):
-                    value = self.__dict__[name]
-                    fp.write('%s = %s\n' % (name, repr(value)))
-
     def _validate(self):
-        if self.grid_x0 < 0:
-            raise ValueError('illegal grid_x0 value')
+        if (self.lon0 < -180) | (self.lon0 > 180.0):
+            raise ValueError('illegal lon0 value')
+        if (self.lon1 < -180) | (self.lon1 > 180.0):
+            raise ValueError('illegal lon1 value')
+        if (self.lat0 < -90) | (self.lat0 > 90):
+            raise ValueError('illegal lat0 value')
+        if (self.lat1 < -90) | (self.lat1 > 90.0):
+            raise ValueError('illegal lat1 value')
 
-        if self.grid_y0 < 0:
-            raise ValueError('illegal grid_y0 value')
+        if self.lat0 <= self.lat1:
+            raise ValueError(
+                'illegal combination of grid_y0, grid_height, spatial_res values. Latitude must be given in descending orders')
 
-        lat1 = 90 - (self.grid_y0 + self.grid_height) * self.spatial_res
-        lat2 = 90 - self.grid_y0 * self.spatial_res
-        if lat1 >= lat2 or lat1 < -90 or lat1 > 90 or lat2 < -90 or lat2 > 90:
-            raise ValueError('illegal combination of grid_y0, grid_height, spatial_res values')
-
-        lon1 = -180 + self.grid_x0 * self.spatial_res
-        lon2 = -180 + (self.grid_x0 + self.grid_width) * self.spatial_res
-        if lon1 >= lon2 or lon1 < -180 or lon1 > 180 or lon2 < -180 or lon2 > 180:
+        if self.lon0 >= self.lon1:
             raise ValueError('illegal combination of grid_x0, grid_width, spatial_res values')
 
         if self.chunk_sizes is not None and len(self.chunk_sizes) != 3:
-            raise ValueError('chunk_sizes must be a sequence of three integers: <time-size>, <lat-size>, <lon-size>')
-        
+            raise ValueError(
+                'chunk_sizes must be a sequence of three integers: <time-size>, <lat-size>, <lon-size>')
+
         if self.comp_level is not None and (self.comp_level < 1 or self.comp_level > 9):
             raise ValueError('comp_level must be an integer in the range 1 to 9')

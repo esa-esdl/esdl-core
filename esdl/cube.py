@@ -2,11 +2,14 @@ import math
 import os
 from datetime import datetime, timedelta
 
+import warnings
 import netCDF4
-
+import numpy as np
 import esdl
+import xarray as xr
 import esdl.util
-from .cube_access import CubeDataAccess
+import zarr
+from numcodecs import Blosc
 from .cube_config import CubeConfig, CUBE_CHANGELOG
 # from .cube_provider import CubeSourceProvider
 from .version import version as __version__
@@ -55,12 +58,12 @@ class Cube:
         return self._closed
 
     @property
-    def data(self) -> CubeDataAccess:
+    def data(self):
         """
-        The cube's data which is an instance of the **CubeDataAccess** class.
+        The cube's data represented as an xarray dataset
         """
         if not self._data:
-            self._data = CubeDataAccess(self.config, self.base_dir)
+            self._data = xr.open_zarr(self.base_dir)
         return self._data
 
     @staticmethod
@@ -75,8 +78,17 @@ class Cube:
 
         if not os.path.exists(base_dir):
             raise IOError('data cube base directory does not exists: %s' % base_dir)
-        config = CubeConfig.load(os.path.join(base_dir, 'cube.config'))
-        return Cube(base_dir, config)
+        zg = zarr.open_group(base_dir)
+
+        # Construct a CubeConfig object from the zarr attributes.
+        # datetime values have to be parsed
+        config = zg.attrs['cube.config']
+        for k in ('start_time', 'end_time', 'ref_time'):
+            dt = datetime.strptime(config[k], '%Y-%m-%d %H:%M:%S')
+            config[k] = dt
+
+        CubeConfig._ensure_compatible_config(config)
+        return Cube(base_dir, CubeConfig(**config))
 
     @staticmethod
     def create(base_dir, config=CubeConfig()):
@@ -91,22 +103,124 @@ class Cube:
 
         if os.path.exists(base_dir):
             raise IOError('data cube base directory exists: %s' % base_dir)
-        os.mkdir(base_dir)
-        config.store(os.path.join(base_dir, 'cube.config'))
-        with open(os.path.join(base_dir, 'CHANGELOG'), 'w') as fp:
-            fp.write(CUBE_CHANGELOG)
+
+        num_periods_per_year = config.num_periods_per_year
+        bndsdim = ('bnds', [0, 1])
+
+        temporal_res = config.temporal_res
+        start_year = config.start_time.year
+        end_year = config.end_time.year
+        start_nums = [config.date2num(datetime(yr, 1, 1)) for yr in range(start_year, end_year)]
+
+        time_bnds_attrs = {
+            'units': config.time_units,
+            'calendar': config.calendar,
+            '_ARRAY_DIMENSIONS': ['time', 'bnds']
+        }
+
+        def correctub(sn, temporal_res, i, ntot):
+            if i == (ntot-1):
+                return sn+366
+            else:
+                return sn + temporal_res * (i + 1.0)
+
+        lower_bounds = [sn + temporal_res * (i + 0.0)
+                        for sn in start_nums for i in range(num_periods_per_year)]
+        upper_bounds = [correctub(sn, temporal_res, i, num_periods_per_year)
+                        for sn in start_nums for i in range(num_periods_per_year)]
+        time_bnds_vals = np.zeros((len(lower_bounds), 2))
+        time_bnds_vals[:, 0] = lower_bounds
+        time_bnds_vals[:, 1] = upper_bounds
+
+        time_attrs = {
+            'long_name': 'time',
+            'standard_name': 'time',
+            'units': config.time_units,
+            'calendar': config.calendar,
+            'bounds': 'time_bnds',
+            '_ARRAY_DIMENSIONS': ['time'],
+        }
+        time_vals = [sn + temporal_res * (i + 0.5)
+                     for sn in start_nums for i in range(num_periods_per_year)]
+        # times[-1] = var_time_bnds[-1,0] + (var_time_bnds[-1,1] - var_time_bnds[-1,0]) / 2.
+        # Thus, we keep date of the last time range always at Julian day 364, not in the center of the period.
+        # The time bounds then specify the real extent of the period.
+        # Uncomment the upper line to center it between the upper and lower bound!
+
+        lon_attrs = {
+            'long_name': 'longitude',
+            'standard_name': 'longitude',
+            'units': 'degrees_east',
+            'bounds': 'lon_bnds',
+            '_ARRAY_DIMENSIONS': ['lon'],
+        }
+        lon_bnds_attrs = {'units': 'degrees_east', '_ARRAY_DIMENSIONS': ['lon', 'bnds']}
+
+        lat_attrs = {
+            'long_name': 'latitude',
+            'standard_name': 'latitude',
+            'units': 'degrees_north',
+            'bounds': 'lat_bnds',
+            '_ARRAY_DIMENSIONS': ['lat'],
+        }
+
+        lat_bnds_attrs = {'units': 'degrees_north', '_ARRAY_DIMENSIONS': ['lat', 'bnds']}
+
+        lon_vals = np.zeros(config.grid_width)
+        lon_bnds_vals = np.zeros((config.grid_width, 2))
+        lon_breakpoints = np.linspace(config.lon0, config.lon1, config.grid_width+1, True)
+        lon_bnds_vals[:, 0] = lon_breakpoints[0:config.grid_width]
+        lon_bnds_vals[:, 1] = lon_breakpoints[1:config.grid_width+1]
+        lon_vals = (lon_bnds_vals[:, 0] + lon_bnds_vals[:, 1])/2
+
+        lat_vals = np.zeros(config.grid_height)
+        lat_bnds_vals = np.zeros((config.grid_height, 2))
+        lat_breakpoints = np.linspace(config.lat0, config.lat1, config.grid_height+1, True)
+        lat_bnds_vals[:, 1] = lat_breakpoints[0:config.grid_height]
+        lat_bnds_vals[:, 0] = lat_breakpoints[1:config.grid_height+1]
+        lat_vals = (lat_bnds_vals[:, 0] + lat_bnds_vals[:, 1])/2
+
+        ds = xr.Dataset(coords={
+            'time': time_vals,
+            'lat': lat_vals,
+            'lon': lon_vals,
+            'time_bnds': (['time', 'bnds'], time_bnds_vals),
+            'lat_bnds': (['lat', 'bnds'], lat_bnds_vals),
+            'lon_bnds': (['lon', 'bnds'], lon_bnds_vals),
+        })
+
+        ds.attrs['CHANGELOG'] = CUBE_CHANGELOG
+
+        ds.coords['time'].attrs.update(time_attrs)
+        ds.coords['lon'].attrs.update(lon_attrs)
+        ds.coords['lat'].attrs.update(lat_attrs)
+        ds.coords['time_bnds'].attrs.update(time_bnds_attrs)
+        ds.coords['lon_bnds'].attrs.update(lon_bnds_attrs)
+        ds.coords['lat_bnds'].attrs.update(lat_bnds_attrs)
+
+        dsz = ds.to_zarr(base_dir)
+
+        # Write the cubeconfig attribute directly to zarr because this is a nested
+        # dict and not NetCDF compatible, so xarray won't accept this
+        configdict = {}
+
+        # Convert datetimes to string for JSON repr
+        for k, v in config.__dict__.items():
+            if isinstance(v, datetime):
+                configdict[k] = str(v)
+            else:
+                configdict[k] = v
+
+        z = zarr.open_group(base_dir)
+        z.attrs['cube.config'] = configdict
+
         return Cube(base_dir, config)
 
     def close(self):
-        """
-        Closes the data cube.
-        """
-        if self._data:
-            self._data.close()
-            self._data = None
-        self._closed = True
+        warnings.warn(
+            "This function is deprecated. Zarr cubes do not have to be closed.", DeprecationWarning)
 
-    def update(self, provider: 'CubeSourceProvider'):
+    def update(self, provider: 'CubeSourceProvider', image_cache_size=12):
         """
         Updates the data cube with source data from the given image provider.
 
@@ -124,79 +238,103 @@ class Cube:
             target_start_time = self._config.start_time
         if self._config.end_time and self._config.end_time < target_end_time:
             target_end_time = self._config.end_time
+
+        dsgroup = zarr.open_group(self.base_dir)
+
+        # Initiate zarr datasets
+        for varname in provider.variable_descriptors:
+            if not varname in dsgroup.array_keys():
+                self._init_variable_dataset(provider, varname)
+
+        varnames = provider.variable_descriptors.keys()
         target_year_1 = target_start_time.year
         target_year_2 = target_end_time.year
         cube_temporal_res = self._config.temporal_res
         num_periods_per_year = self._config.num_periods_per_year
-        datasets = dict()
+        datasets = {varname: dsgroup[varname] for varname in provider.variable_descriptors}
+        imagecache = []
 
-        for target_year in range(target_year_1, target_year_2 + 1):
+        # Preallocate cache so that multiple images may be written at once,
+        # This should be much faster when writing time series
+
+        # Initial index inside zarr array to write to
+        i0 = (target_year_1-self._config.start_time.year)*num_periods_per_year
+        ilast = i0-1
+        for target_year in range(target_year_1, target_year_2+1):
             time_min = datetime(target_year, 1, 1)
             time_max = datetime(target_year + 1, 1, 1)
             d_time = timedelta(days=cube_temporal_res)
             time_1 = time_min
-            # Close all open datasets of last year (which have been processed)
-            for key in datasets:
-                if target_year - 1 == int(key[0:4]):
-                    datasets[key].close()
             for time_index in range(num_periods_per_year):
                 time_2 = time_1 + d_time
                 if time_2 > time_max:
                     time_2 = time_max
-                weight = esdl.util.temporal_weight(time_1, time_2, target_start_time, target_end_time)
+                weight = esdl.util.temporal_weight(
+                    time_1, time_2, target_start_time, target_end_time)
                 if weight > 0.0:
                     var_name_to_image = provider.compute_variable_images(time_1, time_2)
                     if var_name_to_image:
-                        self._write_images(provider, datasets, (time_index, time_1, time_2), var_name_to_image)
+                        imagecache.append((i0, var_name_to_image))
+                #print("t1: ", time_1, " t2: ", time_2)
+                if i0-ilast >= image_cache_size:
+                    #print("i0 ilast", i0, ilast)
+                    if len(imagecache) > 0:
+                        # print(datasets)
+                        self._write_images(provider, datasets, imagecache,
+                                           varnames, image_cache_size)
+                    imagecache = []
+                    ilast = i0
                 time_1 = time_2
-        for key in datasets:
-            if datasets[key].isopen():
-                datasets[key].close()
+                i0 = i0 + 1
+        if len(imagecache) > 0:
+            self._write_images(provider, datasets, imagecache, varnames, image_cache_size)
         provider.close()
 
-    def _write_images(self, provider, datasets, target_time, var_name_to_image):
-        for var_name in var_name_to_image:
-            image = var_name_to_image[var_name]
-            if image is not None:
-                self._write_image(provider, datasets, target_time, var_name, image)
+    def _write_images(self, provider, datasets, imagecache, varnames, image_cache_size):
+        # First we unpack the data into 3d-numpy arrays
+        for var_name in varnames:
+            ds = datasets[var_name]
+            i0 = imagecache[0][0]
+            iend = imagecache[-1][0] + 1
+            im_first = imagecache[0][1][var_name]
+            image_all = np.full(
+                (iend-i0, im_first.shape[0], im_first.shape[1]), ds.fill_value, ds.dtype)
+            for entry in imagecache:
+                i1 = entry[0]
+                im_now = entry[1][var_name]
+                image_all[i1-i0, :, :] = im_now
+            print("Writing variable %s image from time index %d to %d" % (var_name, i0, iend))
+            ds[i0:iend, :, :] = image_all
 
-    def _write_image(self, provider, datasets, target_time, var_name, image):
-        time_index, target_start_time, target_end_time = target_time
-        folder_name = var_name
-        folder = os.path.join(os.path.join(self._base_dir, 'data', folder_name))
-        if not os.path.exists(folder):
-            os.makedirs(folder, exist_ok=True)
-        filename = '%04d_%s.nc' % (target_start_time.year, var_name)
-        file = os.path.join(folder, filename)
-        if filename in datasets:
-            dataset = datasets[filename]
-        else:
-            if os.path.exists(file):
-                dataset = netCDF4.Dataset(file, 'a')
-            else:
-                dataset = netCDF4.Dataset(file, 'w', format=self._config.file_format)
-                self._init_variable_dataset(provider, dataset, var_name, target_start_time.year)
-            datasets[filename] = dataset
-
-        t2 = self._config.date2num(target_end_time)
-        time_bnds = dataset.variables['time_bnds']
-        if time_bnds[time_index, 1] != t2:
-            print("Warning: Time stamps discrepancy: %f is is not %f" % (time_bnds[time_index, 1], t2))
-            print("target start: %s, target end %s" % (target_start_time, target_end_time))
-
-        var_variable = dataset.variables[var_name]
-        var_variable[time_index, :, :] = image
-
-    def _init_variable_dataset(self, provider, dataset, variable_name, start_year):
+    def _init_variable_dataset(self, provider, variable_name):
         import time
+
+        zdataset = zarr.open_group(self.base_dir)
+
+        nt = len(zdataset['time'])
+        nx = len(zdataset['lon'])
+        ny = len(zdataset['lat'])
+
+        if not self._config.chunk_sizes:
+            cs = (1, ny, nx)
+        else:
+            cs = self._config.chunk_sizes
+
+        if self._config.compression:
+            compressor = Blosc(cname='lz4', clevel=self._config.comp_level)
+        else:
+            compressor = None
+
+        variable_descriptors = provider.variable_descriptors
+        variable_attributes = variable_descriptors[variable_name]
+
+        newds = zdataset.create_dataset(variable_name, shape=(nt, ny, nx), chunks=cs,
+                                        dtype=variable_attributes['data_type'], compressor=compressor,
+                                        fillvalue=variable_attributes['fill_value'])
 
         # TODO (forman, 20160512): some of these attributes could be read from cube configuration
         # see http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#description-of-file-contents
         # see http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#attribute-appendix
-        dataset.Conventions = 'CF-1.6'
-        dataset.institution = 'Brockmann Consult GmbH, Germany'
-        dataset.source = 'ESDL data cube generation, version %s' % __version__
-        dataset.history = time.ctime(time.time()) + ' - ESDL data cube generation'
         #
         # check (nf 20151023) - add more global attributes from CF-conventions here,
         #                       especially those that reference original sources and originators
@@ -204,103 +342,25 @@ class Cube:
         # dataset.title = ...
         # dataset.references = ...
         # dataset.comment = ...
+        source_attributes = {k: v for k, v in variable_attributes.items(
+        ) if k not in {'data_type', 'fill_value', 'scale_factor', 'add_offset'}}
+        all_attributes = {
+            'Conventions': 'CF-1.6',
+            'institution': 'Brockmann Consult GmbH, Germany',
+            'source':  'ESDL data cube generation, version %s' % __version__,
+            'history': time.ctime(time.time()) + ' - ESDL data cube generation',
+            'northing': '%s degrees' % self.config.northing,
+            'easting': '%s degrees' % self.config.easting,
+            'source_attributes': source_attributes,
+            # This is actually mangling with xarray-internals to tell xarray about the dimension variables
+            # This will have to change in the future, once there is something like a NetZDF zarr extension
+            # defined, see e.g. issue
+            '_ARRAY_DIMENSIONS': ["time", "lat", "lon"]
+        }
+        for k in all_attributes:
+            newds.attrs[k] = all_attributes[k]
 
-        dataset.northing = '%s degrees' % self.config.northing
-        dataset.easting = '%s degrees' % self.config.easting
-        dataset.spatial_res = '%s degrees' % self.config.spatial_res
-
-        image_x0, image_y0, image_width, image_height = provider.spatial_coverage
-
-        num_periods_per_year = self._config.num_periods_per_year
-        dataset.createDimension('bnds', 2)
-        dataset.createDimension('time', num_periods_per_year)
-        dataset.createDimension('lat', image_height)
-        dataset.createDimension('lon', image_width)
-
-        temporal_res = self._config.temporal_res
-        start_date = datetime(start_year, 1, 1, 0, 0)
-        start_num = self._config.date2num(start_date)
-        var_time_bnds = dataset.createVariable('time_bnds', 'f8', ('time', 'bnds'), fill_value=-9999.0)
-        var_time_bnds.units = self._config.time_units
-        var_time_bnds.calendar = self._config.calendar
-        lower_bounds = [start_num + temporal_res * (i + 0.0) for i in range(num_periods_per_year)]
-        upper_bounds = [start_num + temporal_res * (i + 1.0) for i in range(num_periods_per_year)]
-        upper_bounds[-1] = self._config.date2num(datetime(start_year + 1, 1, 1, 0, 0))
-        var_time_bnds[:, 0] = lower_bounds
-        var_time_bnds[:, 1] = upper_bounds
-
-        var_time = dataset.createVariable('time', 'f8', ('time',), fill_value=-9999.0)
-        var_time.long_name = 'time'
-        var_time.standard_name = 'time'
-        var_time.units = self._config.time_units
-        var_time.calendar = self._config.calendar
-        var_time.bounds = 'time_bnds'
-
-        times = [start_num + temporal_res * (i + 0.5) for i in range(num_periods_per_year)]
-        # times[-1] = var_time_bnds[-1,0] + (var_time_bnds[-1,1] - var_time_bnds[-1,0]) / 2.
-        # Thus, we keep date of the last time range always at Julian day 364, not in the center of the period.
-        # The time bounds then specify the real extent of the period.
-        # Uncomment the upper line to center it between the upper and lower bound!
-        var_time[:] = times
-
-        var_longitude = dataset.createVariable('lon', 'f4', ('lon',))
-        var_longitude.long_name = 'longitude'
-        var_longitude.standard_name = 'longitude'
-        var_longitude.units = 'degrees_east'
-        var_longitude.bounds = 'lon_bnds'
-
-        var_longitude_bnds = dataset.createVariable('lon_bnds', 'f4', ('lon', 'bnds'))
-        var_longitude_bnds.units = 'degrees_east'
-
-        var_latitude = dataset.createVariable('lat', 'f4', ('lat',))
-        var_latitude.long_name = 'latitude'
-        var_latitude.standard_name = 'latitude'
-        var_latitude.units = 'degrees_north'
-        var_latitude.bounds = 'lat_bnds'
-
-        var_latitude_bnds = dataset.createVariable('lat_bnds', 'f4', ('lat', 'bnds'))
-        var_latitude_bnds.units = 'degrees_north'
-
-        spatial_res = self._config.spatial_res
-
-        lon0 = self._config.easting + image_x0 * spatial_res
-        for i in range(image_width):
-            lon = lon0 + i * spatial_res
-            var_longitude[i] = lon + 0.5 * spatial_res
-            var_longitude_bnds[i, 0] = lon
-            var_longitude_bnds[i, 1] = lon + spatial_res
-
-        lat0 = self._config.northing + image_y0 * spatial_res
-        for i in range(image_height):
-            lat = lat0 - i * spatial_res
-            var_latitude[i] = lat - 0.5 * spatial_res
-            var_latitude_bnds[i, 0] = lat - spatial_res
-            var_latitude_bnds[i, 1] = lat
-
-        variable_descriptors = provider.variable_descriptors
-        variable_attributes = variable_descriptors[variable_name]
-        # Mandatory attributes
-        variable_data_type = variable_attributes['data_type']
-        variable_fill_value = variable_attributes['fill_value']
-        var_variable = dataset.createVariable(variable_name, variable_data_type,
-                                              ('time', 'lat', 'lon',),
-                                              fill_value=variable_fill_value,
-                                              chunksizes=self._config.chunk_sizes,
-                                              zlib=self._config.compression,
-                                              complevel=self._config.comp_level)
-        var_variable.scale_factor = variable_attributes.get('scale_factor', 1.0)
-        var_variable.add_offset = variable_attributes.get('add_offset', 0.0)
-
-        # Set remaining NetCDF attributes
-        for name in variable_attributes:
-            if name not in {'data_type', 'fill_value', 'scale_factor', 'add_offset'}:
-                value = variable_attributes[name]
-                try:
-                    var_variable.__setattr__(name, value)
-                except ValueError as ve:
-                    # TODO (forman, 20160512): log, or print to stderr
-                    print('%s = %s failed (%s)!' % (name, value, str(ve)))
-        return dataset
+        return newds
 
     @staticmethod
     def _get_num_steps(x1, x2, dx):

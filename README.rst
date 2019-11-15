@@ -63,9 +63,9 @@ Extensions
 
 * ``esdl.image_providers``:
   * ``'burnt_area = esdl.providers.burnt_area.BurntAreaProvider'``
-* ``console_scripts``: 
+* ``console_scripts``:
   * ``'esdl_cli = esdl.cli:main'``, see %PYTHON_HOME%/Scripts/esdl_cli (*.exe on Windows) after installation
-    
+
 
 ------------
 How to build
@@ -74,12 +74,12 @@ How to build
 Development mode installation::
 
     > python setup.py develop
-    
+
 or real installation::
-    
+
     > python setup.py install
-    
-    
+
+
 
 How to generate a data cube
 ---------------------------
@@ -90,7 +90,7 @@ following entry::
     cube_sources_root = <your local cube source directory>
 
 
-To generate a default data cube with a 0.25 degree resolution and variables 'BurntArea', 'C_Emmisions', Ozone', 
+To generate a default data cube with a 0.25 degree resolution and variables 'BurntArea', 'C_Emmisions', Ozone',
 'Precip' call the ``cube-gen`` tool::
 
     > cube-gen testcube burnt_area:dir=BurntAreaDir c_emissions:dir=EmissionsDir ozone:Ozone-CCI/Total_Columns/L3/MERGED precip:dir=CPC_precip
@@ -130,6 +130,4 @@ Production and test code dependencies
 * netCDF4  >= 1.2
 * numpy >= 1.9
 * gridtools
-
-
-
+* zarr >= 2.3
