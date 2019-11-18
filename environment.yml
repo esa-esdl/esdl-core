@@ -4,6 +4,7 @@ channels:
   - cablab
   - ioos
 dependencies:
+  - python <=3.7.4
   - dask
   - gridtools
   - h5netcdf
@@ -24,5 +25,5 @@ dependencies:
   #
   # for testing only
   #
-  - pytest
-  - pytest-cov
+#  - pytest
+#  - pytest-cov
