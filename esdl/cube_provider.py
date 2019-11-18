@@ -1,13 +1,13 @@
 import glob
 import os.path
 import time
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 from datetime import datetime
 
 import gridtools.resampling as gtr
 import netCDF4
 import numpy as np
-from typing import Tuple, Dict, Any
+from typing import Tuple, Dict, Any, Generic, TypeVar, Optional
 
 from .cube_config import CubeConfig
 from .util import Config, NetCDFDatasetCache, aggregate_images, temporal_weight
@@ -56,16 +56,17 @@ class CubeSourceProvider(metaclass=ABCMeta):
         """
         pass
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def temporal_coverage(self) -> Tuple[datetime, datetime]:
         """
         Return the start and end time of the available source data.
 
         :return: A tuple of datetime.datetime instances (start_time, end_time).
         """
-        return None
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def spatial_coverage(self) -> Tuple[int, int, int, int]:
         """
         Return the spatial coverage as a rectangle represented by a tuple of integers (x, y, width, height) in the
@@ -73,9 +74,9 @@ class CubeSourceProvider(metaclass=ABCMeta):
 
         :return: A tuple of integers (x, y, width, height) in the cube's image coordinates.
         """
-        return None
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def variable_descriptors(self) -> Dict[str, Dict[str, Any]]:
         """
         Return a dictionary which maps target(!) variable names to a dictionary of target attribute values.
@@ -93,7 +94,6 @@ class CubeSourceProvider(metaclass=ABCMeta):
 
         :return: dictionary of variable names to attribute dictionaries
         """
-        return None
 
     @abstractmethod
     def compute_variable_images(self, period_start: datetime, period_end: datetime) -> Dict[str, np.ndarray]:
@@ -117,7 +117,6 @@ class CubeSourceProvider(metaclass=ABCMeta):
                  (grid_height, grid_width) as given by the :py:class:`CubeConfig`.
                  Return ``None`` if no such variables exists for the given target time range.
         """
-        return None
 
     @abstractmethod
     def close(self):
@@ -125,7 +124,6 @@ class CubeSourceProvider(metaclass=ABCMeta):
         Called by the cube's :py:meth:`update` method after all images have been retrieved and the provider is no
         longer used.
         """
-        pass
 
 
 class BaseCubeSourceProvider(CubeSourceProvider, metaclass=ABCMeta):
@@ -173,7 +171,7 @@ class BaseCubeSourceProvider(CubeSourceProvider, metaclass=ABCMeta):
                            "Consider changing the start_time or end_time in cube.config")
 
     @abstractmethod
-    def compute_source_time_ranges(self) -> list or None:
+    def compute_source_time_ranges(self) -> Optional[list]:
         """
         Return a sorted list of all time ranges of every source file.
         Items in this list must be 4-element tuples of the form
@@ -285,7 +283,7 @@ class BaseStaticCubeSourceProvider(CubeSourceProvider, metaclass=ABCMeta):
         """
         return self.cube_config.start_time, self.cube_config.end_time
 
-    def compute_variable_images(self, period_start: datetime, period_end: datetime) -> Dict[str, np.ndarray]:
+    def compute_variable_images(self, period_start: datetime, period_end: datetime) -> Optional[Dict[str, np.ndarray]]:
         if self._variable_images_computed:
             return None
 
@@ -408,6 +406,9 @@ class NetCDFStaticCubeSourceProvider(BaseStaticCubeSourceProvider, metaclass=ABC
         else:
             raise ValueError("unexpected shape for variable '%s'" % var_name)
         return var_image
+
+
+C = TypeVar('C')
 
 
 class DatasetCubeSourceProvider(BaseCubeSourceProvider, Generic[C], metaclass=ABCMeta):
