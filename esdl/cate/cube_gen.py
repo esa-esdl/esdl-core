@@ -26,7 +26,8 @@ class CateDatasetCache(DatasetCache):
             var = var[time_index, :, :]
             return numpy.ma.masked_invalid(var, copy=False)
         else:
-            raise ValueError("Error: wrong dimension for xarray var. Should be 3 is " + str(len(var.shape)))
+            return numpy.ma.masked_invalid(var, copy=False)
+            #raise ValueError("Error: wrong dimension for xarray var. Should be 3 is " + str(var))
 
     def open_dataset(self, real_file) -> xarray.Dataset:
         if os.path.isfile(real_file):

@@ -244,6 +244,7 @@ class Cube:
         # Initiate zarr datasets
         for varname in provider.variable_descriptors:
             if not varname in dsgroup.array_keys():
+                print(dsgroup)
                 self._init_variable_dataset(provider, varname)
 
         varnames = provider.variable_descriptors.keys()
@@ -357,6 +358,7 @@ class Cube:
             # defined, see e.g. issue
             '_ARRAY_DIMENSIONS': ["time", "lat", "lon"]
         }
+
         for k in all_attributes:
             newds.attrs[k] = all_attributes[k]
 
